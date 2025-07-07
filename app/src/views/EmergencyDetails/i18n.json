@@ -16,6 +16,12 @@
         "emergencyMapTitle": "Affected Provinces",
         "exportMap": "Export",
         "contactsTitle": "Contacts",
-        "sourceLabel": "Source {source}"
+        "sourceLabel": "Source {source}",
+        "imminentAnticipatoryLabel": "Imminent / Anticipatory",
+        "previousCrisesTitle": "Previous Crises",
+        "syncButton": "Sync",
+        "copyButton": "Copy",
+        "drefOperationalStrategyTitle": "DREF Operational Strategy",
+        "moreButton": "More"
     }
 }

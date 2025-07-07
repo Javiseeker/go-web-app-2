@@ -1,10 +1,11 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import {
     Container,
     HtmlOutput,
     KeyFigure,
     TextOutput,
+    Button,
 } from '@ifrc-go/ui';
 import { useTranslation } from '@ifrc-go/ui/hooks';
 import { resolveToString } from '@ifrc-go/ui/utils';
@@ -22,7 +23,6 @@ import Link from '#components/Link';
 import useDisasterType from '#hooks/domain/useDisasterType';
 import useGlobalEnums from '#hooks/domain/useGlobalEnums';
 import { type EmergencyOutletContext } from '#utils/outletContext';
-import { type GoApiResponse } from '#utils/restRequest';
 
 import EmergencyMap from './EmergencyMap';
 import FieldReportStats from './FieldReportStats';
@@ -45,8 +45,6 @@ function getFieldReport(
     if (reports.length === 0) {
         return undefined;
     }
-
-    // FIXME: use max function
     return reports.reduce((
         selectedReport: FieldReport | undefined,
         currentReport: FieldReport | undefined,
@@ -63,13 +61,12 @@ function getFieldReport(
     }, undefined);
 }
 
-/** @knipignore */
-// eslint-disable-next-line import/prefer-default-export
 export function Component() {
     const strings = useTranslation(i18n);
     const disasterTypes = useDisasterType();
     const { emergencyResponse } = useOutletContext<EmergencyOutletContext>();
     const { api_visibility_choices } = useGlobalEnums();
+    const [showFullDref, setShowFullDref] = useState(false);
 
     const visibilityMap = useMemo(
         () => listToMap(
@@ -142,12 +139,10 @@ export function Component() {
     );
 
     return (
-        <div
-            className={styles.emergencyDetails}
-        >
+        <div className={styles.emergencyDetails}>
             {hasKeyFigures && (
                 <Container
-                    className={styles.keyFiguresContainer}
+                    className={styles.keyFigureList}
                     heading={strings.emergencyKeyFiguresTitle}
                     childrenContainerClassName={styles.keyFigureList}
                     withHeaderBorder
@@ -157,11 +152,8 @@ export function Component() {
                             <KeyFigure
                                 key={keyFigure.id}
                                 className={styles.keyFigure}
-                                // FIXME: fix typing in server (medium priority)
-                                // FIXME: Rounding this because it was previously rounded
                                 value={Math.round(
                                     Number.parseInt(
-                                        // Removing commas from the value
                                         keyFigure.number.replace(/[^\d.-]/g, ''),
                                         10,
                                     ),
@@ -178,6 +170,7 @@ export function Component() {
                     )}
                 </Container>
             )}
+
             {isDefined(emergencyResponse) && (
                 <Container
                     heading={strings.emergencyOverviewTitle}
@@ -247,48 +240,84 @@ export function Component() {
                     />
                 </Container>
             )}
-            {isDefined(emergencyResponse)
-                && isDefined(emergencyResponse?.summary)
-                && isTruthyString(emergencyResponse.summary)
-                && (
-                    <Container
-                        heading={strings.situationalOverviewTitle}
-                        withHeaderBorder
-                    >
-                        <HtmlOutput
-                            value={emergencyResponse.summary}
-                        />
-                    </Container>
+
+            {/* Situational Overview */}
+            <Container
+                heading={(
+                    <div className={styles.sectionHeadingRow}>
+                        <div className={styles.sectionTitle}>{strings.situationalOverviewTitle}</div>
+                        <div className={styles.sectionLabel}>{strings.imminentAnticipatoryLabel}</div>
+                    </div>
                 )}
-            {isDefined(emergencyResponse)
-                && isDefined(emergencyResponse?.links)
-                && emergencyResponse.links.length > 0
-                && (
-                    <Container
-                        heading={strings.linksTitle}
-                        withHeaderBorder
-                        childrenContainerClassName={styles.linksContent}
-                    >
-                        {emergencyResponse.links.map((link) => (
-                            <div
-                                key={link.id}
-                                className={styles.linkContainer}
+                withHeaderBorder
+                childrenContainerClassName={styles.situationalOverviewContent}
+            >
+                {isTruthyString(emergencyResponse?.summary)
+                    ? <HtmlOutput value={emergencyResponse.summary} />
+                    : <p className={styles.placeholderText}>No situational overview data available</p>}
+            </Container>
+
+            {/* Previous Crises */}
+            <Container
+                heading={(
+                    <div className={styles.sectionHeadingRow}>
+                        <div className={styles.sectionTitle}>{strings.previousCrisesTitle}</div>
+                        <div className={styles.sectionControls}>
+                            <Button
+                                variant="tertiary"
+                                size="small"
+                                icon="refresh"
+                                onClick={() => { /* Sync handler stub */ }}
                             >
-                                <Link
-                                    href={link.url}
-                                    external
-                                    withLinkIcon
-                                    className={styles.link}
-                                >
-                                    {link.title}
-                                </Link>
-                                <div>
-                                    {link.description}
-                                </div>
-                            </div>
-                        ))}
-                    </Container>
+                                {strings.syncButton}
+                            </Button>
+                            <Button
+                                variant="tertiary"
+                                size="small"
+                                icon="copy"
+                                onClick={() => { /* Copy handler stub */ }}
+                            >
+                                {strings.copyButton}
+                            </Button>
+                        </div>
+                    </div>
                 )}
+                withHeaderBorder
+                childrenContainerClassName={styles.previousCrisesContent}
+            >
+                {isTruthyString(emergencyResponse?.previous_crises)
+                    ? <HtmlOutput value={emergencyResponse.previous_crises} />
+                    : <p className={styles.placeholderText}>No previous crises data available</p>}
+            </Container>
+
+            {/* DREF Operational Strategy */}
+            <Container
+                heading={(
+                    <div className={styles.sectionHeadingRow}>
+                        <div className={styles.sectionTitle}>{strings.drefOperationalStrategyTitle}</div>
+                        <Button
+                            variant="tertiary"
+                            size="small"
+                            icon="more"
+                            onClick={() => setShowFullDref(!showFullDref)}
+                            className={styles.moreButton}
+                        >
+                            {strings.moreButton}
+                        </Button>
+                    </div>
+                )}
+                withHeaderBorder
+                childrenContainerClassName={styles.drefOperationalStrategyContent}
+            >
+                {isTruthyString(emergencyResponse?.dref_operational_strategy) ? (
+                    showFullDref
+                        ? <HtmlOutput value={emergencyResponse.dref_operational_strategy} />
+                        : <HtmlOutput value={`${emergencyResponse.dref_operational_strategy.substring(0, 200)}...`} />
+                ) : (
+                    <p className={styles.placeholderText}>No DREF operational strategy data available</p>
+                )}
+            </Container>
+
             <div className={styles.mapKeyFigureContainer}>
                 {emergencyResponse && !emergencyResponse.hide_field_report_map && (
                     <Container
@@ -318,71 +347,53 @@ export function Component() {
                     </Container>
                 )}
             </div>
-            {isDefined(groupedContacts) && Object.keys(groupedContacts).length > 0
-                && (
-                    <Container
-                        heading={strings.contactsTitle}
-                        childrenContainerClassName={styles.contactsContent}
-                        withHeaderBorder
-                    >
-                        {/* FIXME: lets not use Object.entries here */}
-                        {Object.entries(groupedContacts).map(([contactGroup, contacts]) => (
-                            <Container
-                                key={contactGroup}
-                                heading={contactGroup}
-                                childrenContainerClassName={styles.contactList}
-                                headingLevel={4}
-                            >
-                                {contacts.map((contact) => (
-                                    <div
-                                        key={contact.id}
-                                        className={styles.contact}
-                                    >
-                                        <div className={styles.details}>
-                                            <div className={styles.name}>
-                                                {contact.name}
-                                            </div>
-                                            <div className={styles.title}>
-                                                {contact.title}
-                                            </div>
-                                        </div>
-                                        <div className={styles.contactMechanisms}>
-                                            <div className={styles.type}>
-                                                {contact.ctype}
-                                            </div>
-                                            {isTruthyString(contact.email) && (
-                                                <TextOutput
-                                                    value={(
-                                                        <Link
-                                                            href={`mailto:${contact.email}`}
-                                                            external
-                                                            withLinkIcon
-                                                        >
-                                                            {contact.email}
-                                                        </Link>
-                                                    )}
-                                                />
-                                            )}
-                                            {isTruthyString(contact.phone) && (
-                                                <TextOutput
-                                                    value={(
-                                                        <Link
-                                                            href={`tel:${contact.phone}`}
-                                                            withLinkIcon
-                                                            external
-                                                        >
-                                                            {contact.phone}
-                                                        </Link>
-                                                    )}
-                                                />
-                                            )}
-                                        </div>
+
+            {isDefined(groupedContacts) && Object.keys(groupedContacts).length > 0 && (
+                <Container
+                    heading={strings.contactsTitle}
+                    childrenContainerClassName={styles.contactsContent}
+                    withHeaderBorder
+                >
+                    {Object.entries(groupedContacts).map(([contactGroup, contacts]) => (
+                        <Container
+                            key={contactGroup}
+                            heading={contactGroup}
+                            childrenContainerClassName={styles.contactList}
+                            headingLevel={4}
+                        >
+                            {contacts.map((contact) => (
+                                <div key={contact.id} className={styles.contact}>
+                                    <div className={styles.details}>
+                                        <div className={styles.name}>{contact.name}</div>
+                                        <div className={styles.title}>{contact.title}</div>
                                     </div>
-                                ))}
-                            </Container>
-                        ))}
-                    </Container>
-                )}
+                                    <div className={styles.contactMechanisms}>
+                                        <div className={styles.type}>{contact.ctype}</div>
+                                        {isTruthyString(contact.email) && (
+                                            <TextOutput
+                                                value={(
+                                                    <Link href={`mailto:${contact.email}`} external withLinkIcon>
+                                                        {contact.email}
+                                                    </Link>
+                                                )}
+                                            />
+                                        )}
+                                        {isTruthyString(contact.phone) && (
+                                            <TextOutput
+                                                value={(
+                                                    <Link href={`tel:${contact.phone}`} withLinkIcon external>
+                                                        {contact.phone}
+                                                    </Link>
+                                                )}
+                                            />
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                        </Container>
+                    ))}
+                </Container>
+            )}
         </div>
     );
 }

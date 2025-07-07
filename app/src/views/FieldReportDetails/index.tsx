@@ -242,15 +242,27 @@ export function Component() {
                 </Breadcrumbs>
             )}
             actions={(
-                <Link
-                    className={styles.editLink}
-                    to="fieldReportFormEdit"
-                    urlParams={{ fieldReportId }}
-                    variant="secondary"
-                    disabled={shouldHideDetails}
-                >
-                    {strings.editReportButtonLabel}
-                </Link>
+                <>
+                    <Link
+                        className={styles.editLink}
+                        to="fieldReportFormEdit"
+                        urlParams={{ fieldReportId }}
+                        variant="secondary"
+                        disabled={shouldHideDetails}
+                    >
+                        {strings.editReportButtonLabel}
+                    </Link>
+                    {isDefined(eventDetails?.id) && (
+                        <Link
+                            className={styles.editLink}
+                            to="emergenciesLayout"
+                            urlParams={{ emergencyId: eventDetails.id }}
+                            variant="secondary"
+                        >
+                            {strings.viewEmergencyDetailsButtonLabel ?? 'View Emergency Details'}
+                        </Link>
+                    )}
+                </>
             )}
             descriptionContainerClassName={styles.description}
             description={!shouldHideDetails && (
