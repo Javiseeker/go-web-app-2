@@ -1,0 +1,11 @@
+{
+    "namespace": "emergencyDetails",
+    "strings": {
+        "llmSummariesTitle": "LLM Summaries",
+        "llmSummariesPending": "Generating AI summaries...",
+        "llmSummariesError": "Failed to generate AI summaries. Please try again later.",
+        "llmSummariesEmpty": "No AI summaries available for this emergency.",
+        "llmSummariesRegenerate": "Regenerate Summaries",
+        "llmSummariesLoading": "Loading summaries..."
+    }
+}

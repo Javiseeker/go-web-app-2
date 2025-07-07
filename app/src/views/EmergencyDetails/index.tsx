@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useOutletContext } from 'react-router-dom';
+import { useOutletContext, useParams } from 'react-router-dom';
 import {
     Container,
     HtmlOutput,
@@ -26,6 +26,7 @@ import { type GoApiResponse } from '#utils/restRequest';
 
 import EmergencyMap from './EmergencyMap';
 import FieldReportStats from './FieldReportStats';
+import LlmSummaries from './LlmSummary';
 
 import i18n from './i18n.json';
 import styles from './styles.module.css';
@@ -70,6 +71,7 @@ export function Component() {
     const disasterTypes = useDisasterType();
     const { emergencyResponse } = useOutletContext<EmergencyOutletContext>();
     const { api_visibility_choices } = useGlobalEnums();
+    const { emergencyId } = useParams();
 
     const visibilityMap = useMemo(
         () => listToMap(
@@ -178,6 +180,7 @@ export function Component() {
                     )}
                 </Container>
             )}
+            
             {isDefined(emergencyResponse) && (
                 <Container
                     heading={strings.emergencyOverviewTitle}
@@ -289,6 +292,9 @@ export function Component() {
                         ))}
                     </Container>
                 )}
+            {emergencyId && !Number.isNaN(Number(emergencyId)) && (
+                <LlmSummaries emergencyId={Number(emergencyId)} />
+            )}
             <div className={styles.mapKeyFigureContainer}>
                 {emergencyResponse && !emergencyResponse.hide_field_report_map && (
                     <Container

@@ -1,0 +1,55 @@
+.llm-summaries-container {
+    .actions {
+        display: flex;
+        gap: var(--go-ui-spacing-md);
+        align-items: center;
+        flex-direction: row; /* Ensures horizontal layout */
+    }
+
+    .summaries-content {
+        display: flex;
+        flex-direction: column;
+        gap: var(--go-ui-spacing-lg);
+    }
+
+    .summary-item {
+        display: flex;
+        flex-direction: column;
+        gap: var(--go-ui-spacing-md);
+        padding: var(--go-ui-spacing-md);
+        border-radius: var(--go-ui-border-radius-lg);
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+
+        .summary-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: var(--go-ui-spacing-md);
+
+            .summary-title {
+                margin: 0;
+                font-size: var(--go-ui-font-size-lg);
+                font-weight: var(--go-ui-font-weight-semibold);
+                color: var(--go-ui-color-text-black);
+            }
+
+            .summary-date {
+                font-size: var(--go-ui-font-size-sm);
+                color: var(--go-ui-color-text-light);
+                white-space: nowrap;
+            }
+        }
+
+        .summary-content {
+            line-height: 1.6;
+            color: var(--go-ui-color-text-black);
+        }
+
+        .confidence-score {
+            font-size: var(--go-ui-font-size-sm);
+            color: var(--go-ui-color-text-light);
+            font-style: italic;
+        }
+    }
+}

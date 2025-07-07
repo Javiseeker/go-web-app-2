@@ -42,6 +42,7 @@ import FieldReportTable from './FieldReportsTable';
 import FlashUpdateTable from './FlashUpdatesTable';
 import Map from './Map';
 
+
 import i18n from './i18n.json';
 import styles from './styles.module.css';
 
