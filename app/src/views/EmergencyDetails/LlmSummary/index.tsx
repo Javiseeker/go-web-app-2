@@ -1,3 +1,4 @@
+import { useState, useCallback } from 'react';
 import { useTranslation } from '@ifrc-go/ui/hooks';
 import {
     Button,
@@ -12,7 +13,6 @@ import {
     CopyLineIcon,
     RefreshLineIcon,
 } from '@ifrc-go/icons';
-import { useCallback } from 'react';
 
 import i18n from './i18n.json';
 import styles from './styles.module.css';
@@ -33,12 +33,10 @@ function LLMSummaries(props: Props) {
     const { emergencyId } = props;
     const strings = useTranslation(i18n);
 
-    // Mock states
-    const isLoading = false;
-    const hasError = false;
-    const regeneratePending = false;
+    const [apiMessage, setApiMessage] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [hasError, setHasError] = useState(false);
 
-    // Mock summary data
     const summaries: LLMSummary[] = [
         {
             id: 1,
@@ -57,9 +55,32 @@ function LLMSummaries(props: Props) {
         }
     }, [summaries]);
 
-    const handleRegenerate = () => {
-        // Replace with actual API call
-        console.log('Regenerate summaries for emergency ID:', emergencyId);
+    const handleRegenerate = async () => {
+        setIsLoading(true);
+        setHasError(false);
+    
+        try {
+            const response = await fetch('http://localhost:8000/api/v2/how-are-you/', {
+                method: 'GET',
+            });
+    
+            const text = await response.text();
+            console.log('Raw API response:', text);
+    
+            const data = JSON.parse(text);
+            console.log('Parsed JSON:', data);
+    
+            if (!response.ok || !data.message) {
+                throw new Error('Bad response or missing message');
+            }
+    
+            setApiMessage(data.message || 'No message');
+        } catch (error) {
+            console.error('Failed to sync:', error);
+            setHasError(true);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     if (isLoading) {
@@ -71,7 +92,7 @@ function LLMSummaries(props: Props) {
             >
                 <Message
                     pending
-                    title={strings.llmSummariesLoading}
+                    title="Regenerating summary..."
                 />
             </Container>
         );
@@ -85,7 +106,7 @@ function LLMSummaries(props: Props) {
                 withHeaderBorder
             >
                 <Message
-                    title={strings.llmSummariesError}
+                    title="Failed to regenerate summary."
                     variant="error"
                 />
             </Container>
@@ -106,11 +127,11 @@ function LLMSummaries(props: Props) {
             </Container>
         );
     }
+
     return (
         <Container
             className={styles.llmSummariesContainer}
             heading={strings.llmSummariesTitle}
-
             withHeaderBorder
             childrenContainerClassName={styles.summariesContent}
             actions={(
@@ -128,7 +149,7 @@ function LLMSummaries(props: Props) {
                         onClick={handleRegenerate}
                         variant="tertiary"
                         icons={<RefreshLineIcon />}
-                        disabled={regeneratePending}
+                        disabled={isLoading}
                     >
                         Sync
                     </Button>
@@ -160,9 +181,15 @@ function LLMSummaries(props: Props) {
                     )}
                 </div>
             ))}
+
+            {apiMessage && (
+                <Message
+                    title={apiMessage}
+                    variant="info"
+                />
+            )}
         </Container>
     );
 }
 
 export default LLMSummaries;
-
