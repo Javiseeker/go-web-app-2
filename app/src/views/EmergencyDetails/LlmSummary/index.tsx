@@ -58,8 +58,12 @@ function LLMSummaries(props: Props) {
     }, [summaries]);
 
     const handleRegenerate = () => {
-        // Replace with actual API call
-        console.log('Regenerate summaries for emergency ID:', emergencyId);
+        // Print all ids for debugging
+        console.log('Regenerate summaries for:', {
+            emergencyId,
+            countryId,
+            disasterTypeId,
+        });
     };
 
     if (isLoading) {
