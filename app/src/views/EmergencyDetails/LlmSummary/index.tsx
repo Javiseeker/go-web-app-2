@@ -19,6 +19,8 @@ import styles from './styles.module.css';
 
 interface Props {
     emergencyId: number;
+    countryId?: number;
+    disasterTypeId?: number;
 }
 
 interface LLMSummary {
@@ -30,7 +32,7 @@ interface LLMSummary {
 }
 
 function LLMSummaries(props: Props) {
-    const { emergencyId } = props;
+    const { emergencyId, countryId, disasterTypeId } = props;
     const strings = useTranslation(i18n);
 
     const [apiMessage, setApiMessage] = useState<string | null>(null);
@@ -55,32 +57,9 @@ function LLMSummaries(props: Props) {
         }
     }, [summaries]);
 
-    const handleRegenerate = async () => {
-        setIsLoading(true);
-        setHasError(false);
-    
-        try {
-            const response = await fetch('http://localhost:8000/api/v2/how-are-you/', {
-                method: 'GET',
-            });
-    
-            const text = await response.text();
-            console.log('Raw API response:', text);
-    
-            const data = JSON.parse(text);
-            console.log('Parsed JSON:', data);
-    
-            if (!response.ok || !data.message) {
-                throw new Error('Bad response or missing message');
-            }
-    
-            setApiMessage(data.message || 'No message');
-        } catch (error) {
-            console.error('Failed to sync:', error);
-            setHasError(true);
-        } finally {
-            setIsLoading(false);
-        }
+    const handleRegenerate = () => {
+        // Replace with actual API call
+        console.log('Regenerate summaries for emergency ID:', emergencyId);
     };
 
     if (isLoading) {

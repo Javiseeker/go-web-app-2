@@ -293,7 +293,11 @@ export function Component() {
                     </Container>
                 )}
             {emergencyId && !Number.isNaN(Number(emergencyId)) && (
-                <LlmSummaries emergencyId={Number(emergencyId)} />
+                <LlmSummaries 
+                    emergencyId={Number(emergencyId)}
+                    countryId={emergencyResponse?.countries?.[0]?.id}
+                    disasterTypeId={emergencyResponse?.dtype}
+                />
             )}
             <div className={styles.mapKeyFigureContainer}>
                 {emergencyResponse && !emergencyResponse.hide_field_report_map && (
