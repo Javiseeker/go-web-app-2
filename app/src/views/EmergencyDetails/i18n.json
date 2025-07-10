@@ -22,6 +22,8 @@
         "syncButton": "Sync",
         "copyButton": "Copy",
         "drefOperationalStrategyTitle": "DREF Operational Strategy",
-        "moreButton": "More"
+        "moreButton": "More",
+        "syncingButton": "Syncing...",
+        "copiedButton": "Copied!"
     }
 }

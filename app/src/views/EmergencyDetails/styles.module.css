@@ -1,3 +1,8 @@
+/* =================================================================== */
+/* =====================  EmergencyDetails Styles  =================== */
+/* =================================================================== */
+
+/* ===== EmergencyDetails main wrapper ===== */
 .emergencyDetails {
     display: flex;
     flex-direction: column;
@@ -5,154 +10,146 @@
     gap: var(--go-ui-spacing-2xl);
 }
 
+/* ===== Key figures ===== */
 .keyFigureList {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
     gap: var(--go-ui-spacing-md);
 }
-
 .keyFigure {
     flex-basis: 20rem;
     border-radius: var(--go-ui-border-radius-lg);
     box-shadow: var(--go-ui-box-shadow-md);
 }
 
+/* ===== Overview grid ===== */
 .overviewContent {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr;
-    grid-gap: var(--go-ui-spacing-md);
+    gap: var(--go-ui-spacing-md);
 }
-
-.overviewItem {
-    display: contents;
-}
-
+.overviewItem { display: contents; }
 .disasterCategoryValue {
     display: flex;
     gap: var(--go-ui-spacing-sm);
 }
-
-@media screen and (max-width: 50rem) {
-    .overviewContent {
-        grid-template-columns: 1fr 1fr;
-    }
+@media (max-width: 50rem) {
+    .overviewContent { grid-template-columns: 1fr 1fr; }
 }
 
+/* ===== Map + key-figure side-by-side ===== */
 .mapKeyFigureContainer {
     display: flex;
     flex-grow: 1;
     gap: var(--go-ui-spacing-md);
 }
-
-.mapContainer {
-    flex-grow: 1;
+.mapContainer              { flex-grow: 1; }
+.fieldReportStatsContainer { flex-basis: calc(8vw + 16rem); }
+@media (max-width: 50rem) {
+    .mapKeyFigureContainer { flex-direction: column; }
 }
 
-.fieldReportStatsContainer {
-    flex-basis: calc(8vw + 16rem);
-}
-
-@media screen and (max-width: 50rem) {
-    .mapKeyFigureContainer {
-        flex-direction: column;
-    }
-}
-
+/* ===== Links ===== */
 .linksContent {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    grid-gap: var(--go-ui-spacing-md);
+    gap: var(--go-ui-spacing-md);
 }
-
-@media screen and (max-width: 50rem) {
-    .linksContent {
-        grid-template-columns: 1fr;
-    }
+@media (max-width: 50rem) {
+    .linksContent { grid-template-columns: 1fr; }
 }
-
 .linkContainer {
     display: flex;
     flex-direction: column;
     gap: var(--go-ui-spacing-xs);
 }
+.link { color: var(--go-ui-color-text-black); }
 
-.link {
-    color: var(--go-ui-color-text-black);
-}
-
+/* ===== Contacts ===== */
 .contactsContent {
     display: flex;
     flex-direction: column;
     gap: var(--go-ui-spacing-xl);
     padding: var(--go-ui-spacing-md) 0;
 }
-
 .contactList {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
-    grid-gap: var(--go-ui-spacing-md);
+    gap: var(--go-ui-spacing-md);
 }
-
 .contact {
     display: flex;
     flex-direction: column;
+    gap: var(--go-ui-spacing-sm);
+    padding: var(--go-ui-spacing-md);
     border-radius: var(--go-ui-border-radius-lg);
     box-shadow: var(--go-ui-box-shadow-md);
-    padding: var(--go-ui-spacing-md);
-    gap: var(--go-ui-spacing-sm);
 }
+.name  { font-size: var(--go-ui-font-size-lg); font-weight: var(--go-ui-font-weight-semibold); }
+.type, .title { font-size: var(--go-ui-font-size-sm); color: var(--go-ui-color-text-light); }
 
-.name {
-    font-size: var(--go-ui-font-size-lg);
-    font-weight: var(--go-ui-font-weight-semibold);
-}
+/* ------------------------------------------------------------------ */
+/* ===== Section heading row (left title / right controls-label) ===== */
+/* ------------------------------------------------------------------ */
 
-.type,
-.title {
-    color: var(--go-ui-color-text-light);
-    font-size: var(--go-ui-font-size-sm);
-}
-
-/* New additions for situational overview, previous crises, and DREF operational strategy */
-
+/* Grid lets the last column hug the far right without margin hacks */
 .sectionHeadingRow {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: var(--go-ui-spacing-md);
-    border-bottom: none;
-    padding-bottom: 0;
+    display: grid;
+    grid-template-columns: 1fr auto;  /* title stretches, last item auto */
+    align-items: center;  /* Changed from baseline to center for better alignment */
+    gap: var(--go-ui-spacing-md);
     width: 100%;
 }
 
+/* Left-hand title - keep this larger and prominent */
 .sectionTitle {
-    font-weight: var(--go-ui-font-weight-semibold);
-    font-size: 1rem;
-    white-space: nowrap;
+    font-weight: var(--go-ui-font-weight-bold);  /* Increased from semibold */
+    font-size: 1.125rem;  /* Increased from 1rem */
+    line-height: 1.2;
+    color: var(--go-ui-color-text-dark);
 }
 
-.situationalLabel,
-.previousCrisesControls,
-.sectionHeadingControls,
+/* Right-hand label / controls / more button - make these smaller */
+.sectionLabel, 
+.sectionControls, 
 .moreButton {
-    white-space: nowrap;
-    margin-left: auto; /* pushes these elements to the far right */
-    font-weight: var(--go-ui-font-weight-semibold);
-    font-size: 0.875rem;
-    color: var(--go-ui-color-text-medium);
     display: flex;
     align-items: center;
-    gap: var(--go-ui-spacing-md);
+    gap: var(--go-ui-spacing-sm);  /* Reduced from md */
+    font-weight: var(--go-ui-font-weight-normal);  /* Reduced from semibold */
+    font-size: 0.75rem;  /* Reduced from 0.875rem */
+    color: var(--go-ui-color-text-medium);
+    white-space: nowrap;
+    line-height: 1;
 }
 
+/* Make the label text slightly more prominent than buttons */
+.sectionLabel {
+    font-weight: var(--go-ui-font-weight-medium);
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+    font-size: 0.6875rem;  /* Even smaller for uppercase text */
+}
+
+/* Ensure buttons in sectionControls are also smaller */
+.sectionControls button {
+    font-size: 0.75rem !important;
+}
+
+/* ===== Specific content areas ===== */
+.situationalOverviewContent,
+.previousCrisesContent,
+.drefOperationalStrategyContent {
+    padding: var(--go-ui-spacing-md);
+}
+
+/* ===== Utility ===== */
 .placeholderText {
+    margin: var(--go-ui-spacing-md) 0;
     font-style: italic;
     color: var(--go-ui-color-text-light);
-    margin: var(--go-ui-spacing-md) 0;
 }
-
 .sectionContent {
-    padding-top: var(--go-ui-spacing-sm);
-    padding-bottom: var(--go-ui-spacing-lg);
+    padding-block: var(--go-ui-spacing-sm) var(--go-ui-spacing-lg);
 }

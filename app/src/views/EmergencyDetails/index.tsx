@@ -22,7 +22,10 @@ import SeverityIndicator from '#components/domain/SeverityIndicator';
 import Link from '#components/Link';
 import useDisasterType from '#hooks/domain/useDisasterType';
 import useGlobalEnums from '#hooks/domain/useGlobalEnums';
+import useIfrcEvents from '#hooks/domain/useIfrcEvents';
+import usePerDrefStatus from '#hooks/domain/usePerDrefStatus';
 import { type EmergencyOutletContext } from '#utils/outletContext';
+import { cleanAiText } from '#utils/textcleaner';
 
 import EmergencyMap from './EmergencyMap';
 import FieldReportStats from './FieldReportStats';
@@ -67,6 +70,42 @@ export function Component() {
     const { emergencyResponse } = useOutletContext<EmergencyOutletContext>();
     const { api_visibility_choices } = useGlobalEnums();
     const [showFullDref, setShowFullDref] = useState(false);
+    
+    // Add state to track manual refetch and copy status
+    const [isRefetching, setIsRefetching] = useState(false);
+    const [isCopied, setIsCopied] = useState(false);
+
+    // Use the new hooks
+    const { response: ifrcEvents, pending: ifrcEventsPending, error: ifrcEventsError, refetch: refetchIfrcEvents } = useIfrcEvents(
+        emergencyResponse?.countries?.[0]?.id,
+        emergencyResponse?.dtype
+    );
+
+    // Debug logging for IFRC Events
+    console.log('=== IFRC EVENTS DEBUG ===');
+    console.log('Country ID:', emergencyResponse?.countries?.[0]?.id);
+    console.log('Disaster Type:', emergencyResponse?.dtype);
+    console.log('IFRC Events Response:', ifrcEvents);
+    console.log('IFRC Events Pending:', ifrcEventsPending);
+    console.log('IFRC Events Error:', ifrcEventsError);
+    console.log('refetchIfrcEvents function:', refetchIfrcEvents);
+    console.log('========================');
+
+    // Get DREF ID from appeals - but always use a value to trigger the hook
+    const drefId = emergencyResponse?.appeals && emergencyResponse.appeals.length > 0 
+        ? emergencyResponse.appeals[0].id 
+        : 1; // Use 1 as default to ensure the hook runs
+    
+    const { response: perDrefStatus, pending: perDrefStatusPending, error: perDrefStatusError } = usePerDrefStatus(drefId);
+
+    // Debug logging for PER-DREF Status
+    console.log('=== PER-DREF STATUS DEBUG ===');
+    console.log('DREF ID:', drefId);
+    console.log('PER-DREF Response:', perDrefStatus);
+    console.log('PER-DREF Pending:', perDrefStatusPending);
+    console.log('PER-DREF Error:', perDrefStatusError);
+    console.log('Emergency Appeals:', emergencyResponse?.appeals);
+    console.log('===========================');
 
     const visibilityMap = useMemo(
         () => listToMap(
@@ -137,6 +176,62 @@ export function Component() {
         },
         [emergencyContacts, latestFieldReport],
     );
+
+    // Sync handler for previous crises
+    const handleSyncPreviousCrises = () => {
+        console.log('=== SYNC BUTTON CLICKED ===');
+        console.log('refetchIfrcEvents exists?', !!refetchIfrcEvents);
+        console.log('refetchIfrcEvents type:', typeof refetchIfrcEvents);
+        
+        if (refetchIfrcEvents) {
+            setIsRefetching(true);
+            console.log('Starting refetch...');
+            
+            // Call refetch
+            refetchIfrcEvents();
+            
+            // Since we don't know if it returns a promise, 
+            // use a timeout to reset the loading state
+            setTimeout(() => {
+                console.log('Resetting isRefetching state');
+                setIsRefetching(false);
+            }, 2000);
+        } else {
+            console.error('refetchIfrcEvents is not available!');
+        }
+        console.log('===========================');
+    };
+
+    // Copy handler for previous crises
+    const handleCopyPreviousCrises = async () => {
+        console.log('=== COPY BUTTON CLICKED ===');
+        console.log('AI Summary exists?', !!ifrcEvents?.ai_structured_summary);
+        
+        if (ifrcEvents?.ai_structured_summary) {
+            try {
+                const cleanedText = cleanAiText(ifrcEvents.ai_structured_summary);
+                console.log('Cleaned text length:', cleanedText.length);
+                console.log('First 100 chars:', cleanedText.substring(0, 100));
+                
+                await navigator.clipboard.writeText(cleanedText);
+                console.log('✅ Text successfully copied to clipboard!');
+                
+                // Show copied status
+                setIsCopied(true);
+                setTimeout(() => {
+                    setIsCopied(false);
+                }, 2000);
+            } catch (err) {
+                console.error('❌ Failed to copy to clipboard:', err);
+            }
+        } else {
+            console.log('No AI summary available to copy');
+        }
+        console.log('===========================');
+    };
+
+    // Determine if we should show loading state
+    const isLoadingPreviousCrises = ifrcEventsPending || isRefetching;
 
     return (
         <div className={styles.emergencyDetails}>
@@ -246,7 +341,11 @@ export function Component() {
                 heading={(
                     <div className={styles.sectionHeadingRow}>
                         <div className={styles.sectionTitle}>{strings.situationalOverviewTitle}</div>
-                        <div className={styles.sectionLabel}>{strings.imminentAnticipatoryLabel}</div>
+                        {perDrefStatus && (
+                            <div className={styles.sectionLabel}>
+                                {perDrefStatus.type_of_onset_display} / {perDrefStatus.type_of_dref_display}
+                            </div>
+                        )}
                     </div>
                 )}
                 withHeaderBorder
@@ -266,18 +365,20 @@ export function Component() {
                             <Button
                                 variant="tertiary"
                                 size="small"
-                                icon="refresh"
-                                onClick={() => { /* Sync handler stub */ }}
+                                icon={isRefetching ? "loading" : "refresh"}
+                                onClick={handleSyncPreviousCrises}
+                                disabled={isLoadingPreviousCrises}
                             >
-                                {strings.syncButton}
+                                {isRefetching ? strings.syncingButton : strings.syncButton}
                             </Button>
                             <Button
                                 variant="tertiary"
                                 size="small"
-                                icon="copy"
-                                onClick={() => { /* Copy handler stub */ }}
+                                icon={isCopied ? "check" : "copy"}
+                                onClick={handleCopyPreviousCrises}
+                                disabled={!ifrcEvents?.ai_structured_summary || isLoadingPreviousCrises}
                             >
-                                {strings.copyButton}
+                                {isCopied ? strings.copiedButton : strings.copyButton}
                             </Button>
                         </div>
                     </div>
@@ -285,9 +386,19 @@ export function Component() {
                 withHeaderBorder
                 childrenContainerClassName={styles.previousCrisesContent}
             >
-                {isTruthyString(emergencyResponse?.previous_crises)
-                    ? <HtmlOutput value={emergencyResponse.previous_crises} />
-                    : <p className={styles.placeholderText}>No previous crises data available</p>}
+                {isLoadingPreviousCrises && (
+                    <p className={styles.placeholderText}>
+                        {isRefetching ? 'Syncing previous crises data...' : 'Loading previous crises data...'}
+                    </p>
+                )}
+                {ifrcEventsError && !isLoadingPreviousCrises && (
+                    <p className={styles.placeholderText}>Error loading previous crises data</p>
+                )}
+                {!isLoadingPreviousCrises && !ifrcEventsError && (
+                    isTruthyString(ifrcEvents?.ai_structured_summary)
+                        ? <HtmlOutput value={cleanAiText(ifrcEvents.ai_structured_summary)} />
+                        : <p className={styles.placeholderText}>No previous crises data available</p>
+                )}
             </Container>
 
             {/* DREF Operational Strategy */}
