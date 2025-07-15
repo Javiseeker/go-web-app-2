@@ -153,3 +153,43 @@
 .sectionContent {
     padding-block: var(--go-ui-spacing-sm) var(--go-ui-spacing-lg);
 }
+
+/* ===== Budget Summary Definition List Styling ===== */
+.budgetDefinitionList {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 0.25rem 1rem;
+    margin-top: var(--go-ui-spacing-md);
+}
+.budgetDefinitionList dt {
+    font-weight: 600;
+    color: var(--go-ui-color-text-dark);
+}
+.budgetDefinitionList dd {
+    margin: 0;
+    color: var(--go-ui-color-text-dark);
+}
+
+/* ===== More Button Styling for better visibility ===== */
+.moreButton {
+    margin-top: var(--go-ui-spacing-sm);
+    font-weight: 700;
+    font-size: 0.875rem;
+    padding: 0.25rem 0.75rem;
+    background-color: var(--go-ui-color-background-secondary);
+    border: 1px solid var(--go-ui-color-border-medium);
+    border-radius: var(--go-ui-border-radius-md);
+    color: var(--go-ui-color-text-dark);
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    user-select: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.moreButton:hover {
+    background-color: var(--go-ui-color-background-primary);
+    color: var(--go-ui-color-text-black);
+    border-color: var(--go-ui-color-border-dark);
+}

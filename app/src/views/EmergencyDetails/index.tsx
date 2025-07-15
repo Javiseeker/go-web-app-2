@@ -24,6 +24,7 @@ import useDisasterType from '#hooks/domain/useDisasterType';
 import useGlobalEnums from '#hooks/domain/useGlobalEnums';
 import useIfrcEvents from '#hooks/domain/useIfrcEvents';
 import usePerDrefStatus from '#hooks/domain/usePerDrefStatus';
+import usePerDrefSummary from '#hooks/domain/usePerDrefSummary';
 import { type EmergencyOutletContext } from '#utils/outletContext';
 import { cleanAiText } from '#utils/textcleaner';
 
@@ -71,41 +72,20 @@ export function Component() {
     const { api_visibility_choices } = useGlobalEnums();
     const [showFullDref, setShowFullDref] = useState(false);
     
-    // Add state to track manual refetch and copy status
     const [isRefetching, setIsRefetching] = useState(false);
     const [isCopied, setIsCopied] = useState(false);
 
-    // Use the new hooks
     const { response: ifrcEvents, pending: ifrcEventsPending, error: ifrcEventsError, refetch: refetchIfrcEvents } = useIfrcEvents(
         emergencyResponse?.countries?.[0]?.id,
         emergencyResponse?.dtype
     );
 
-    // Debug logging for IFRC Events
-    console.log('=== IFRC EVENTS DEBUG ===');
-    console.log('Country ID:', emergencyResponse?.countries?.[0]?.id);
-    console.log('Disaster Type:', emergencyResponse?.dtype);
-    console.log('IFRC Events Response:', ifrcEvents);
-    console.log('IFRC Events Pending:', ifrcEventsPending);
-    console.log('IFRC Events Error:', ifrcEventsError);
-    console.log('refetchIfrcEvents function:', refetchIfrcEvents);
-    console.log('========================');
-
-    // Get DREF ID from appeals - but always use a value to trigger the hook
     const drefId = emergencyResponse?.appeals && emergencyResponse.appeals.length > 0 
         ? emergencyResponse.appeals[0].id 
-        : 1; // Use 1 as default to ensure the hook runs
-    
-    const { response: perDrefStatus, pending: perDrefStatusPending, error: perDrefStatusError } = usePerDrefStatus(drefId);
+        : 1;
 
-    // Debug logging for PER-DREF Status
-    console.log('=== PER-DREF STATUS DEBUG ===');
-    console.log('DREF ID:', drefId);
-    console.log('PER-DREF Response:', perDrefStatus);
-    console.log('PER-DREF Pending:', perDrefStatusPending);
-    console.log('PER-DREF Error:', perDrefStatusError);
-    console.log('Emergency Appeals:', emergencyResponse?.appeals);
-    console.log('===========================');
+    const { response: perDrefStatus, pending: perDrefStatusPending, error: perDrefStatusError } = usePerDrefStatus(drefId);
+    const { response: perDrefSummary, pending: perDrefSummaryPending, error: perDrefSummaryError } = usePerDrefSummary(drefId);
 
     const visibilityMap = useMemo(
         () => listToMap(
@@ -154,12 +134,10 @@ export function Component() {
                         if (isNotDefined(contact)) {
                             return undefined;
                         }
-
                         const { ctype } = contact;
                         if (isNotDefined(ctype)) {
                             return undefined;
                         }
-
                         return {
                             ...contact,
                             ctype,
@@ -177,61 +155,35 @@ export function Component() {
         [emergencyContacts, latestFieldReport],
     );
 
-    // Sync handler for previous crises
     const handleSyncPreviousCrises = () => {
-        console.log('=== SYNC BUTTON CLICKED ===');
-        console.log('refetchIfrcEvents exists?', !!refetchIfrcEvents);
-        console.log('refetchIfrcEvents type:', typeof refetchIfrcEvents);
-        
         if (refetchIfrcEvents) {
             setIsRefetching(true);
-            console.log('Starting refetch...');
-            
-            // Call refetch
             refetchIfrcEvents();
-            
-            // Since we don't know if it returns a promise, 
-            // use a timeout to reset the loading state
             setTimeout(() => {
-                console.log('Resetting isRefetching state');
                 setIsRefetching(false);
             }, 2000);
-        } else {
-            console.error('refetchIfrcEvents is not available!');
         }
-        console.log('===========================');
     };
 
-    // Copy handler for previous crises
     const handleCopyPreviousCrises = async () => {
-        console.log('=== COPY BUTTON CLICKED ===');
-        console.log('AI Summary exists?', !!ifrcEvents?.ai_structured_summary);
-        
         if (ifrcEvents?.ai_structured_summary) {
             try {
                 const cleanedText = cleanAiText(ifrcEvents.ai_structured_summary);
-                console.log('Cleaned text length:', cleanedText.length);
-                console.log('First 100 chars:', cleanedText.substring(0, 100));
-                
                 await navigator.clipboard.writeText(cleanedText);
-                console.log('✅ Text successfully copied to clipboard!');
-                
-                // Show copied status
                 setIsCopied(true);
                 setTimeout(() => {
                     setIsCopied(false);
                 }, 2000);
-            } catch (err) {
-                console.error('❌ Failed to copy to clipboard:', err);
+            } catch {
+                // silent fail
             }
-        } else {
-            console.log('No AI summary available to copy');
         }
-        console.log('===========================');
     };
 
-    // Determine if we should show loading state
     const isLoadingPreviousCrises = ifrcEventsPending || isRefetching;
+
+    const operationalSummary = perDrefSummary?.operational_summary ?? '';
+    const budgetSummary = perDrefSummary?.budget_summary;
 
     return (
         <div className={styles.emergencyDetails}>
@@ -342,7 +294,14 @@ export function Component() {
                     <div className={styles.sectionHeadingRow}>
                         <div className={styles.sectionTitle}>{strings.situationalOverviewTitle}</div>
                         {perDrefStatus && (
-                            <div className={styles.sectionLabel}>
+                            <div
+                                className={styles.sectionLabel}
+                                style={{
+                                    color: perDrefStatus.type_of_onset_display === 'Sudden' || perDrefStatus.type_of_onset_display === 'Imminent'
+                                        ? 'var(--go-ui-color-alert)'
+                                        : undefined,
+                                }}
+                            >
                                 {perDrefStatus.type_of_onset_display} / {perDrefStatus.type_of_dref_display}
                             </div>
                         )}
@@ -403,29 +362,92 @@ export function Component() {
 
             {/* DREF Operational Strategy */}
             <Container
-                heading={(
-                    <div className={styles.sectionHeadingRow}>
-                        <div className={styles.sectionTitle}>{strings.drefOperationalStrategyTitle}</div>
-                        <Button
-                            variant="tertiary"
-                            size="small"
-                            icon="more"
-                            onClick={() => setShowFullDref(!showFullDref)}
-                            className={styles.moreButton}
-                        >
-                            {strings.moreButton}
-                        </Button>
-                    </div>
-                )}
+                heading={strings.drefOperationalStrategyTitle}
                 withHeaderBorder
                 childrenContainerClassName={styles.drefOperationalStrategyContent}
             >
-                {isTruthyString(emergencyResponse?.dref_operational_strategy) ? (
-                    showFullDref
-                        ? <HtmlOutput value={emergencyResponse.dref_operational_strategy} />
-                        : <HtmlOutput value={`${emergencyResponse.dref_operational_strategy.substring(0, 200)}...`} />
-                ) : (
-                    <p className={styles.placeholderText}>No DREF operational strategy data available</p>
+                {perDrefSummaryPending && (
+                    <p className={styles.placeholderText}>
+                        Loading DREF operational strategy data...
+                    </p>
+                )}
+
+                {!perDrefSummaryPending && perDrefSummaryError && (
+                    <p className={styles.placeholderText}>
+                        Error loading DREF operational strategy data
+                    </p>
+                )}
+
+                {!perDrefSummaryPending && !perDrefSummaryError && operationalSummary && (
+                    <>
+                        <HtmlOutput
+                            value={
+                                showFullDref
+                                    ? operationalSummary
+                                    : `${operationalSummary.substring(0, 300)}${operationalSummary.length > 300 ? '...' : ''}`
+                            }
+                        />
+                        {operationalSummary.length > 300 && (
+                            <Button
+                                variant="secondary"
+                                size="small"
+                                icon={showFullDref ? 'less' : 'more'}
+                                onClick={() => setShowFullDref(!showFullDref)}
+                                className={styles.moreButton}
+                            >
+                                {showFullDref ? 'Show Less' : 'Show More'}
+                            </Button>
+                        )}
+                    </>
+                )}
+
+                {!perDrefSummaryPending && !perDrefSummaryError && !operationalSummary && (
+                    <p className={styles.placeholderText}>
+                        No DREF operational strategy data available
+                    </p>
+                )}
+
+                {showFullDref && budgetSummary && (
+                    <Container heading="Budget Summary" withHeaderBorder>
+                        <dl className={styles.budgetDefinitionList}>
+                            <div>
+                                <dt>Total Allocation:</dt>
+                                <dd>{budgetSummary.budget_overview?.total_allocation ?? 'N/A'}</dd>
+                            </div>
+                            <div>
+                                <dt>Operation Timeframe:</dt>
+                                <dd>{budgetSummary.budget_overview?.operation_timeframe ?? 'N/A'}</dd>
+                            </div>
+                            <div>
+                                <dt>Target Beneficiaries:</dt>
+                                <dd>{budgetSummary.budget_overview?.target_beneficiaries ?? 'N/A'}</dd>
+                            </div>
+                            <div>
+                                <dt>Cost per Beneficiary:</dt>
+                                <dd>{budgetSummary.budget_overview?.cost_per_beneficiary ?? 'N/A'}</dd>
+                            </div>
+                            <div>
+                                <dt>Funding Status:</dt>
+                                <dd>{budgetSummary.budget_overview?.funding_status ?? 'N/A'}</dd>
+                            </div>
+                            <div>
+                                <dt>Sectoral Budget Summary:</dt>
+                                <dd>{budgetSummary.sectoral_breakdown?.summary ?? 'No sectoral budget breakdown provided'}</dd>
+                            </div>
+                            <div>
+                                <dt>Financial Analysis Summary:</dt>
+                                <dd>{budgetSummary.financial_analysis?.summary ?? 'Limited data inhibits detailed financial analysis; no sectoral allocation or activity distribution available'}</dd>
+                            </div>
+                            <div>
+                                <dt>Confidence Level:</dt>
+                                <dd>{budgetSummary.confidence_level ?? 'N/A'}</dd>
+                            </div>
+                            <div>
+                                <dt>Data Quality Notes:</dt>
+                                <dd>{budgetSummary.data_quality_notes ?? 'N/A'}</dd>
+                            </div>
+                        </dl>
+                    </Container>
                 )}
             </Container>
 
