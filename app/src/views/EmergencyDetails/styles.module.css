@@ -81,13 +81,13 @@
 .contact {
     display: flex;
     flex-direction: column;
-    gap: var(--go-ui-spacing-sm);
-    padding: var(--go-ui-spacing-md);
     border-radius: var(--go-ui-border-radius-lg);
     box-shadow: var(--go-ui-box-shadow-md);
+    padding: var(--go-ui-spacing-md);
+    gap: var(--go-ui-spacing-sm);
 }
 .name  { font-size: var(--go-ui-font-size-lg); font-weight: var(--go-ui-font-weight-semibold); }
-.type, .title { font-size: var(--go-ui-font-size-sm); color: var(--go-ui-color-text-light); }
+.type, .title { color: var(--go-ui-color-text-light); font-size: var(--go-ui-font-size-sm); }
 
 /* ------------------------------------------------------------------ */
 /* ===== Section heading row (left title / right controls-label) ===== */
@@ -104,10 +104,10 @@
 
 /* Left-hand title - keep this larger and prominent */
 .sectionTitle {
-    font-weight: var(--go-ui-font-weight-bold);  /* Increased from semibold */
-    font-size: 1.125rem;  /* Increased from 1rem */
     line-height: 1.2;
     color: var(--go-ui-color-text-dark);
+    font-size: 1.125rem;  /* Increased from 1rem */
+    font-weight: var(--go-ui-font-weight-bold);  /* Increased from semibold */
 }
 
 /* Right-hand label / controls / more button - make these smaller */
@@ -116,20 +116,20 @@
 .moreButton {
     display: flex;
     align-items: center;
-    gap: var(--go-ui-spacing-sm);  /* Reduced from md */
-    font-weight: var(--go-ui-font-weight-normal);  /* Reduced from semibold */
-    font-size: 0.75rem;  /* Reduced from 0.875rem */
-    color: var(--go-ui-color-text-medium);
-    white-space: nowrap;
     line-height: 1;
+    white-space: nowrap;
+    color: var(--go-ui-color-text-medium);
+    font-size: 0.75rem;  /* Reduced from 0.875rem */
+    font-weight: var(--go-ui-font-weight-normal);  /* Reduced from semibold */
+    gap: var(--go-ui-spacing-sm);  /* Reduced from md */
 }
 
 /* Make the label text slightly more prominent than buttons */
 .sectionLabel {
-    font-weight: var(--go-ui-font-weight-medium);
     text-transform: uppercase;
     letter-spacing: 0.025em;
     font-size: 0.6875rem;  /* Even smaller for uppercase text */
+    font-weight: var(--go-ui-font-weight-medium);
 }
 
 /* Ensure buttons in sectionControls are also smaller */
@@ -147,8 +147,8 @@
 /* ===== Utility ===== */
 .placeholderText {
     margin: var(--go-ui-spacing-md) 0;
-    font-style: italic;
     color: var(--go-ui-color-text-light);
+    font-style: italic;
 }
 .sectionContent {
     padding-block: var(--go-ui-spacing-sm) var(--go-ui-spacing-lg);
@@ -162,8 +162,8 @@
     margin-top: var(--go-ui-spacing-md);
 }
 .budgetDefinitionList dt {
-    font-weight: 600;
     color: var(--go-ui-color-text-dark);
+    font-weight: 600;
 }
 .budgetDefinitionList dd {
     margin: 0;
@@ -172,24 +172,24 @@
 
 /* ===== More Button Styling for better visibility ===== */
 .moreButton {
-    margin-top: var(--go-ui-spacing-sm);
-    font-weight: 700;
-    font-size: 0.875rem;
-    padding: 0.25rem 0.75rem;
-    background-color: var(--go-ui-color-background-secondary);
-    border: 1px solid var(--go-ui-color-border-medium);
-    border-radius: var(--go-ui-border-radius-md);
-    color: var(--go-ui-color-text-dark);
-    cursor: pointer;
-    transition: background-color 0.2s ease, color 0.2s ease;
-    user-select: none;
     display: inline-flex;
     align-items: center;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    margin-top: var(--go-ui-spacing-sm);
+    border: 1px solid var(--go-ui-color-border-medium);
+    border-radius: var(--go-ui-border-radius-md);
+    background-color: var(--go-ui-color-background-secondary);
+    cursor: pointer;
+    padding: 0.25rem 0.75rem;
+    color: var(--go-ui-color-text-dark);
+    font-size: 0.875rem;
+    font-weight: 700;
+    user-select: none;
     gap: 0.3rem;
 }
 
 .moreButton:hover {
+    border-color: var(--go-ui-color-border-dark);
     background-color: var(--go-ui-color-background-primary);
     color: var(--go-ui-color-text-black);
-    border-color: var(--go-ui-color-border-dark);
 }

@@ -1,13 +1,11 @@
-// utils/textCleaner.ts
-
 /**
  * Clean AI-generated text by removing markdown headers and formatting
  * @param text - The raw text to clean
  * @returns Cleaned text
  */
-export function cleanAiText(text: string): string {
+export default function cleanAiText(text: string): string {
     if (!text) return '';
-    
+
     return text
         // Remove "# Top X Learnings" headers
         .replace(/^#\s*Top\s+\d+\s+Learnings?\s*$/gim, '')
@@ -17,7 +15,7 @@ export function cleanAiText(text: string): string {
         .replace(/^###\s+/gm, '')
         // Remove #### headers
         .replace(/^####\s+/gm, '')
-        // Remove ##### headers  
+        // Remove ##### headers
         .replace(/^#####\s+/gm, '')
         // Remove any standalone # headers
         .replace(/^#+\s*/gm, '')
@@ -26,30 +24,3 @@ export function cleanAiText(text: string): string {
         // Remove leading/trailing whitespace
         .trim();
 }
-
-// Alternative: More aggressive cleaning
-export function cleanAiTextAggressive(text: string): string {
-    if (!text) return '';
-    
-    return text
-        // Remove everything from "# Top" to the first actual content
-        .replace(/^#.*?Top.*?Learnings?.*?\n/gim, '')
-        // Remove numbered section headers like "### 1. Title"
-        .replace(/^###\s+\d+\.\s+[^\n]*\n/gm, '')
-        // Remove any remaining markdown headers
-        .replace(/^#+\s+.*$/gm, '')
-        // Clean up whitespace
-        .replace(/\n{3,}/g, '\n\n')
-        .trim();
-}
-
-// Usage examples:
-/*
-const rawText = `# Top 3 Learnings
-### 1. Importance of Coordination for Amplified Impact - Coordinated efforts...
-### 2. Community Involvement Strengthens Recognition...
-### 3. Preparedness and Response in Earthquake-Prone Regions...`;
-
-const cleaned = cleanAiText(rawText);
-console.log(cleaned);
-*/

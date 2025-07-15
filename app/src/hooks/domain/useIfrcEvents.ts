@@ -4,6 +4,7 @@
 ------------------------------------------------------------------- */
 
 import { useCallback } from 'react';
+
 import { useRequest } from '#utils/restRequest';
 
 export interface IfrcEvent {
@@ -28,10 +29,10 @@ export default function useIfrcEvents(
         trigger,
     } = useRequest<IfrcEvent>({
         skip,
-        url  : '/api/v2/ifrc-events/',
+        url: '/api/v2/ifrc-events/',
         query: skip ? undefined : {
-            country       : countryId,
-            disaster_type : disasterTypeId,
+            country: countryId,
+            disaster_type: disasterTypeId,
         },
     });
 
