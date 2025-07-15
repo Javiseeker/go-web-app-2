@@ -3,7 +3,7 @@
  * @param text - The raw text to clean
  * @returns Cleaned text
  */
-export default function cleanAiText(text: string): string {
+export function cleanAiText(text: string): string {
     if (!text) return '';
 
     return text

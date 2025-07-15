@@ -1,14 +1,11 @@
-import {
-    useMemo,
-    useState,
-} from 'react';
+import { useMemo, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import {
-    Button,
     Container,
     HtmlOutput,
     KeyFigure,
     TextOutput,
+    Button,
 } from '@ifrc-go/ui';
 import { useTranslation } from '@ifrc-go/ui/hooks';
 import { resolveToString } from '@ifrc-go/ui/utils';
@@ -28,8 +25,9 @@ import useGlobalEnums from '#hooks/domain/useGlobalEnums';
 import useIfrcEvents from '#hooks/domain/useIfrcEvents';
 import usePerDrefStatus from '#hooks/domain/usePerDrefStatus';
 import usePerDrefSummary from '#hooks/domain/usePerDrefSummary';
-import cleanAiText from '#utils/textcleaner';
 import { type EmergencyOutletContext } from '#utils/outletContext';
+import { cleanAiText } from '#utils/textcleaner';
+
 import EmergencyMap from './EmergencyMap';
 import FieldReportStats from './FieldReportStats';
 
@@ -55,55 +53,39 @@ function getFieldReport(
         selectedReport: FieldReport | undefined,
         currentReport: FieldReport | undefined,
     ) => {
-        if (
-            isNotDefined(selectedReport) ||
-            compareFunction(
+        if (isNotDefined(selectedReport)
+            || compareFunction(
                 currentReport?.updated_at,
                 selectedReport.updated_at,
                 direction,
-            ) > 0
-        ) {
+            ) > 0) {
             return currentReport;
         }
         return selectedReport;
     }, undefined);
 }
 
-function EmergencyDetails() {
+export function Component() {
     const strings = useTranslation(i18n);
     const disasterTypes = useDisasterType();
     const { emergencyResponse } = useOutletContext<EmergencyOutletContext>();
     const { api_visibility_choices } = useGlobalEnums();
     const [showFullDref, setShowFullDref] = useState(false);
-
+    
     const [isRefetching, setIsRefetching] = useState(false);
     const [isCopied, setIsCopied] = useState(false);
 
-    const {
-        response: ifrcEvents,
-        pending: ifrcEventsPending,
-        error: ifrcEventsError,
-        refetch: refetchIfrcEvents,
-    } = useIfrcEvents(
+    const { response: ifrcEvents, pending: ifrcEventsPending, error: ifrcEventsError, refetch: refetchIfrcEvents } = useIfrcEvents(
         emergencyResponse?.countries?.[0]?.id,
-        emergencyResponse?.dtype,
+        emergencyResponse?.dtype
     );
 
-    const drefId =
-        emergencyResponse?.appeals &&
-        emergencyResponse.appeals.length > 0
-            ? emergencyResponse.appeals[0].id
-            : 1;
+    const drefId = emergencyResponse?.appeals && emergencyResponse.appeals.length > 0 
+        ? emergencyResponse.appeals[0].id 
+        : 1;
 
-    const {
-        response: perDrefStatus,
-    } = usePerDrefStatus(drefId);
-
-    const {
-        response: perDrefSummary,
-        pending: perDrefSummaryPending,
-        error: perDrefSummaryError,
-    } = usePerDrefSummary(drefId);
+    const { response: perDrefStatus, pending: perDrefStatusPending, error: perDrefStatusError } = usePerDrefStatus(drefId);
+    const { response: perDrefSummary, pending: perDrefSummaryPending, error: perDrefSummaryError } = usePerDrefSummary(drefId);
 
     const visibilityMap = useMemo(
         () => listToMap(
@@ -114,76 +96,64 @@ function EmergencyDetails() {
         [api_visibility_choices],
     );
 
-    const hasKeyFigures =
-        isDefined(emergencyResponse) &&
-        emergencyResponse.key_figures.length !== 0;
+    const hasKeyFigures = isDefined(emergencyResponse)
+        && emergencyResponse.key_figures.length !== 0;
 
     const disasterType = disasterTypes?.find(
-        (typeOfDisaster) =>
-            typeOfDisaster.id === emergencyResponse?.dtype,
+        (typeOfDisaster) => typeOfDisaster.id === emergencyResponse?.dtype,
     );
 
-    const mdrCode =
-        isDefined(emergencyResponse) &&
-        isDefined(emergencyResponse?.appeals) &&
-        emergencyResponse.appeals.length > 0
-            ? emergencyResponse?.appeals[0].code
-            : undefined;
+    const mdrCode = isDefined(emergencyResponse)
+        && isDefined(emergencyResponse?.appeals)
+        && emergencyResponse.appeals.length > 0
+        ? emergencyResponse?.appeals[0].code : undefined;
 
-    const hasFieldReports =
-        isDefined(emergencyResponse) &&
-        isDefined(emergencyResponse?.field_reports) &&
-        emergencyResponse?.field_reports.length > 0;
+    const hasFieldReports = isDefined(emergencyResponse)
+        && isDefined(emergencyResponse?.field_reports)
+        && emergencyResponse?.field_reports.length > 0;
 
     const firstFieldReport = hasFieldReports
-        ? getFieldReport(
-            emergencyResponse.field_reports,
-            compareDate,
-            -1,
-        )
-        : undefined;
-
+        ? getFieldReport(emergencyResponse.field_reports, compareDate, -1) : undefined;
     const assistanceIsRequestedByNS = firstFieldReport?.ns_request_assistance;
     const assistanceIsRequestedByCountry = firstFieldReport?.request_assistance;
-
     const latestFieldReport = hasFieldReports
-        ? getFieldReport(
-            emergencyResponse.field_reports,
-            compareDate,
-        )
-        : undefined;
+        ? getFieldReport(emergencyResponse.field_reports, compareDate) : undefined;
 
     const emergencyContacts = emergencyResponse?.contacts;
 
-    const groupedContacts = useMemo(() => {
-        type Contact = Omit<NonNullable<typeof emergencyContacts>[number], 'event'>;
-        let contactsToProcess: Contact[] | undefined = emergencyContacts;
-        if (!contactsToProcess || contactsToProcess.length <= 0) {
-            contactsToProcess = latestFieldReport?.contacts;
-        }
-        const grouped = listToGroupList(
-            contactsToProcess?.map(
-                (contact) => {
-                    if (isNotDefined(contact)) {
-                        return undefined;
-                    }
-                    const { ctype } = contact;
-                    if (isNotDefined(ctype)) {
-                        return undefined;
-                    }
-                    return {
-                        ...contact,
-                        ctype,
-                    };
-                },
-            ).filter(isDefined) ?? [],
-            (contact) =>
-                contact.email.endsWith('ifrc.org')
-                    ? 'IFRC'
-                    : 'National Societies',
-        );
-        return grouped;
-    }, [emergencyContacts, latestFieldReport]);
+    const groupedContacts = useMemo(
+        () => {
+            type Contact = Omit<NonNullable<typeof emergencyContacts>[number], 'event'>;
+            let contactsToProcess: Contact[] | undefined = emergencyContacts;
+            if (!contactsToProcess || contactsToProcess.length <= 0) {
+                contactsToProcess = latestFieldReport?.contacts;
+            }
+            const grouped = listToGroupList(
+                contactsToProcess?.map(
+                    (contact) => {
+                        if (isNotDefined(contact)) {
+                            return undefined;
+                        }
+                        const { ctype } = contact;
+                        if (isNotDefined(ctype)) {
+                            return undefined;
+                        }
+                        return {
+                            ...contact,
+                            ctype,
+                        };
+                    },
+                ).filter(isDefined) ?? [],
+                (contact) => (
+                    contact.email.endsWith('ifrc.org')
+                        ? 'IFRC'
+                        : 'National Societies'
+                ),
+            );
+            return grouped;
+        },
+        [emergencyContacts, latestFieldReport],
+    );
 
     const handleSyncPreviousCrises = () => {
         if (refetchIfrcEvents) {
@@ -284,11 +254,9 @@ function EmergencyDetails() {
                     <TextOutput
                         className={styles.overviewItem}
                         label={strings.visibility}
-                        value={
-                            isDefined(emergencyResponse.visibility)
-                                ? visibilityMap?.[emergencyResponse.visibility]
-                                : '--'
-                        }
+                        value={isDefined(emergencyResponse.visibility)
+                            ? visibilityMap?.[emergencyResponse.visibility]
+                            : '--'}
                         strongValue
                     />
                     <TextOutput
@@ -324,24 +292,17 @@ function EmergencyDetails() {
             <Container
                 heading={(
                     <div className={styles.sectionHeadingRow}>
-                        <div className={styles.sectionTitle}>
-                            {strings.situationalOverviewTitle}
-                        </div>
+                        <div className={styles.sectionTitle}>{strings.situationalOverviewTitle}</div>
                         {perDrefStatus && (
                             <div
                                 className={styles.sectionLabel}
                                 style={{
-                                    color:
-                                        perDrefStatus.type_of_onset_display === 'Sudden' ||
-                                        perDrefStatus.type_of_onset_display === 'Imminent'
-                                            ? 'var(--go-ui-color-alert)'
-                                            : undefined,
+                                    color: perDrefStatus.type_of_onset_display === 'Sudden' || perDrefStatus.type_of_onset_display === 'Imminent'
+                                        ? 'var(--go-ui-color-alert)'
+                                        : undefined,
                                 }}
                             >
-                                {perDrefStatus.type_of_onset_display}
-                                {' '}
-                                /
-                                {perDrefStatus.type_of_dref_display}
+                                {perDrefStatus.type_of_onset_display} / {perDrefStatus.type_of_dref_display}
                             </div>
                         )}
                     </div>
@@ -351,45 +312,32 @@ function EmergencyDetails() {
             >
                 {isTruthyString(emergencyResponse?.summary)
                     ? <HtmlOutput value={emergencyResponse.summary} />
-                    : (
-                        <p className={styles.placeholderText}>
-                            No situational overview data available
-                        </p>
-                    )}
+                    : <p className={styles.placeholderText}>No situational overview data available</p>}
             </Container>
 
             {/* Previous Crises */}
             <Container
                 heading={(
                     <div className={styles.sectionHeadingRow}>
-                        <div className={styles.sectionTitle}>
-                            {strings.previousCrisesTitle}
-                        </div>
+                        <div className={styles.sectionTitle}>{strings.previousCrisesTitle}</div>
                         <div className={styles.sectionControls}>
                             <Button
                                 variant="tertiary"
                                 size="small"
-                                icon={isRefetching ? 'loading' : 'refresh'}
+                                icon={isRefetching ? "loading" : "refresh"}
                                 onClick={handleSyncPreviousCrises}
                                 disabled={isLoadingPreviousCrises}
                             >
-                                {isRefetching
-                                    ? strings.syncingButton
-                                    : strings.syncButton}
+                                {isRefetching ? strings.syncingButton : strings.syncButton}
                             </Button>
                             <Button
                                 variant="tertiary"
                                 size="small"
-                                icon={isCopied ? 'check' : 'copy'}
+                                icon={isCopied ? "check" : "copy"}
                                 onClick={handleCopyPreviousCrises}
-                                disabled={
-                                    !ifrcEvents?.ai_structured_summary ||
-                                    isLoadingPreviousCrises
-                                }
+                                disabled={!ifrcEvents?.ai_structured_summary || isLoadingPreviousCrises}
                             >
-                                {isCopied
-                                    ? strings.copiedButton
-                                    : strings.copyButton}
+                                {isCopied ? strings.copiedButton : strings.copyButton}
                             </Button>
                         </div>
                     </div>
@@ -399,28 +347,16 @@ function EmergencyDetails() {
             >
                 {isLoadingPreviousCrises && (
                     <p className={styles.placeholderText}>
-                        {isRefetching
-                            ? 'Syncing previous crises data...'
-                            : 'Loading previous crises data...'}
+                        {isRefetching ? 'Syncing previous crises data...' : 'Loading previous crises data...'}
                     </p>
                 )}
                 {ifrcEventsError && !isLoadingPreviousCrises && (
-                    <p className={styles.placeholderText}>
-                        Error loading previous crises data
-                    </p>
+                    <p className={styles.placeholderText}>Error loading previous crises data</p>
                 )}
                 {!isLoadingPreviousCrises && !ifrcEventsError && (
                     isTruthyString(ifrcEvents?.ai_structured_summary)
-                        ? (
-                            <HtmlOutput value={cleanAiText(
-                                ifrcEvents.ai_structured_summary,
-                            )} />
-                        )
-                        : (
-                            <p className={styles.placeholderText}>
-                                No previous crises data available
-                            </p>
-                        )
+                        ? <HtmlOutput value={cleanAiText(ifrcEvents.ai_structured_summary)} />
+                        : <p className={styles.placeholderText}>No previous crises data available</p>
                 )}
             </Container>
 
@@ -442,46 +378,36 @@ function EmergencyDetails() {
                     </p>
                 )}
 
-                {!perDrefSummaryPending &&
-                    !perDrefSummaryError &&
-                    operationalSummary && (
-                        <>
-                            <HtmlOutput
-                                value={
-                                    showFullDref
-                                        ? operationalSummary
-                                        : `${
-                                            operationalSummary.substring(
-                                                0,
-                                                300,
-                                            )
-                                        }${operationalSummary.length > 300
-                                            ? '...'
-                                            : ''}`
-                                }
-                            />
-                            {operationalSummary.length > 300 && (
-                                <Button
-                                    variant="secondary"
-                                    size="small"
-                                    icon={showFullDref ? 'less' : 'more'}
-                                    onClick={() => setShowFullDref(!showFullDref)}
-                                    className={styles.moreButton}
-                                >
-                                    {showFullDref
-                                        ? 'Show Less'
-                                        : 'Show More'}
-                                </Button>
-                            )}
-                        </>
+                {!perDrefSummaryPending && !perDrefSummaryError && operationalSummary && (
+                    <>
+                        <HtmlOutput
+                            value={
+                                showFullDref
+                                    ? operationalSummary
+                                    : `${operationalSummary.substring(0, 300)}${operationalSummary.length > 300 ? '...' : ''}`
+                            }
+                        />
+                        {operationalSummary.length > 300 && (
+                            <Button
+                                variant="secondary"
+                                size="small"
+                                icon={showFullDref ? 'less' : 'more'}
+                                onClick={() => setShowFullDref(!showFullDref)}
+                                className={styles.moreButton}
+                                aria-expanded={showFullDref}
+                                aria-label={showFullDref ? strings.lessButton : strings.moreButton}
+                                key="toggle-button"
+                            >
+                                {showFullDref ? strings.lessButton : strings.moreButton}
+                            </Button>
+                        )}
+                    </>
                 )}
 
-                {!perDrefSummaryPending &&
-                    !perDrefSummaryError &&
-                    !operationalSummary && (
-                        <p className={styles.placeholderText}>
-                            No DREF operational strategy data available
-                        </p>
+                {!perDrefSummaryPending && !perDrefSummaryError && !operationalSummary && (
+                    <p className={styles.placeholderText}>
+                        No DREF operational strategy data available
+                    </p>
                 )}
 
                 {showFullDref && budgetSummary && (
@@ -489,59 +415,39 @@ function EmergencyDetails() {
                         <dl className={styles.budgetDefinitionList}>
                             <div>
                                 <dt>Total Allocation:</dt>
-                                <dd>
-                                    {budgetSummary.budget_overview?.total_allocation ?? 'N/A'}
-                                </dd>
+                                <dd>{budgetSummary.budget_overview?.total_allocation ?? 'N/A'}</dd>
                             </div>
                             <div>
                                 <dt>Operation Timeframe:</dt>
-                                <dd>
-                                    {budgetSummary.budget_overview?.operation_timeframe ?? 'N/A'}
-                                </dd>
+                                <dd>{budgetSummary.budget_overview?.operation_timeframe ?? 'N/A'}</dd>
                             </div>
                             <div>
                                 <dt>Target Beneficiaries:</dt>
-                                <dd>
-                                    {budgetSummary.budget_overview?.target_beneficiaries ?? 'N/A'}
-                                </dd>
+                                <dd>{budgetSummary.budget_overview?.target_beneficiaries ?? 'N/A'}</dd>
                             </div>
                             <div>
                                 <dt>Cost per Beneficiary:</dt>
-                                <dd>
-                                    {budgetSummary.budget_overview?.cost_per_beneficiary ?? 'N/A'}
-                                </dd>
+                                <dd>{budgetSummary.budget_overview?.cost_per_beneficiary ?? 'N/A'}</dd>
                             </div>
                             <div>
                                 <dt>Funding Status:</dt>
-                                <dd>
-                                    {budgetSummary.budget_overview?.funding_status ?? 'N/A'}
-                                </dd>
+                                <dd>{budgetSummary.budget_overview?.funding_status ?? 'N/A'}</dd>
                             </div>
                             <div>
                                 <dt>Sectoral Budget Summary:</dt>
-                                <dd>
-                                    {budgetSummary.sectoral_breakdown?.summary ??
-                                        'No sectoral budget breakdown provided'}
-                                </dd>
+                                <dd>{budgetSummary.sectoral_breakdown?.summary ?? 'No sectoral budget breakdown provided'}</dd>
                             </div>
                             <div>
                                 <dt>Financial Analysis Summary:</dt>
-                                <dd>
-                                    {budgetSummary.financial_analysis?.summary ??
-                                        'Limited data inhibits detailed financial analysis; no sectoral allocation or activity distribution available'}
-                                </dd>
+                                <dd>{budgetSummary.financial_analysis?.summary ?? 'Limited data inhibits detailed financial analysis; no sectoral allocation or activity distribution available'}</dd>
                             </div>
                             <div>
                                 <dt>Confidence Level:</dt>
-                                <dd>
-                                    {budgetSummary.confidence_level ?? 'N/A'}
-                                </dd>
+                                <dd>{budgetSummary.confidence_level ?? 'N/A'}</dd>
                             </div>
                             <div>
                                 <dt>Data Quality Notes:</dt>
-                                <dd>
-                                    {budgetSummary.data_quality_notes ?? 'N/A'}
-                                </dd>
+                                <dd>{budgetSummary.data_quality_notes ?? 'N/A'}</dd>
                             </div>
                         </dl>
                     </Container>
@@ -549,100 +455,83 @@ function EmergencyDetails() {
             </Container>
 
             <div className={styles.mapKeyFigureContainer}>
-                {emergencyResponse &&
-                    !emergencyResponse.hide_field_report_map && (
-                        <Container
-                            className={styles.mapContainer}
-                            heading={strings.emergencyMapTitle}
-                            withHeaderBorder
-                        >
-                            {emergencyResponse && (
-                                <EmergencyMap event={emergencyResponse} />
-                            )}
-                        </Container>
-                )}
-                {hasFieldReports &&
-                    isDefined(latestFieldReport) &&
-                    !emergencyResponse.hide_attached_field_reports && (
-                        <Container
-                            className={styles.fieldReportStatsContainer}
-                            heading={strings.emergencyKeyFiguresTitle}
-                            withHeaderBorder
-                        >
-                            <FieldReportStats
-                                report={latestFieldReport}
-                                disasterType={emergencyResponse.dtype}
+                {emergencyResponse && !emergencyResponse.hide_field_report_map && (
+                    <Container
+                        className={styles.mapContainer}
+                        heading={strings.emergencyMapTitle}
+                        withHeaderBorder
+                    >
+                        {emergencyResponse && (
+                            <EmergencyMap
+                                event={emergencyResponse}
                             />
-                        </Container>
+                        )}
+                    </Container>
+                )}
+                {hasFieldReports
+                    && isDefined(latestFieldReport)
+                    && !emergencyResponse.hide_attached_field_reports && (
+                    <Container
+                        className={styles.fieldReportStatsContainer}
+                        heading={strings.emergencyKeyFiguresTitle}
+                        withHeaderBorder
+                    >
+                        <FieldReportStats
+                            report={latestFieldReport}
+                            disasterType={emergencyResponse.dtype}
+                        />
+                    </Container>
                 )}
             </div>
 
-            {isDefined(groupedContacts) &&
-                Object.keys(groupedContacts).length > 0 && (
-                    <Container
-                        heading={strings.contactsTitle}
-                        childrenContainerClassName={styles.contactsContent}
-                        withHeaderBorder
-                    >
-                        {Object.entries(groupedContacts).map(
-                            ([contactGroup, contacts]) => (
-                                <Container
-                                    key={contactGroup}
-                                    heading={contactGroup}
-                                    childrenContainerClassName={styles.contactList}
-                                    headingLevel={4}
-                                >
-                                    {contacts.map((contact) => (
-                                        <div key={contact.id} className={styles.contact}>
-                                            <div className={styles.details}>
-                                                <div className={styles.name}>
-                                                    {contact.name}
-                                                </div>
-                                                <div className={styles.title}>
-                                                    {contact.title}
-                                                </div>
-                                            </div>
-                                            <div className={styles.contactMechanisms}>
-                                                <div className={styles.type}>
-                                                    {contact.ctype}
-                                                </div>
-                                                {isTruthyString(contact.email) && (
-                                                    <TextOutput
-                                                        value={(
-                                                            <Link
-                                                                href={`mailto:${contact.email}`}
-                                                                external
-                                                                withLinkIcon
-                                                            >
-                                                                {contact.email}
-                                                            </Link>
-                                                        )}
-                                                    />
+            {isDefined(groupedContacts) && Object.keys(groupedContacts).length > 0 && (
+                <Container
+                    heading={strings.contactsTitle}
+                    childrenContainerClassName={styles.contactsContent}
+                    withHeaderBorder
+                >
+                    {Object.entries(groupedContacts).map(([contactGroup, contacts]) => (
+                        <Container
+                            key={contactGroup}
+                            heading={contactGroup}
+                            childrenContainerClassName={styles.contactList}
+                            headingLevel={4}
+                        >
+                            {contacts.map((contact) => (
+                                <div key={contact.id} className={styles.contact}>
+                                    <div className={styles.details}>
+                                        <div className={styles.name}>{contact.name}</div>
+                                        <div className={styles.title}>{contact.title}</div>
+                                    </div>
+                                    <div className={styles.contactMechanisms}>
+                                        <div className={styles.type}>{contact.ctype}</div>
+                                        {isTruthyString(contact.email) && (
+                                            <TextOutput
+                                                value={(
+                                                    <Link href={`mailto:${contact.email}`} external withLinkIcon>
+                                                        {contact.email}
+                                                    </Link>
                                                 )}
-                                                {isTruthyString(contact.phone) && (
-                                                    <TextOutput
-                                                        value={(
-                                                            <Link
-                                                                href={`tel:${contact.phone}`}
-                                                                withLinkIcon
-                                                                external
-                                                            >
-                                                                {contact.phone}
-                                                            </Link>
-                                                        )}
-                                                    />
+                                            />
+                                        )}
+                                        {isTruthyString(contact.phone) && (
+                                            <TextOutput
+                                                value={(
+                                                    <Link href={`tel:${contact.phone}`} withLinkIcon external>
+                                                        {contact.phone}
+                                                    </Link>
                                                 )}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </Container>
-                            ),
-                        )}
-                    </Container>
+                                            />
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                        </Container>
+                    ))}
+                </Container>
             )}
         </div>
     );
 }
 
-EmergencyDetails.displayName = 'EmergencyDetails';
-export default EmergencyDetails;
+Component.displayName = 'EmergencyDetails';
