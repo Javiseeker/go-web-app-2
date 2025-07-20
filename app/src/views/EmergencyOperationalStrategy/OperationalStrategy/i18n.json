@@ -1,5 +1,5 @@
 {
-    "namespace": "emergencyDetailsOperationalStrategy",
+    "namespace": "emergencyOperationalStrategy",
     "strings": {
         "operationalStrategyTitle": "Operational Strategy",
         "lastUpdateLabel": "Last update:",

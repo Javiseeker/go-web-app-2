@@ -177,8 +177,6 @@ export function Component() {
                 ifrcEventsError={ifrcEventsError}
             />
 
-            {/* OperationalStrategy removed - now in separate view */}
-
             <div className={styles.mapKeyFigureContainer}>
                 {emergencyResponse && !emergencyResponse.hide_field_report_map && (
                     <Container

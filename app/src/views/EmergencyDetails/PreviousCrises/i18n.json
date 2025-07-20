@@ -1,9 +1,10 @@
 {
-    "namespace": "emergencyDetailsPreviousCrises",
+    "namespace": "emergencyDetails",
     "strings": {
-        "lessonsLearnedTitle": "Lessons Learned from Previous Operations",
-        "loadingPreviousCrises": "Loading lessons learned data...",
-        "errorLoadingPreviousCrises": "Error loading lessons learned data",
-        "noLessonsLearnedData": "No lessons learned data available"
+      "previousCrisesLessonsLearnedTitle": "Lessons Learned from Previous Operations",
+      "previousCrisesLoading": "Loading lessons learned data...",
+      "previousCrisesErrorLoading": "Error loading lessons learned data",
+      "previousCrisesNoData": "No lessons learned data available"
     }
-}
+  }
+  

@@ -1,7 +1,8 @@
 {
-    "namespace": "emergencyDetailsSituationalOverview",
+    "namespace": "emergencyDetails",
     "strings": {
-        "situationalOverviewTitle": "Situational Overview",
-        "noSituationalOverviewData": "No situational overview data available"
+      "situationalOverviewTitle": "Situational Overview",
+      "situationalOverviewNoData": "No situational overview data available"
     }
-}
+  }
+  

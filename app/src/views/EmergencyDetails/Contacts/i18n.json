@@ -1,6 +1,8 @@
 {
-    "namespace": "emergencyDetailsContacts",
+    "namespace": "emergencyDetails",
     "strings": {
-        "contactsTitle": "Emergency Contacts"
+      "contactsTitle": "Contacts",
+      "emergencyContactsTitle": "Emergency Contacts"
     }
-}
+  }
+  

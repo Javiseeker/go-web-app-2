@@ -1,14 +1,15 @@
 {
-    "namespace": "emergencyDetailsOverview",
+    "namespace": "emergencyDetails",
     "strings": {
-        "emergencyOverviewTitle": "Emergency Overview",
-        "disasterCategorization": "Disaster Categorization",
-        "disasterType": "Disaster Type",
-        "startDate": "Start Date",
-        "visibility": "Visibility",
-        "mdrCode": "MDR Code",
-        "glideNumber": "GLIDE Number",
-        "assistanceRequestedByNS": "Assistance Requested by NS",
-        "assistanceRequestedByGovernment": "Assistance Requested by Government"
+      "emergencyOverviewTitle": "Emergency Overview",
+      "overviewDisasterCategorization": "Disaster Categorization",
+      "overviewDisasterType": "Disaster Type",
+      "overviewStartDate": "Start Date",
+      "overviewVisibility": "Visibility",
+      "overviewMdrCode": "MDR Code",
+      "overviewGlideNumber": "GLIDE Number",
+      "overviewAssistanceRequestedByNS": "Assistance Requested by NS",
+      "overviewAssistanceRequestedByGovernment": "Assistance Requested by Government"
     }
-}
+  }
+  
