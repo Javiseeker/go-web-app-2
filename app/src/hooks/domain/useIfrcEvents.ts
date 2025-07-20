@@ -40,14 +40,16 @@ export default function useIfrcEvents(
             lessons: [
                 {
                     title: 'Not enough staff to support logistics',
-                    insight: 'One learning from a previous similar operation is the following ipsum dolor sit amet, consectetur adipiscing elit. Integer sodales sit amet quam non fermentum. Ut finibus fermentum ultrices. Nunc ut elit sollicitudin, malesuada libero non, lobortis nisl. Sed ac elit in augue interdum porta sed nec metus.',
+                    insight:
+                      'One learning from a previous similar operation is the following ipsum dolor sit amet, consectetur adipiscing elit. Integer sodales sit amet quam non fermentum. Ut finibus fermentum ultrices. Nunc ut elit sollicitudin, malesuada libero non, lobortis nisl. Sed ac elit in augue interdum porta sed nec metus.',
                     sources: [
                         { PAN: 'Philippines: Typhoon 05-2023' },
                     ],
                 },
                 {
                     title: 'Cyclone Alerts Enhance Safety',
-                    insight: 'Issuing timely alerts for cyclonic activity, such as during Tropical Depression #13 and Cyclone Beryl, helped prepare communities for potential flooding, landslides, and storm surges, reducing risks to life and infrastructure.',
+                    insight:
+                      'Issuing timely alerts for cyclonic activity, such as during Tropical Depression #13 and Cyclone Beryl, helped prepare communities for potential flooding, landslides, and storm surges, reducing risks to life and infrastructure.',
                     sources: [
                         { PAN: 'Provincial Flood/Flood - 2022-10' },
                         { PAN: 'Cyclone - 07-2024' },
@@ -55,7 +57,8 @@ export default function useIfrcEvents(
                 },
                 {
                     title: 'Effective Water Crisis Response',
-                    insight: 'During the 2025 water contamination crisis in Herrera and Los Santos, emergency measures like distributing bottled water and monitoring water quality helped mitigate impacts on over 22,500 people.',
+                    insight:
+                      'During the 2025 water contamination crisis in Herrera and Los Santos, emergency measures like distributing bottled water and monitoring water quality helped mitigate impacts on over 22,500 people.',
                     sources: [
                         { PAN: 'Biological Emergency - 06-2025' },
                     ],
@@ -65,7 +68,6 @@ export default function useIfrcEvents(
         },
     };
 
-    // For now, always return mock data
     const response = mockResponse;
     const pending = false;
     const error = null;
@@ -79,7 +81,7 @@ export default function useIfrcEvents(
         refetch,
     };
 
-    // TODO: Replace with real API call when ready:
+    // Uncomment and use real API call once ready:
     /*
     const skip = !(countryId && disasterTypeId);
 

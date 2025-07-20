@@ -21,9 +21,9 @@ export interface PerDrefStatus {
  */
 export default function usePerDrefStatus(drefId?: number) {
     // Always use hardcoded ID 6955 for the actual API call
-    return useRequest({
-        skip: !drefId, // Still skip if no drefId is provided
+    return useRequest<PerDrefStatus>({
+        skip: !drefId,
         url: '/api/v2/per-dref-status/',
-        query: { id: 6955 }, // Always use 6955
+        query: { id: 6955 },
     });
 }

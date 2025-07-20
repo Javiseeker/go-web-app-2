@@ -5,6 +5,7 @@ import { type EmergencyOutletContext } from '#utils/outletContext';
 
 import OperationalStrategy from './OperationalStrategy';
 
+/** @knipignore */
 // eslint-disable-next-line import/prefer-default-export
 export function Component() {
     const { emergencyResponse } = useOutletContext<EmergencyOutletContext>();
