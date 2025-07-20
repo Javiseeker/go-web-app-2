@@ -6,7 +6,7 @@
 
 import { useRequest } from '#utils/restRequest';
 
-export interface PerDrefStatus {
+interface PerDrefStatus {
     dref_id: number;
     dref_count: number;
     type_of_dref_display: string; // e.g. "Response"
@@ -22,8 +22,8 @@ export interface PerDrefStatus {
 export default function usePerDrefStatus(drefId?: number) {
     // Always use hardcoded ID 6955 for the actual API call
     return useRequest<PerDrefStatus>({
-        skip: !drefId,
+        skip: !drefId, // Still skip if no drefId is provided
         url: '/api/v2/per-dref-status/',
-        query: { id: 6955 },
+        query: { id: 6955 }, // Always use 6955
     });
 }
