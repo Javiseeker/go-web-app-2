@@ -222,6 +222,19 @@ const emergencyDetails = customWrapRoute({
     },
 });
 
+const emergencyOperationalStrategy = customWrapRoute({
+    parent: emergenciesLayout,
+    path: 'operational-strategy',
+    component: {
+        render: () => import('#views/EmergencyOperationalStrategy'),
+        props: {},
+    },
+    context: {
+        title: 'Emergency Operational Strategy',
+        visibility: 'anything',
+    },
+});
+
 const emergencyReportsAndDocuments = customWrapRoute({
     parent: emergenciesLayout,
     path: 'reports',
@@ -1255,6 +1268,7 @@ const wrappedRoutes = {
     emergencyFollow,
     emergenciesLayout,
     emergencyDetails,
+    emergencyOperationalStrategy,
     emergencyIndex,
     emergencyReportsAndDocuments,
     emergencyActivities,

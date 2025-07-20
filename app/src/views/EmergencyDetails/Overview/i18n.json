@@ -1,0 +1,14 @@
+{
+    "namespace": "emergencyDetailsOverview",
+    "strings": {
+        "emergencyOverviewTitle": "Emergency Overview",
+        "disasterCategorization": "Disaster Categorization",
+        "disasterType": "Disaster Type",
+        "startDate": "Start Date",
+        "visibility": "Visibility",
+        "mdrCode": "MDR Code",
+        "glideNumber": "GLIDE Number",
+        "assistanceRequestedByNS": "Assistance Requested by NS",
+        "assistanceRequestedByGovernment": "Assistance Requested by Government"
+    }
+}

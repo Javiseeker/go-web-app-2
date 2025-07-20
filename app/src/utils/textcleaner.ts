@@ -24,3 +24,6 @@ export function cleanAiText(text: string): string {
         // Remove leading/trailing whitespace
         .trim();
 }
+
+// Add default export to fix lint issue
+export default cleanAiText;

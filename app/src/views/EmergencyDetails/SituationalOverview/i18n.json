@@ -1,0 +1,7 @@
+{
+    "namespace": "emergencyDetailsSituationalOverview",
+    "strings": {
+        "situationalOverviewTitle": "Situational Overview",
+        "noSituationalOverviewData": "No situational overview data available"
+    }
+}

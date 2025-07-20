@@ -4,6 +4,7 @@
         "emergencyPageTitle": "IFRC GO - Emergency - {emergencyName}",
         "emergencyPageTitleFallback": "IFRC GO - Emergency",
         "emergencyTabDetails":"Emergency Details",
+        "emergencyTabOperationalStrategy":"Operation Strategy",
         "emergencyTabReports":"Reports/Documents",
         "emergencyTabActivities":"Activities",
         "emergencyTabSurge":"Surge",

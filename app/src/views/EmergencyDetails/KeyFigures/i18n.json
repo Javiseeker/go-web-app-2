@@ -1,0 +1,7 @@
+{
+    "namespace": "emergencyDetailsKeyFigures",
+    "strings": {
+        "emergencyKeyFiguresTitle": "Key Figures",
+        "sourceLabel": "Source: {source}"
+    }
+}

@@ -1,0 +1,65 @@
+.contactsContent {
+    display: flex;
+    flex-direction: column;
+    gap: var(--go-ui-spacing-md);
+}
+
+.contactList {
+    display: flex;
+    flex-direction: column;
+    gap: var(--go-ui-spacing-sm);
+}
+
+.contact {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    border: 1px solid var(--go-ui-color-separator);
+    border-radius: var(--go-ui-border-radius-sm);
+    background-color: var(--go-ui-color-foreground);
+    padding: var(--go-ui-spacing-sm);
+}
+
+.details {
+    display: flex;
+    flex-direction: column;
+    gap: var(--go-ui-spacing-xs);
+}
+
+.name {
+    color: var(--go-ui-color-text);
+    font-size: var(--go-ui-font-size-md);
+    font-weight: var(--go-ui-font-weight-medium);
+}
+
+.title {
+    color: var(--go-ui-color-text-light);
+    font-size: var(--go-ui-font-size-sm);
+}
+
+.contactMechanisms {
+    display: flex;
+    align-items: flex-end;
+    flex-direction: column;
+    gap: var(--go-ui-spacing-xs);
+}
+
+.type {
+    border-radius: var(--go-ui-border-radius-sm);
+    background-color: var(--go-ui-color-gray-20);
+    padding: var(--go-ui-spacing-xs) var(--go-ui-spacing-sm);
+    color: var(--go-ui-color-text);
+    font-size: var(--go-ui-font-size-sm);
+    font-weight: var(--go-ui-font-weight-medium);
+}
+
+@media (max-width: 768px) {
+    .contact {
+        flex-direction: column;
+        gap: var(--go-ui-spacing-sm);
+    }
+
+    .contactMechanisms {
+        align-items: flex-start;
+    }
+}

@@ -1,0 +1,9 @@
+{
+    "namespace": "emergencyDetailsPreviousCrises",
+    "strings": {
+        "lessonsLearnedTitle": "Lessons Learned from Previous Operations",
+        "loadingPreviousCrises": "Loading lessons learned data...",
+        "errorLoadingPreviousCrises": "Error loading lessons learned data",
+        "noLessonsLearnedData": "No lessons learned data available"
+    }
+}

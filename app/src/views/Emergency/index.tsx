@@ -48,11 +48,9 @@ import {
 import i18n from './i18n.json';
 import styles from './styles.module.css';
 
-/*
-function getRouteIdFromName(text: string) {
+/* function getRouteIdFromName(text: string) {
     return text.toLowerCase().trim().split(' ').join('-');
-}
-*/
+} */
 
 /** @knipignore */
 // eslint-disable-next-line import/prefer-default-export
@@ -316,7 +314,6 @@ export function Component() {
                             compactValue
                             label={strings.emergencyFundingRequirementsLabel}
                         />
-
                     )}
                     {isDefined(funding) && (
                         <KeyFigure
@@ -337,6 +334,12 @@ export function Component() {
                     urlParams={{ emergencyId }}
                 >
                     {strings.emergencyTabDetails}
+                </NavigationTab>
+                <NavigationTab
+                    to="emergencyOperationalStrategy"
+                    urlParams={{ emergencyId }}
+                >
+                    {strings.emergencyTabOperationalStrategy}
                 </NavigationTab>
                 <NavigationTab
                     to="emergencyReportsAndDocuments"

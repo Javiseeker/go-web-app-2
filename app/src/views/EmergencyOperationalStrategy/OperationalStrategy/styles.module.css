@@ -1,0 +1,314 @@
+/* Main Container */
+.operationalStrategy {
+    margin: 0 auto;
+    background-color: var(--go-ui-color-foreground);
+    padding: var(--go-ui-spacing-lg);
+    max-width: 1200px;
+}
+
+/* Last Update */
+.lastUpdate {
+    margin-bottom: var(--go-ui-spacing-lg);
+    color: var(--go-ui-color-text-light);
+    font-size: var(--go-ui-font-size-sm);
+}
+
+/* Top Two-Column Layout */
+.topSection {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--go-ui-spacing-lg);
+    margin-bottom: var(--go-ui-spacing-xl);
+}
+
+.objectivesCard,
+.strategyCard {
+    border: 1px solid var(--go-ui-color-separator);
+    border-radius: var(--go-ui-border-radius-md);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    background-color: var(--go-ui-color-foreground);
+    padding: var(--go-ui-spacing-lg);
+}
+
+.cardTitle {
+    margin: 0 0 var(--go-ui-spacing-md) 0;
+    border-bottom: 1px solid var(--go-ui-color-separator);
+    padding-bottom: var(--go-ui-spacing-sm);
+    color: var(--go-ui-color-text);
+    font-size: var(--go-ui-font-size-lg);
+    font-weight: var(--go-ui-font-weight-bold);
+}
+
+.contentText {
+    margin: 0;
+    line-height: 1.6;
+    color: var(--go-ui-color-text-light);
+    font-size: var(--go-ui-font-size-md);
+}
+
+/* AI Disclaimer */
+.aiDisclaimer {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: var(--go-ui-spacing-xl);
+    border: 1px solid var(--go-ui-color-separator);
+    border-radius: var(--go-ui-border-radius-sm);
+    background-color: var(--go-ui-color-gray-20);
+    padding: var(--go-ui-spacing-md);
+    gap: var(--go-ui-spacing-sm);
+}
+
+.infoIcon {
+    flex-shrink: 0;
+    color: var(--go-ui-color-red);
+    font-size: var(--go-ui-font-size-lg);
+}
+
+.disclaimerText {
+    line-height: 1.5;
+    color: var(--go-ui-color-text-light);
+    font-size: var(--go-ui-font-size-sm);
+    font-style: italic;
+}
+
+.seeHereLink {
+    text-decoration: underline;
+    color: var(--go-ui-color-red);
+    text-underline-offset: 2px;
+}
+
+/* Section Containers */
+.sectionContainer {
+    margin-bottom: var(--go-ui-spacing-xl);
+}
+
+.sectionTitle {
+    margin: 0 0 var(--go-ui-spacing-lg) 0;
+    letter-spacing: 0.5px;
+    color: var(--go-ui-color-text);
+    font-size: var(--go-ui-font-size-lg);
+    font-weight: var(--go-ui-font-weight-bold);
+}
+
+/* Sectors Engaged */
+.sectorsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--go-ui-spacing-md);
+}
+
+.sectorCard {
+    display: flex;
+    align-items: center;
+    border: 1px solid var(--go-ui-color-separator);
+    border-radius: var(--go-ui-border-radius-md);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    background-color: var(--go-ui-color-foreground);
+    padding: var(--go-ui-spacing-lg);
+    gap: var(--go-ui-spacing-md);
+}
+
+.sectorIcon {
+    font-size: var(--go-ui-font-size-2xl);
+}
+
+.sectorName {
+    color: var(--go-ui-color-text);
+    font-size: var(--go-ui-font-size-md);
+    font-weight: var(--go-ui-font-weight-medium);
+}
+
+/* Sectoral Needs */
+.sectoralNeedsContent {
+    display: flex;
+    flex-direction: column;
+    gap: var(--go-ui-spacing-md);
+}
+
+.sectoralNeedCard {
+    border: 1px solid var(--go-ui-color-separator);
+    border-radius: var(--go-ui-border-radius-md);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    background-color: var(--go-ui-color-foreground);
+}
+
+.sectorHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-radius: var(--go-ui-border-radius-md) var(--go-ui-border-radius-md) 0 0;
+    background-color: var(--go-ui-color-gray-20);
+    padding: var(--go-ui-spacing-lg);
+}
+
+.sectorInfo {
+    display: flex;
+    align-items: center;
+    gap: var(--go-ui-spacing-md);
+}
+
+.sectorTitle {
+    color: var(--go-ui-color-text);
+    font-size: var(--go-ui-font-size-lg);
+    font-weight: var(--go-ui-font-weight-bold);
+}
+
+.sectorMetrics {
+    display: flex;
+    gap: var(--go-ui-spacing-xl);
+}
+
+.metricGroup {
+    display: flex;
+    align-items: flex-end;
+    flex-direction: column;
+}
+
+.metricLabel {
+    margin-bottom: var(--go-ui-spacing-xs);
+    color: var(--go-ui-color-text-light);
+    font-size: var(--go-ui-font-size-sm);
+}
+
+.metricValue {
+    color: var(--go-ui-color-text);
+    font-size: var(--go-ui-font-size-md);
+    font-weight: var(--go-ui-font-weight-bold);
+}
+
+.expandButton {
+    flex-shrink: 0;
+    min-width: 40px;
+}
+
+/* Sector Details */
+.sectorDetails {
+    border-top: 1px solid var(--go-ui-color-separator);
+    padding: var(--go-ui-spacing-lg);
+}
+
+.indicatorsSection,
+.needsSection {
+    margin-bottom: var(--go-ui-spacing-lg);
+}
+
+.needsSection:last-child {
+    margin-bottom: 0;
+}
+
+.subSectionTitle {
+    margin: 0 0 var(--go-ui-spacing-md) 0;
+    color: var(--go-ui-color-text);
+    font-size: var(--go-ui-font-size-md);
+    font-weight: var(--go-ui-font-weight-medium);
+}
+
+/* Indicators Table */
+.indicatorsTable {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--go-ui-color-separator);
+    border-radius: var(--go-ui-border-radius-sm);
+}
+
+.tableHeader {
+    display: flex;
+    justify-content: flex-end;
+    border-bottom: 1px solid var(--go-ui-color-separator);
+    background-color: var(--go-ui-color-gray-20);
+    padding: var(--go-ui-spacing-sm) var(--go-ui-spacing-md);
+    color: var(--go-ui-color-text);
+    font-size: var(--go-ui-font-size-sm);
+    font-weight: var(--go-ui-font-weight-medium);
+}
+
+.indicatorRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--go-ui-color-separator);
+    padding: var(--go-ui-spacing-sm) var(--go-ui-spacing-md);
+}
+
+.indicatorRow:last-child {
+    border-bottom: none;
+}
+
+.indicatorName {
+    flex: 1;
+    color: var(--go-ui-color-text-light);
+    font-size: var(--go-ui-font-size-sm);
+}
+
+.indicatorValue {
+    min-width: 80px;
+    text-align: right;
+    color: var(--go-ui-color-text);
+    font-size: var(--go-ui-font-size-sm);
+    font-weight: var(--go-ui-font-weight-medium);
+}
+
+.needsText {
+    margin: 0;
+    line-height: 1.6;
+    color: var(--go-ui-color-text-light);
+    font-size: var(--go-ui-font-size-md);
+}
+
+/* Loading and Error States */
+.loadingText,
+.errorText {
+    padding: var(--go-ui-spacing-xl);
+    text-align: center;
+    color: var(--go-ui-color-text-light);
+    font-size: var(--go-ui-font-size-md);
+    font-style: italic;
+}
+
+.errorText {
+    color: var(--go-ui-color-red);
+}
+
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .operationalStrategy {
+        padding: var(--go-ui-spacing-md);
+    }
+
+    .topSection {
+        grid-template-columns: 1fr;
+        gap: var(--go-ui-spacing-md);
+    }
+
+    .sectorHeader {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: var(--go-ui-spacing-md);
+    }
+
+    .sectorMetrics {
+        flex-direction: column;
+        gap: var(--go-ui-spacing-sm);
+        width: 100%;
+    }
+
+    .metricGroup {
+        align-items: flex-start;
+    }
+
+    .sectorsGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .indicatorRow {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: var(--go-ui-spacing-xs);
+    }
+
+    .indicatorValue {
+        min-width: unset;
+        text-align: left;
+    }
+}
