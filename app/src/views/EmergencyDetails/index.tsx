@@ -55,7 +55,7 @@ function getFieldReport(
         return selectedReport;
     }, undefined);
 }
-
+// eslint-disable-next-line import/prefer-default-export
 export function Component() {
     const disasterTypes = useDisasterType();
     const { emergencyResponse } = useOutletContext<EmergencyOutletContext>();
