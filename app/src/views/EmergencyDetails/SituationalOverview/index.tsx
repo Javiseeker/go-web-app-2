@@ -28,28 +28,7 @@ function SituationalOverview(props: Props) {
 
     return (
         <Container
-            heading={(
-                <div className={styles.sectionHeadingRow}>
-                    <div className={styles.sectionTitle}>
-                        {strings.situationalOverviewTitle}
-                    </div>
-                    {perDrefStatus && (
-                        <div
-                            className={styles.sectionLabel}
-                            style={{
-                                color: perDrefStatus.type_of_onset_display === 'Sudden'
-                                    || perDrefStatus.type_of_onset_display === 'Imminent'
-                                    ? 'var(--go-ui-color-alert)'
-                                    : 'var(--go-ui-color-text-medium)',
-                            }}
-                        >
-                            {perDrefStatus.type_of_onset_display}
-                            {' / '}
-                            {perDrefStatus.type_of_dref_display}
-                        </div>
-                    )}
-                </div>
-            )}
+            heading={strings.situationalOverviewTitle}
             withHeaderBorder
             childrenContainerClassName={styles.situationalOverviewContent}
         >
@@ -59,9 +38,7 @@ function SituationalOverview(props: Props) {
                     className={styles.summaryContent}
                 />
             ) : (
-                <p className={styles.placeholderText}>
-                    {strings.noSituationalOverviewData}
-                </p>
+                <p>{strings.situationalOverviewNoData}</p>
             )}
         </Container>
     );

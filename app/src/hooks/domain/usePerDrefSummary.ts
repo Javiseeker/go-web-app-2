@@ -1,6 +1,10 @@
 import { useRequest } from '#utils/restRequest';
+import { useMemo } from 'react';
 
-// Only export the main hook and main type if you need them outside
+// Cache object to store responses
+const cache = new Map<string, { data: PerDrefSummary; timestamp: number }>();
+const CACHE_DURATION = 10 * 60 * 1000; // 10 minutes in milliseconds
+
 interface BudgetOverview {
     total_allocation: string;
     operation_timeframe: string;
@@ -41,16 +45,43 @@ interface BudgetSummary {
 interface Metadata {
     dref_id: number;
     dref_title: string;
-    dref_source: string;
-    event_id: number;
-    event_name: string;
-    field_reports_count: number;
-    status: string;
-    errors: string[];
+    dref_date: string;
+    dref_created_at: string;
+    dref_budget_file: string;
+    dref_op_update_number: number;
+    dref_source?: string;
+    event_id?: number;
+    event_name?: string;
+    field_reports_count?: number;
+    status?: string;
+    errors?: string[];
+}
+
+interface Indicator {
+    title: string;
+    people_targeted: number;
+}
+
+interface FutureAction {
+    indicators: Indicator[];
+    budget: number;
+    description: string;
+    people_targeted_total: number | null;
+}
+
+interface Sector {
+    title: string;
+    title_display: string;
+    actions_taken_summary: string;
+    needs_summary: string;
+    future_actions: FutureAction[];
 }
 
 export interface PerDrefSummary {
     operational_summary: string;
+    sectors: Sector[];
+    dref_type: string;
+    dref_onset: string;
     budget_summary?: BudgetSummary;
     metadata?: Metadata;
 }
@@ -60,10 +91,36 @@ export interface PerDrefSummary {
  *   const { response, pending, error, refetch } = usePerDrefSummary(drefId);
  */
 export default function usePerDrefSummary(drefId?: number) {
-    // Always use hardcoded ID 6955 for the actual API call
-    return useRequest<PerDrefSummary>({
-        skip: !drefId,
+    // Hardcode the ID for testing
+    const hardcodedId = 6955;
+    const cacheKey = `dref-summary-${hardcodedId}`;
+    
+    // Check cache
+    const cachedData = useMemo(() => {
+        const cached = cache.get(cacheKey);
+        if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+            return cached.data;
+        }
+        return null;
+    }, [cacheKey]);
+    
+    const { response, pending, error, refetch } = useRequest<PerDrefSummary>({
+        skip: !!cachedData, // Skip if we have cached data
         url: '/api/v2/per-dref-summary/',
-        query: { id: 6955 },
+        query: { id: hardcodedId },
+        onSuccess: (data) => {
+            // Cache the successful response
+            if (data) {
+                cache.set(cacheKey, { data, timestamp: Date.now() });
+            }
+        },
     });
+    
+    // Return cached data if available, otherwise return fresh response
+    return {
+        response: cachedData || response,
+        pending: !cachedData && pending,
+        error: !cachedData ? error : undefined,
+        refetch,
+    };
 }

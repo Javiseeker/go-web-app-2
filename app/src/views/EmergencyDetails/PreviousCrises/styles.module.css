@@ -2,7 +2,7 @@
     padding: 0;
 }
 
-.placeholderText {
+/* .placeholderText {
     margin: var(--go-ui-spacing-md);
     border-radius: var(--go-ui-border-radius-sm);
     background-color: var(--go-ui-color-gray-20);
@@ -10,25 +10,24 @@
     text-align: center;
     color: var(--go-ui-color-text-light);
     font-style: italic;
-}
+} */
 
+/* container grid */
 .lessonsGrid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: var(--go-ui-spacing-md);
-    padding: var(--go-ui-spacing-md);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);   /* 3 equal columns ≥ 1024px */
+  gap: var(--go-ui-spacing-md);
 }
 
+/* card */
 .lessonCard {
-    display: flex;
-    flex-direction: column;
-    border: 1px solid var(--go-ui-color-separator);
-    border-radius: var(--go-ui-border-radius-md);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    background-color: var(--go-ui-color-foreground);
-    padding: var(--go-ui-spacing-lg);
-    height: fit-content;
-    gap: var(--go-ui-spacing-md);
+  display: flex;              /* NEW → equal heights */
+  flex-direction: column;     /* title + text + footer vertical */
+  padding: 1.25rem;
+  border: 1px solid var(--go-ui-color-separator);
+  border-radius: 8px;
+  background: #fff;
+  min-height: 280px;          /* NEW → forces equal height */
 }
 
 .lessonTitle {
@@ -49,21 +48,38 @@
     font-size: var(--go-ui-font-size-md);
 }
 
+/* keep links at the bottom */
 .lessonSources {
-    margin-top: auto;
-    border-top: 1px solid var(--go-ui-color-separator);
-    padding-top: var(--go-ui-spacing-md);
+  margin-top: auto;           /* pushes footer down */
 }
 
 .lessonSource {
     display: block;
     margin: 0;
+    border: none;
+    background: none;
+    padding: 0;
+    text-align: left;
     text-decoration: underline;
     text-decoration-color: var(--go-ui-color-text-light);
     color: var(--go-ui-color-text);
+    cursor: pointer;
     font-size: var(--go-ui-font-size-md);
     font-weight: var(--go-ui-font-weight-medium);
     text-underline-offset: 2px;
+    transition: all 0.2s ease-in-out;
+}
+
+.lessonSource:hover {
+    color: var(--go-ui-color-primary);
+    text-decoration-color: var(--go-ui-color-primary);
+    text-decoration-thickness: 2px;
+}
+
+.lessonSource:focus {
+    outline: 2px solid var(--go-ui-color-primary);
+    outline-offset: 2px;
+    border-radius: var(--go-ui-border-radius-sm);
 }
 
 .lessonSource + .lessonSource {
@@ -85,25 +101,78 @@
     font-size: var(--go-ui-font-size-sm);
 }
 
-@media (max-width: 768px) {
-    .lessonsGrid {
-        grid-template-columns: 1fr;
-        gap: var(--go-ui-spacing-md);
-        padding: var(--go-ui-spacing-sm);
-    }
-
-    .lessonCard {
-        padding: var(--go-ui-spacing-md);
-    }
+.seeMoreContainer {
+    display: flex;
+    justify-content: center;
+    padding: var(--go-ui-spacing-md);
+    border-top: 1px solid var(--go-ui-color-separator);
+    margin: 0 var(--go-ui-spacing-md);
 }
 
-@media (max-width: 480px) {
-    .lessonsGrid {
-        gap: var(--go-ui-spacing-sm);
-        padding: var(--go-ui-spacing-xs);
-    }
+.seeMoreButton {
+    border: 1px solid var(--go-ui-color-primary);
+    border-radius: var(--go-ui-border-radius-sm);
+    background-color: transparent;
+    padding: var(--go-ui-spacing-sm) var(--go-ui-spacing-lg);
+    color: var(--go-ui-color-primary);
+    cursor: pointer;
+    font-size: var(--go-ui-font-size-md);
+    font-weight: var(--go-ui-font-weight-medium);
+    transition: color 0.2s ease-in-out;
+    text-decoration: underline;
+}
 
-    .lessonCard {
-        padding: var(--go-ui-spacing-sm);
-    }
+.seeMoreButton:hover {
+    color: #dc2626 !important;
+}
+
+.seeMoreButton:focus {
+    outline: 2px solid var(--go-ui-color-primary);
+    outline-offset: 2px;
+}
+
+.seeMoreContainer {
+    display: flex;
+    justify-content: center;
+    padding: var(--go-ui-spacing-md);
+    border-top: 1px solid var(--go-ui-color-separator);
+    margin: 0 var(--go-ui-spacing-md);
+}
+
+.seeMoreButton {
+    border: 1px solid var(--go-ui-color-primary);
+    border-radius: var(--go-ui-border-radius-sm);
+    background-color: transparent;
+    padding: var(--go-ui-spacing-sm) var(--go-ui-spacing-lg);
+    color: var(--go-ui-color-primary);
+    cursor: pointer;
+    font-size: var(--go-ui-font-size-md);
+    font-weight: var(--go-ui-font-weight-medium);
+    transition: all 0.2s ease-in-out;
+    text-decoration: underline;
+}
+
+.seeMoreButton:hover {
+    background-color: var(--go-ui-color-primary);
+    color: var(--go-ui-color-foreground);
+    text-decoration: none;
+}
+
+.seeMoreButton:focus {
+    outline: 2px solid var(--go-ui-color-primary);
+    outline-offset: 2px;
+}
+
+/* tablet → 2 columns  */
+@media (max-width: 1023px) {
+  .lessonsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* mobile → 1 column  */
+@media (max-width: 639px) {
+  .lessonsGrid {
+    grid-template-columns: 1fr;
+  }
 }

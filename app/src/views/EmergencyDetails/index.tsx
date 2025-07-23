@@ -55,6 +55,7 @@ function getFieldReport(
         return selectedReport;
     }, undefined);
 }
+
 /** @knipignore */
 // eslint-disable-next-line import/prefer-default-export
 export function Component() {
@@ -62,24 +63,36 @@ export function Component() {
     const { emergencyResponse } = useOutletContext<EmergencyOutletContext>();
     const { api_visibility_choices } = useGlobalEnums();
 
+    // Find disasterType object from emergencyResponse dtype
+    const disasterType = disasterTypes?.find(
+        (typeOfDisaster) => typeOfDisaster.id === emergencyResponse?.dtype,
+    );
+
+    // Extract countryId from emergencyResponse (assuming first country)
+    const countryId = emergencyResponse?.countries?.[0]?.id;
+
+    // Disaster type ID from found disasterType
+    const disasterTypeId = disasterType?.id;
+
+    // Debug logs for verification
+    console.log('[EmergencyDetails] countryId:', countryId);
+    console.log('[EmergencyDetails] disasterTypeId:', disasterTypeId);
+
+    // Only call DREF hooks if we have a DREF ID
     const drefId = emergencyResponse?.appeals && emergencyResponse.appeals.length > 0
         ? emergencyResponse.appeals[0].id
         : null;
 
-    // Only call DREF hooks if we have a DREF ID
     const {
         response: perDrefStatus,
     } = usePerDrefStatus(drefId);
 
-    // ALWAYS CALL THE HOOK FOR TESTING - pass dummy values
+    // Use dynamic params instead of hardcoded values
     const {
         response: ifrcEvents,
         pending: ifrcEventsPending,
         error: ifrcEventsError,
-    } = useIfrcEvents(
-        132, // Dummy country ID for testing
-        27, // Dummy disaster type ID for testing
-    );
+    } = useIfrcEvents(countryId, disasterTypeId);
 
     const visibilityMap = useMemo(
         () => listToMap(
@@ -92,10 +105,6 @@ export function Component() {
 
     const hasKeyFigures = isDefined(emergencyResponse)
         && emergencyResponse.key_figures.length !== 0;
-
-    const disasterType = disasterTypes?.find(
-        (typeOfDisaster) => typeOfDisaster.id === emergencyResponse?.dtype,
-    );
 
     const mdrCode = isDefined(emergencyResponse)
         && isDefined(emergencyResponse?.appeals)
@@ -171,7 +180,6 @@ export function Component() {
                 perDrefStatus={perDrefStatus}
             />
 
-            {/* ALWAYS SHOW FOR TESTING */}
             <PreviousCrises
                 ifrcEvents={ifrcEvents}
                 ifrcEventsPending={ifrcEventsPending}

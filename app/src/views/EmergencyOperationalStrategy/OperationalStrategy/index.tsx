@@ -7,7 +7,6 @@ import type { PerDrefSummary } from '#hooks/domain/usePerDrefSummary';
 import i18n from './i18n.json';
 import styles from './styles.module.css';
 
-// Mock sector data based on your design
 interface SectorData {
     id: string;
     name: string;
@@ -19,6 +18,8 @@ interface SectorData {
         targeted: number | string;
     }>;
     needs: string;
+    actionsTaken?: string;
+    description?: string;
 }
 
 interface Props {
@@ -36,66 +37,55 @@ function OperationalStrategy(props: Props) {
 
     const strings = useTranslation(i18n);
     const [expandedSectors, setExpandedSectors] = useState<Set<string>>(new Set());
+    const [showMetadata, setShowMetadata] = useState(false);
 
     // Extract data from API response
     const operationalSummary = perDrefSummary?.operational_summary || '';
     const budgetOverview = perDrefSummary?.budget_summary?.budget_overview;
+    const sectors = perDrefSummary?.sectors || [];
+    const metadata = perDrefSummary?.metadata;
+    
+    // Map API sectors to engaged sectors display - SHOW ALL SECTORS
+    const engagedSectors = sectors
+        .filter((sector) => sector.future_actions && sector.future_actions.length > 0)
+        .map((sector) => ({
+            id: sector.title,
+            name: sector.title_display,
+            icon: getSectorIcon(sector.title),
+        }));
 
-    // Parse operational summary into objectives and strategy
-    const summaryLines = operationalSummary.split('\n').filter((line) => line.trim());
-    const operationObjectives = summaryLines[0] || '';
-    const operationStrategy = summaryLines.slice(1).join('\n') || '';
+    // Map API sectors to sectoral needs data - SHOW ALL SECTORS
+    const sectoralNeeds: SectorData[] = sectors
+        .filter((sector) => sector.future_actions && sector.future_actions.length > 0)
+        .map((sector) => {
+            // Calculate total budget for the sector
+            const totalBudget = sector.future_actions.reduce((sum, action) => sum + (action.budget || 0), 0);
+            
+            // Calculate total people targeted
+            const totalPeopleTargeted = sector.future_actions.reduce((sum, action) => {
+                return sum + (action.people_targeted_total || 0);
+            }, 0);
 
-    // Mock engaged sectors (since not in API response) - matching Figma icons
-    const engagedSectors = [
-        { id: 'health', name: 'Health', icon: '🏥' },
-        { id: 'livelihood', name: 'Livelihood', icon: '🏘️' },
-        { id: 'shelter', name: 'Shelter', icon: '🏠' },
-    ];
+            // Extract all indicators from all future actions
+            const allIndicators = sector.future_actions.flatMap((action) => 
+                action.indicators.map((indicator) => ({
+                    name: indicator.title,
+                    targeted: indicator.people_targeted,
+                }))
+            );
 
-    // Mock sectoral needs data (since detailed breakdown not available in API)
-    const sectoralNeeds: SectorData[] = [
-        {
-            id: 'health',
-            name: 'HEALTH',
-            icon: '🏥',
-            budget: budgetOverview?.total_allocation || '60,000 CHF',
-            peopleTargeted: budgetOverview?.target_beneficiaries?.toString() || '55,355',
-            indicators: [
-                { name: 'Number of people reached with awareness sessions', targeted: '25,067' },
-                { name: 'Number of ambulance teams trained', targeted: 6 },
-                { name: 'Number of SDB replenishment kit pro-cured', targeted: 1 },
-                { name: 'Number of SDB training kits procured', targeted: 2 },
-            ],
-            needs: 'Emergency health interventions including medical supplies, first aid training, and health awareness sessions for flood-affected communities.',
-        },
-        {
-            id: 'shelter',
-            name: 'SHELTER',
-            icon: '🏠',
-            budget: budgetOverview?.total_allocation || '60,000 CHF',
-            peopleTargeted: budgetOverview?.target_beneficiaries?.toString() || '55,355',
-            indicators: [
-                { name: 'Number of emergency shelters provided', targeted: '840' },
-                { name: 'Number of shelter repair kits distributed', targeted: 200 },
-                { name: 'Number of people in temporary accommodation', targeted: 1500 },
-            ],
-            needs: 'Immediate shelter support including emergency accommodation, repair materials, and temporary housing solutions for displaced families.',
-        },
-        {
-            id: 'livelihoods',
-            name: 'LIVELIHOODS',
-            icon: '🏘️',
-            budget: budgetOverview?.total_allocation || '60,000 CHF',
-            peopleTargeted: budgetOverview?.target_beneficiaries?.toString() || '55,355',
-            indicators: [
-                { name: 'Number of cash grants distributed', targeted: '840' },
-                { name: 'Number of livelihood restoration activities', targeted: 15 },
-                { name: 'Number of people supported with income generation', targeted: 2100 },
-            ],
-            needs: 'Multi-purpose cash grants and livelihood restoration activities to help affected households recover their economic stability and resilience.',
-        },
-    ];
+            return {
+                id: sector.title,
+                name: sector.title_display.toUpperCase(),
+                icon: getSectorIcon(sector.title),
+                budget: totalBudget > 0 ? `${totalBudget.toLocaleString()} CHF` : '--',
+                peopleTargeted: totalPeopleTargeted > 0 ? totalPeopleTargeted.toLocaleString() : '--',
+                indicators: allIndicators,
+                needs: sector.needs_summary || '',
+                actionsTaken: sector.actions_taken_summary || '',
+                description: sector.future_actions[0]?.description || '',
+            };
+        });
 
     const toggleSectorExpansion = (sectorId: string) => {
         const newExpanded = new Set(expandedSectors);
@@ -110,9 +100,12 @@ function OperationalStrategy(props: Props) {
     if (perDrefSummaryPending) {
         return (
             <div className={styles.operationalStrategy}>
-                <p className={styles.loadingText}>
-                    {strings.loadingOperationalStrategy}
-                </p>
+                <div className={styles.loadingContainer}>
+                    <div className={styles.loadingSpinner} />
+                    <p className={styles.loadingText}>
+                        Loading operational strategy...
+                    </p>
+                </div>
             </div>
         );
     }
@@ -129,49 +122,74 @@ function OperationalStrategy(props: Props) {
 
     return (
         <div className={styles.operationalStrategy}>
-            {/* Last Update */}
-            <div className={styles.lastUpdate}>
-                {strings.lastUpdateLabel}
-                {' '}
-                12 June, 2025
-            </div>
-
-            {/* Top Two-Column Layout */}
-            <div className={styles.topSection}>
-                <div className={styles.objectivesCard}>
-                    <h3 className={styles.cardTitle}>
-                        {strings.operationObjectivesTitle}
-                    </h3>
-                    <p className={styles.contentText}>
-                        {operationObjectives || 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer sodales sit amet quam non fermentum. Ut finibus fermentum ultrices. Nunc ut elit sollicitudin, malesuada libero non, lobortis nisl. Sed ac elit in augue interdum porta sed nec metus. Nullam pharetra neque id tortor lacinia, in tempor quam rutrum. Pellentesque ullamcorper luctus hendrerit. Integer venenatis diam ac felis auctor, at gravida augue pellentesque. Duis velit orci, dapibus sit amet metus sit amet.'}
-                    </p>
-                </div>
-
-                <div className={styles.strategyCard}>
-                    <h3 className={styles.cardTitle}>
-                        {strings.operationStrategyTitle}
-                    </h3>
-                    <p className={styles.contentText}>
-                        {operationStrategy || 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer sodales sit amet quam non fermentum. Ut finibus fermentum ultrices. Nunc ut elit sollicitudin, malesuada libero non, lobortis nisl. Sed ac elit in augue interdum porta sed nec metus. Nullam pharetra neque id tortor lacinia, in tempor quam rutrum. Pellentesque ullamcorper luctus hendrerit. Integer venenatis diam ac felis auctor, at gravida augue pellentesque. Duis velit orci, dapibus sit amet metus sit amet.'}
-                    </p>
-                </div>
-            </div>
-
-            {/* AI Disclaimer */}
+            {/* AI Disclaimer - MOVED TO TOP */}
             <div className={styles.aiDisclaimer}>
                 <span className={styles.infoIcon}>
                     ℹ️
                 </span>
                 <span className={styles.disclaimerText}>
-                    {strings.aiDisclaimerText}
+                    The content below has been generated or summarised by AI models.{' '}
                     <button
                         type="button"
                         className={styles.seeHereLink}
+                        onClick={() => setShowMetadata(!showMetadata)}
                     >
-                        {strings.seeHereLink}
+                        See original submission
                     </button>
                     .
                 </span>
+            </div>
+
+            {/* Metadata Modal/Section */}
+            {showMetadata && metadata && (
+                <div className={styles.metadataSection}>
+                    <div className={styles.metadataHeader}>
+                        <h3>Original Submission Details</h3>
+                        <button
+                            type="button"
+                            className={styles.closeButton}
+                            onClick={() => setShowMetadata(false)}
+                        >
+                            ✕
+                        </button>
+                    </div>
+                    <div className={styles.metadataContent}>
+                        <p><strong>DREF ID:</strong> {metadata.dref_id}</p>
+                        <p><strong>Title:</strong> {metadata.dref_title}</p>
+                        <p><strong>Date:</strong> {formatDate(metadata.dref_date)}</p>
+                        <p><strong>Created:</strong> {formatDate(metadata.dref_created_at)}</p>
+                        <p><strong>Type:</strong> {perDrefSummary?.dref_type}</p>
+                        <p><strong>Onset:</strong> {perDrefSummary?.dref_onset}</p>
+                        <p><strong>Operation Update Number:</strong> {metadata.dref_op_update_number}</p>
+                        {metadata.dref_budget_file && (
+                            <p>
+                                <strong>Budget File:</strong>{' '}
+                                <a href={metadata.dref_budget_file} target="_blank" rel="noopener noreferrer">
+                                    View Budget Document
+                                </a>
+                            </p>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {/* Last Update */}
+            <div className={styles.lastUpdate}>
+                {strings.lastUpdateLabel}
+                {' '}
+                {formatDate(metadata?.dref_date || metadata?.dref_created_at) || '12 June, 2025'}
+            </div>
+
+            {/* Operation Strategy - Full Width */}
+            <div className={styles.fullWidthSection}>
+                <div className={styles.strategyCard}>
+                    <h3 className={styles.cardTitle}>
+                        {strings.operationStrategyTitle}
+                    </h3>
+                    <p className={styles.contentText}>
+                        {operationalSummary || 'No operational summary available.'}
+                    </p>
+                </div>
             </div>
 
             {/* Sectors Engaged */}
@@ -203,7 +221,18 @@ function OperationalStrategy(props: Props) {
                         const isExpanded = expandedSectors.has(sector.id);
                         return (
                             <div key={sector.id} className={styles.sectoralNeedCard}>
-                                <div className={styles.sectorHeader}>
+                                <div
+                                  className={styles.sectorHeader}
+                                  onClick={() => toggleSectorExpansion(sector.id)}
+                                  role="button"
+                                  tabIndex={0}
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter' || e.key === ' ') {
+                                      toggleSectorExpansion(sector.id);
+                                    }
+                                  }}
+                                  aria-expanded={isExpanded}
+                                >
                                     <div className={styles.sectorInfo}>
                                         <span className={styles.sectorIcon}>
                                             {sector.icon}
@@ -215,8 +244,7 @@ function OperationalStrategy(props: Props) {
                                     <div className={styles.sectorMetrics}>
                                         <div className={styles.metricGroup}>
                                             <span className={styles.metricLabel}>
-                                                {strings.budgetLabel}
-                                                :
+                                                {strings.budgetLabel}:
                                             </span>
                                             <span className={styles.metricValue}>
                                                 {sector.budget}
@@ -224,60 +252,80 @@ function OperationalStrategy(props: Props) {
                                         </div>
                                         <div className={styles.metricGroup}>
                                             <span className={styles.metricLabel}>
-                                                {strings.peopleTargetedLabel}
-                                                :
+                                                {strings.peopleTargetedLabel}:
                                             </span>
                                             <span className={styles.metricValue}>
                                                 {sector.peopleTargeted}
                                             </span>
                                         </div>
                                     </div>
-                                    <Button
-                                        variant="tertiary"
-                                        size="small"
-                                        onClick={() => toggleSectorExpansion(sector.id)}
-                                        className={styles.expandButton}
-                                    >
+                                    <span className={styles.expandIcon}>
                                         {isExpanded ? '▲' : '▼'}
-                                    </Button>
+                                    </span>
                                 </div>
 
                                 {isExpanded && (
                                     <div className={styles.sectorDetails}>
-                                        <div className={styles.indicatorsSection}>
-                                            <h4 className={styles.subSectionTitle}>
-                                                {strings.indicatorsTitle}
-                                            </h4>
-                                            <div className={styles.indicatorsTable}>
-                                                <div className={styles.tableHeader}>
-                                                    <span>
-                                                        {strings.targetedLabel}
-                                                    </span>
-                                                </div>
-                                                {sector.indicators.map((indicator) => (
-                                                    <div
-                                                        key={`${sector.id}-${indicator.name}`}
-                                                        className={styles.indicatorRow}
-                                                    >
-                                                        <span className={styles.indicatorName}>
-                                                            {indicator.name}
-                                                        </span>
-                                                        <span className={styles.indicatorValue}>
-                                                            {indicator.targeted}
+                                        {sector.actionsTaken && (
+                                            <div className={styles.actionsTakenSection}>
+                                                <h4 className={styles.subSectionTitle}>
+                                                    Actions Taken
+                                                </h4>
+                                                <p className={styles.needsText}>
+                                                    {sector.actionsTaken}
+                                                </p>
+                                            </div>
+                                        )}
+
+                                        {sector.needs && (
+                                            <div className={styles.needsSection}>
+                                                <h4 className={styles.subSectionTitle}>
+                                                    {strings.needsTitle}
+                                                </h4>
+                                                <p className={styles.needsText}>
+                                                    {sector.needs}
+                                                </p>
+                                            </div>
+                                        )}
+
+                                        {sector.indicators.length > 0 && (
+                                            <div className={styles.indicatorsSection}>
+                                                <h4 className={styles.subSectionTitle}>
+                                                    {strings.indicatorsTitle}
+                                                </h4>
+                                                <div className={styles.indicatorsTable}>
+                                                    <div className={styles.tableHeader}>
+                                                        <span>
+                                                            {strings.targetedLabel}
                                                         </span>
                                                     </div>
-                                                ))}
+                                                    {sector.indicators.map((indicator, index) => (
+                                                        <div
+                                                            key={`${sector.id}-indicator-${index}`}
+                                                            className={styles.indicatorRow}
+                                                        >
+                                                            <span className={styles.indicatorName}>
+                                                                {indicator.name}
+                                                            </span>
+                                                            <span className={styles.indicatorValue}>
+                                                                {indicator.targeted}
+                                                            </span>
+                                                        </div>
+                                                    ))}
+                                                </div>
                                             </div>
-                                        </div>
+                                        )}
 
-                                        <div className={styles.needsSection}>
-                                            <h4 className={styles.subSectionTitle}>
-                                                {strings.needsTitle}
-                                            </h4>
-                                            <p className={styles.needsText}>
-                                                {sector.needs}
-                                            </p>
-                                        </div>
+                                        {sector.description && (
+                                            <div className={styles.plannedActionsSection}>
+                                                <h4 className={styles.subSectionTitle}>
+                                                    {strings.plannedActionsTitle || 'Planned Actions'}
+                                                </h4>
+                                                <p className={styles.needsText}>
+                                                    {sector.description}
+                                                </p>
+                                            </div>
+                                        )}
                                     </div>
                                 )}
                             </div>
@@ -287,6 +335,43 @@ function OperationalStrategy(props: Props) {
             </div>
         </div>
     );
+}
+
+// Helper function to map sector titles to icons
+function getSectorIcon(sectorTitle: string): string {
+    const iconMap: Record<string, string> = {
+        health: '🏥',
+        shelter: '🏠',
+        shelter_housing_and_settlements: '🏠',
+        livelihoods: '🏘️',
+        livelihoods_and_basic_needs: '🏘️',
+        water_sanitation_and_hygiene: '💧',
+        protection_gender_and_inclusion: '👥',
+        community_engagement_and_accountability: '📢',
+        multi_purpose_cash: '💵',
+        risk_reduction_climate_adaptation_and_recovery: '🌍',
+        national_society_strengthening: '🏛️',
+        coordination_and_partnerships: '🤝',
+        secretariat_services: '📋',
+    };
+
+    return iconMap[sectorTitle] || '📌';
+}
+
+// Helper function to format date
+function formatDate(dateString?: string): string {
+    if (!dateString) return 'N/A';
+    
+    try {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-GB', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+        });
+    } catch {
+        return dateString;
+    }
 }
 
 export default OperationalStrategy;

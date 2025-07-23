@@ -3,7 +3,9 @@
     margin: 0 auto;
     background-color: var(--go-ui-color-foreground);
     padding: var(--go-ui-spacing-lg);
-    max-width: 1200px;
+    width: 100%;          /* Take full available width */
+    max-width: none;      /* Remove max width limit */
+    box-sizing: border-box; /* Include padding in width */
 }
 
 /* Last Update */
@@ -11,6 +13,11 @@
     margin-bottom: var(--go-ui-spacing-lg);
     color: var(--go-ui-color-text-light);
     font-size: var(--go-ui-font-size-sm);
+}
+
+/* Full Width Section for single strategy card */
+.fullWidthSection {
+    margin-bottom: var(--go-ui-spacing-xl);
 }
 
 /* Top Two-Column Layout */
@@ -28,6 +35,8 @@
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     background-color: var(--go-ui-color-foreground);
     padding: var(--go-ui-spacing-lg);
+    width: 100%; /* Make cards take full width of container */
+    box-sizing: border-box;
 }
 
 .cardTitle {
@@ -75,13 +84,73 @@
     text-decoration: underline;
     color: var(--go-ui-color-red);
     text-underline-offset: 2px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-style: italic;
+}
+
+/* Metadata Section */
+.metadataSection {
+    margin-bottom: var(--go-ui-spacing-xl);
+    border: 1px solid var(--go-ui-color-separator);
+    border-radius: var(--go-ui-border-radius-md);
+    background-color: var(--go-ui-color-foreground);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.metadataHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--go-ui-spacing-md);
+    border-bottom: 1px solid var(--go-ui-color-separator);
+    background-color: var(--go-ui-color-gray-20);
+}
+
+.metadataHeader h3 {
+    margin: 0;
+    font-size: var(--go-ui-font-size-md);
+    font-weight: var(--go-ui-font-weight-bold);
+}
+
+.closeButton {
+    background: none;
+    border: none;
+    font-size: var(--go-ui-font-size-lg);
+    cursor: pointer;
+    color: var(--go-ui-color-text-light);
+    padding: var(--go-ui-spacing-xs);
+}
+
+.closeButton:hover {
+    color: var(--go-ui-color-text);
+}
+
+.metadataContent {
+    padding: var(--go-ui-spacing-lg);
+}
+
+.metadataContent p {
+    margin: var(--go-ui-spacing-sm) 0;
+    color: var(--go-ui-color-text);
+    font-size: var(--go-ui-font-size-sm);
+}
+
+.metadataContent a {
+    color: var(--go-ui-color-red);
+    text-decoration: underline;
 }
 
 /* Section Containers */
 .sectionContainer {
     margin-bottom: var(--go-ui-spacing-xl);
+    width: 100%;
 }
 
+/* Section Title */
 .sectionTitle {
     margin: 0 0 var(--go-ui-spacing-lg) 0;
     letter-spacing: 0.5px;
@@ -95,8 +164,10 @@
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: var(--go-ui-spacing-md);
+    width: 100%; /* Full width */
 }
 
+/* Individual Sector Card */
 .sectorCard {
     display: flex;
     align-items: center;
@@ -106,6 +177,8 @@
     background-color: var(--go-ui-color-foreground);
     padding: var(--go-ui-spacing-lg);
     gap: var(--go-ui-spacing-md);
+    width: 100%; /* Full width */
+    box-sizing: border-box;
 }
 
 .sectorIcon {
@@ -123,15 +196,20 @@
     display: flex;
     flex-direction: column;
     gap: var(--go-ui-spacing-md);
+    width: 100%;
 }
 
+/* Individual Sector Need Card */
 .sectoralNeedCard {
     border: 1px solid var(--go-ui-color-separator);
     border-radius: var(--go-ui-border-radius-md);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     background-color: var(--go-ui-color-foreground);
+    width: 100%;
+    box-sizing: border-box;
 }
 
+/* Sector Header */
 .sectorHeader {
     display: flex;
     align-items: center;
@@ -139,12 +217,29 @@
     border-radius: var(--go-ui-border-radius-md) var(--go-ui-border-radius-md) 0 0;
     background-color: var(--go-ui-color-gray-20);
     padding: var(--go-ui-spacing-lg);
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.2s ease;
+    width: 100%;
+    border: none;
+    font-family: inherit;
+    text-align: left;
+}
+
+.sectorHeader:hover {
+    background-color: var(--go-ui-color-gray-30);
+}
+
+.sectorHeader:active {
+    background-color: var(--go-ui-color-gray-40);
 }
 
 .sectorInfo {
     display: flex;
     align-items: center;
     gap: var(--go-ui-spacing-md);
+    flex: 0 0 auto;
+    min-width: 300px;
 }
 
 .sectorTitle {
@@ -156,16 +251,17 @@
 .sectorMetrics {
     display: flex;
     gap: var(--go-ui-spacing-xl);
+    margin-left: auto;
+    margin-right: var(--go-ui-spacing-md);
 }
 
 .metricGroup {
     display: flex;
-    align-items: flex-end;
-    flex-direction: column;
+    align-items: center;
+    gap: var(--go-ui-spacing-sm);
 }
 
 .metricLabel {
-    margin-bottom: var(--go-ui-spacing-xs);
     color: var(--go-ui-color-text-light);
     font-size: var(--go-ui-font-size-sm);
 }
@@ -174,11 +270,19 @@
     color: var(--go-ui-color-text);
     font-size: var(--go-ui-font-size-md);
     font-weight: var(--go-ui-font-weight-bold);
+    min-width: 100px;
+    text-align: right;
 }
 
 .expandButton {
     flex-shrink: 0;
     min-width: 40px;
+    color: var(--go-ui-color-text);
+    font-size: var(--go-ui-font-size-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
 }
 
 /* Sector Details */
@@ -188,11 +292,14 @@
 }
 
 .indicatorsSection,
-.needsSection {
+.needsSection,
+.actionsTakenSection,
+.plannedActionsSection {
     margin-bottom: var(--go-ui-spacing-lg);
 }
 
-.needsSection:last-child {
+.needsSection:last-child,
+.plannedActionsSection:last-child {
     margin-bottom: 0;
 }
 
@@ -256,17 +363,42 @@
 }
 
 /* Loading and Error States */
-.loadingText,
-.errorText {
-    padding: var(--go-ui-spacing-xl);
-    text-align: center;
+.loadingContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+    gap: var(--go-ui-spacing-lg);
+}
+
+.loadingSpinner {
+    width: 48px;
+    height: 48px;
+    border: 3px solid var(--go-ui-color-gray-40);
+    border-top-color: var(--go-ui-color-red);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.loadingText {
     color: var(--go-ui-color-text-light);
     font-size: var(--go-ui-font-size-md);
-    font-style: italic;
+    margin: 0;
 }
 
 .errorText {
+    padding: var(--go-ui-spacing-xl);
+    text-align: center;
     color: var(--go-ui-color-red);
+    font-size: var(--go-ui-font-size-md);
+    font-style: italic;
 }
 
 
@@ -287,14 +419,27 @@
         gap: var(--go-ui-spacing-md);
     }
 
+    .sectorInfo {
+        min-width: unset;
+    }
+
     .sectorMetrics {
-        flex-direction: column;
-        gap: var(--go-ui-spacing-sm);
+        flex-direction: row;
+        justify-content: space-between;
         width: 100%;
+        margin-left: 0;
+        margin-right: 0;
     }
 
     .metricGroup {
+        flex-direction: column;
         align-items: flex-start;
+        gap: var(--go-ui-spacing-xs);
+    }
+
+    .metricValue {
+        min-width: unset;
+        text-align: left;
     }
 
     .sectorsGrid {

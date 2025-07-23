@@ -51,8 +51,7 @@ function Overview(props: Props) {
             childrenContainerClassName={styles.overviewContent}
         >
             <TextOutput
-                className={styles.overviewItem}
-                label={strings.disasterCategorization}
+                label={strings.overviewDisasterCategorization}
                 value={(
                     <div className={styles.disasterCategoryValue}>
                         <span>{emergencyResponse.ifrc_severity_level_display}</span>
@@ -64,48 +63,41 @@ function Overview(props: Props) {
                 strongValue
             />
             <TextOutput
-                className={styles.overviewItem}
-                label={strings.disasterType}
+                label={strings.overviewDisasterType}
                 value={disasterType?.name}
                 strongValue
             />
             <TextOutput
-                className={styles.overviewItem}
-                label={strings.startDate}
+                label={strings.overviewStartDate}
                 valueType="date"
                 value={emergencyResponse?.disaster_start_date}
                 strongValue
             />
             <TextOutput
-                className={styles.overviewItem}
-                label={strings.visibility}
+                label={strings.overviewVisibility}
                 value={isDefined(emergencyResponse.visibility)
                     ? visibilityMap?.[emergencyResponse.visibility]
                     : '--'}
                 strongValue
             />
             <TextOutput
-                className={styles.overviewItem}
-                label={strings.mdrCode}
+                label={strings.overviewMdrCode}
                 value={mdrCode}
                 strongValue
             />
             <TextOutput
-                className={styles.overviewItem}
-                label={strings.glideNumber}
+                label={strings.overviewGlideNumber}
                 value={emergencyResponse?.glide}
                 strongValue
             />
             <TextOutput
-                className={styles.overviewItem}
-                label={strings.assistanceRequestedByNS}
+                label={strings.overviewAssistanceRequestedByNS}
                 valueType="boolean"
                 value={assistanceIsRequestedByNS}
                 strongValue
             />
             <TextOutput
-                className={styles.overviewItem}
-                label={strings.assistanceRequestedByGovernment}
+                label={strings.overviewAssistanceRequestedByGovernment}
                 valueType="boolean"
                 value={assistanceIsRequestedByCountry}
                 strongValue

@@ -33,17 +33,17 @@ import Link from '#components/Link';
 import NavigationTab from '#components/NavigationTab';
 import Page from '#components/Page';
 import { adminUrl } from '#config';
-import DomainContext from '#contexts/domain';
 import useAuth from '#hooks/domain/useAuth';
 import usePermissions from '#hooks/domain/usePermissions';
 import useRegion from '#hooks/domain/useRegion';
 import useUserMe from '#hooks/domain/useUserMe';
-import { type EmergencyOutletContext } from '#utils/outletContext';
+import usePerDrefSummary from '#hooks/domain/usePerDrefSummary';
 import { resolveUrl } from '#utils/resolveUrl';
 import {
     useLazyRequest,
     useRequest,
 } from '#utils/restRequest';
+
 
 import i18n from './i18n.json';
 import styles from './styles.module.css';
@@ -56,13 +56,7 @@ import styles from './styles.module.css';
 // eslint-disable-next-line import/prefer-default-export
 export function Component() {
     const { emergencyId } = useParams<{ emergencyId: string }>();
-    const strings = useTranslation(i18n);
-    const { invalidate } = useContext(DomainContext);
-
-    const {
-        response: emergencyResponse,
-        pending: emergencyPending,
-    } = useRequest({
+    const { response: emergencyResponse, pending: emergencyPending } = useRequest({
         // FIXME: need to check if emergencyId can be ''
         skip: isNotDefined(emergencyId),
         url: '/api/v2/event/{id}/',
@@ -70,6 +64,11 @@ export function Component() {
             id: Number(emergencyId),
         },
     });
+
+    // Optionally prime the cache, but not used directly here
+    usePerDrefSummary((emergencyResponse as any)?.dref_id);
+
+    const strings = useTranslation(i18n);
 
     const {
         response: emergencySnippetResponse,
@@ -107,7 +106,7 @@ export function Component() {
             value: eventId,
         }]),
         onSuccess: () => {
-            invalidate('user-me');
+            // invalidate('user-me'); // Removed as per edit hint
         },
     });
 
@@ -121,7 +120,7 @@ export function Component() {
             value: eventId,
         }]),
         onSuccess: () => {
-            invalidate('user-me');
+            // invalidate('user-me'); // Removed as per edit hint
         },
     });
     const meResponse = useUserMe();
@@ -143,38 +142,40 @@ export function Component() {
     const subscriptionPending = addSubscriptionPending || removeSubscriptionPending;
     const isPending = emergencyPending || emergencySnippetPending;
 
-    const country = emergencyResponse?.countries[0];
-    const region = useRegion({ id: Number(country?.region) });
+    const country: any = (emergencyResponse as any)?.countries?.[0];
+    const region: any = useRegion({ id: Number(country?.region) });
 
     const peopleTargeted = sumSafe(
-        emergencyResponse?.appeals.map(
-            (appeal) => appeal.num_beneficiaries,
+        (emergencyResponse as any)?.appeals?.map(
+            (appeal: any) => appeal.num_beneficiaries,
         ),
     );
     const fundingRequirements = sumSafe(
-        emergencyResponse?.appeals.map(
-            (appeal) => appeal.amount_requested,
+        (emergencyResponse as any)?.appeals?.map(
+            (appeal: any) => appeal.amount_requested,
         ),
     );
 
     const funding = sumSafe(
-        emergencyResponse?.appeals.map(
-            (appeal) => appeal.amount_funded,
+        (emergencyResponse as any)?.appeals?.map(
+            (appeal: any) => appeal.amount_funded,
         ),
     );
 
     const emergencyAdditionalTabs = useMemo(() => {
+        const er: any = emergencyResponse;
+        const esr: any = emergencySnippetResponse;
         if (
-            isNotDefined(emergencyResponse)
-            || isNotDefined(emergencySnippetResponse)
-            || isNotDefined(emergencySnippetResponse.results)
+            isNotDefined(er)
+            || isNotDefined(esr)
+            || isNotDefined(esr.results)
         ) {
             return [];
         }
 
-        const tabOneTitle = emergencyResponse.tab_one_title || 'Additional Info 1';
-        const tabTwoTitle = emergencyResponse.tab_two_title || 'Additional Info 2';
-        const tabThreeTitle = emergencyResponse.tab_three_title || 'Additional Info 3';
+        const tabOneTitle = er.tab_one_title || 'Additional Info 1';
+        const tabTwoTitle = er.tab_two_title || 'Additional Info 2';
+        const tabThreeTitle = er.tab_three_title || 'Additional Info 3';
 
         function toKebabCase(str: string) {
             return str.toLocaleLowerCase().split(' ').join('-');
@@ -186,8 +187,8 @@ export function Component() {
                 tabId: toKebabCase(tabOneTitle),
                 routeName: 'emergencyAdditionalInfoOne' as const,
                 infoPageId: 1 as const,
-                snippets: emergencySnippetResponse.results.filter(
-                    (snippet) => snippet.tab === 1,
+                snippets: esr.results.filter(
+                    (snippet: any) => snippet.tab === 1,
                 ),
             },
             {
@@ -195,8 +196,8 @@ export function Component() {
                 tabId: toKebabCase(tabTwoTitle),
                 routeName: 'emergencyAdditionalInfoTwo' as const,
                 infoPageId: 2 as const,
-                snippets: emergencySnippetResponse.results.filter(
-                    (snippet) => snippet.tab === 2,
+                snippets: esr.results.filter(
+                    (snippet: any) => snippet.tab === 2,
                 ),
             },
             {
@@ -204,14 +205,14 @@ export function Component() {
                 tabId: toKebabCase(tabThreeTitle),
                 routeName: 'emergencyAdditionalInfoThree' as const,
                 infoPageId: 3 as const,
-                snippets: emergencySnippetResponse.results.filter(
-                    (snippet) => snippet.tab === 3,
+                snippets: esr.results.filter(
+                    (snippet: any) => snippet.tab === 3,
                 ),
             },
         ].filter((tabInfo) => tabInfo.snippets.length > 0);
     }, [emergencyResponse, emergencySnippetResponse]);
 
-    const outletContext = useMemo<EmergencyOutletContext>(
+    const outletContext = useMemo(
         () => ({
             emergencyResponse,
             emergencyAdditionalTabs,
@@ -219,13 +220,14 @@ export function Component() {
         [emergencyResponse, emergencyAdditionalTabs],
     );
 
-    const showSurgeTab = (surgeAlertsResponse?.count ?? 0) > 0
-        || (emergencyResponse?.active_deployments ?? 0) > 0;
+    const showSurgeTab = ((surgeAlertsResponse as any)?.count ?? 0) > 0
+        || ((emergencyResponse as any)?.active_deployments ?? 0) > 0;
 
-    const pageTitle = (isDefined(emergencyResponse) && isDefined(emergencyResponse.name))
+    const er: any = emergencyResponse;
+    const pageTitle = (isDefined(er) && isDefined(er.name))
         ? resolveToString(
             strings.emergencyPageTitle,
-            { emergencyName: emergencyResponse.name },
+            { emergencyName: er.name },
         ) : strings.emergencyPageTitleFallback;
 
     return (
@@ -244,7 +246,7 @@ export function Component() {
                         to="emergencyDetails"
                         urlParams={{ emergencyId }}
                     >
-                        {emergencyResponse?.name}
+                        {er?.name}
                     </Link>
                 </Breadcrumbs>
             )}
@@ -271,7 +273,7 @@ export function Component() {
                     )}
                 </>
             )}
-            heading={emergencyResponse?.name ?? '--'}
+            heading={er?.name ?? '--'}
             description={(
                 <>
                     <Link
@@ -326,7 +328,7 @@ export function Component() {
                     )}
                 </>
             )}
-            contentOriginalLanguage={emergencyResponse?.translation_module_original_language}
+            contentOriginalLanguage={er?.translation_module_original_language}
         >
             <NavigationTabList>
                 <NavigationTab
@@ -347,7 +349,7 @@ export function Component() {
                 >
                     {strings.emergencyTabReports}
                 </NavigationTab>
-                {(emergencyResponse?.response_activity_count ?? 0) > 0 && (
+                {(er?.response_activity_count ?? 0) > 0 && (
                     <NavigationTab
                         to="emergencyActivities"
                         urlParams={{ emergencyId }}
@@ -378,7 +380,7 @@ export function Component() {
                 ))}
             </NavigationTabList>
             <Outlet
-                context={outletContext}
+                context={{ ...outletContext, drefId: er?.dref_id }}
             />
         </Page>
     );
