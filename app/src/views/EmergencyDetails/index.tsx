@@ -12,7 +12,7 @@ import {
 import useDisasterType from '#hooks/domain/useDisasterType';
 import useGlobalEnums from '#hooks/domain/useGlobalEnums';
 import useIfrcEvents from '#hooks/domain/useIfrcEvents';
-import usePerDrefStatus from '#hooks/domain/usePerDrefStatus';
+import usePerDrefSituationalOverview from '#hooks/domain/usePerDrefSituationalOverview';
 import { type EmergencyOutletContext } from '#utils/outletContext';
 
 import Contacts from './Contacts';
@@ -78,14 +78,12 @@ export function Component() {
     console.log('[EmergencyDetails] countryId:', countryId);
     console.log('[EmergencyDetails] disasterTypeId:', disasterTypeId);
 
-    // Only call DREF hooks if we have a DREF ID
-    const drefId = emergencyResponse?.appeals && emergencyResponse.appeals.length > 0
-        ? emergencyResponse.appeals[0].id
-        : null;
-
+    // Call the new situational overview hook with emergency response ID
     const {
-        response: perDrefStatus,
-    } = usePerDrefStatus(drefId);
+        response: situationalOverviewResponse,
+        pending: situationalOverviewPending,
+        error: situationalOverviewError,
+    } = usePerDrefSituationalOverview(emergencyResponse?.id);
 
     // Use dynamic params instead of hardcoded values
     const {
@@ -176,8 +174,9 @@ export function Component() {
             )}
 
             <SituationalOverview
-                emergencyResponse={emergencyResponse}
-                perDrefStatus={perDrefStatus}
+                situationalOverviewResponse={situationalOverviewResponse}
+                pending={situationalOverviewPending}
+                error={situationalOverviewError}
             />
 
             <PreviousCrises

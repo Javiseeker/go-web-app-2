@@ -3,9 +3,7 @@
     margin: 0 auto;
     background-color: var(--go-ui-color-foreground);
     padding: var(--go-ui-spacing-lg);
-    width: 100%;          /* Take full available width */
-    max-width: none;      /* Remove max width limit */
-    box-sizing: border-box; /* Include padding in width */
+    max-width: 1200px;
 }
 
 /* Last Update */
@@ -35,8 +33,6 @@
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     background-color: var(--go-ui-color-foreground);
     padding: var(--go-ui-spacing-lg);
-    width: 100%; /* Make cards take full width of container */
-    box-sizing: border-box;
 }
 
 .cardTitle {
@@ -97,8 +93,6 @@
     border-radius: var(--go-ui-border-radius-md);
     background-color: var(--go-ui-color-foreground);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    box-sizing: border-box;
 }
 
 .metadataHeader {
@@ -147,10 +141,8 @@
 /* Section Containers */
 .sectionContainer {
     margin-bottom: var(--go-ui-spacing-xl);
-    width: 100%;
 }
 
-/* Section Title */
 .sectionTitle {
     margin: 0 0 var(--go-ui-spacing-lg) 0;
     letter-spacing: 0.5px;
@@ -164,10 +156,8 @@
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: var(--go-ui-spacing-md);
-    width: 100%; /* Full width */
 }
 
-/* Individual Sector Card */
 .sectorCard {
     display: flex;
     align-items: center;
@@ -177,8 +167,6 @@
     background-color: var(--go-ui-color-foreground);
     padding: var(--go-ui-spacing-lg);
     gap: var(--go-ui-spacing-md);
-    width: 100%; /* Full width */
-    box-sizing: border-box;
 }
 
 .sectorIcon {
@@ -196,20 +184,15 @@
     display: flex;
     flex-direction: column;
     gap: var(--go-ui-spacing-md);
-    width: 100%;
 }
 
-/* Individual Sector Need Card */
 .sectoralNeedCard {
     border: 1px solid var(--go-ui-color-separator);
     border-radius: var(--go-ui-border-radius-md);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     background-color: var(--go-ui-color-foreground);
-    width: 100%;
-    box-sizing: border-box;
 }
 
-/* Sector Header */
 .sectorHeader {
     display: flex;
     align-items: center;

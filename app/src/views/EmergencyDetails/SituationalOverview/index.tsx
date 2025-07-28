@@ -8,22 +8,29 @@ import { isTruthyString } from '@togglecorp/fujs';
 import i18n from './i18n.json';
 import styles from './styles.module.css';
 
-type EmergencyResponse = {
-    summary?: string;
-};
-
-type PerDrefStatus = {
-    type_of_onset_display?: string;
-    type_of_dref_display?: string;
-};
+interface PerDrefSituationalOverviewResponse {
+    situational_overview: string;
+    metadata: {
+        event_id: number;
+        event_name: string;
+        disaster_type: string;
+        country: string;
+        latest_update_number: number;
+        total_operational_updates: number;
+        dref_id: number;
+        dref_title: string;
+        dref_date: string;
+    };
+}
 
 interface Props {
-    emergencyResponse?: EmergencyResponse;
-    perDrefStatus?: PerDrefStatus;
+    situationalOverviewResponse?: PerDrefSituationalOverviewResponse;
+    pending?: boolean;
+    error?: any;
 }
 
 function SituationalOverview(props: Props) {
-    const { emergencyResponse, perDrefStatus } = props;
+    const { situationalOverviewResponse, pending, error } = props;
     const strings = useTranslation(i18n);
 
     return (
@@ -32,12 +39,14 @@ function SituationalOverview(props: Props) {
             withHeaderBorder
             childrenContainerClassName={styles.situationalOverviewContent}
         >
-            {isTruthyString(emergencyResponse?.summary) ? (
+            {pending && <p>{strings.loading || 'Loading...'}</p>}
+            {error && <p>{strings.errorLoadingData || 'Error loading data'}</p>}
+            {!pending && !error && isTruthyString(situationalOverviewResponse?.situational_overview) ? (
                 <HtmlOutput
-                    value={emergencyResponse.summary}
+                    value={situationalOverviewResponse.situational_overview}
                     className={styles.summaryContent}
                 />
-            ) : (
+            ) : !pending && !error && (
                 <p>{strings.situationalOverviewNoData}</p>
             )}
         </Container>
