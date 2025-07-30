@@ -16,6 +16,7 @@ interface PerDrefSituationalOverviewResponse {
         total_operational_updates: number;
         dref_id: number;
         dref_title: string;
+        dref_appeal_code: string; // Added appeal code
         dref_date: string;
     };
 }

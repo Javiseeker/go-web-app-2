@@ -4,23 +4,24 @@ import { useMemo, useEffect } from 'react';
 const cache = new Map<string, { data: IfrcEvent; timestamp: number }>();
 const CACHE_DURATION = 10 * 60 * 1000; // 10 minutes
 
-interface LessonSource {
-    PAN: string;
+interface LessonMetadata {
+    eventID: number[];
+    operational_learning_source: string[];
 }
 
 interface Lesson {
     title: string;
     insight: string;
-    sources: LessonSource[] | string[];
+    metadata: LessonMetadata;
+    sources?: LessonSource[] | string[]; // Keep this for backward compatibility if needed
 }
 
-interface StructuredSummary {
-    lessons?: Lesson[];
-    fallback_note?: string;
+interface LessonSource {
+    PAN: string;
 }
 
-interface IfrcEvent {
-    ai_structured_summary: Lesson[] | StructuredSummary | string | null;
+export interface IfrcEvent {
+    ai_structured_summary: Lesson[];
     fallback_note?: string;
 }
 

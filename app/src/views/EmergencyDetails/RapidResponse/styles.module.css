@@ -1,0 +1,126 @@
+/* Rapid Response Section */
+.rapidResponseContent {
+    padding: var(--go-ui-spacing-md) 0;
+}
+
+.rapidResponseDescription {
+    margin: 0 0 var(--go-ui-spacing-lg) 0;
+    color: var(--go-ui-color-text-light);
+    font-size: var(--go-ui-font-size-md);
+    line-height: 1.5;
+}
+
+.filesList {
+    display: flex;
+    flex-direction: column;
+    gap: var(--go-ui-spacing-md);
+}
+
+.fileItem {
+    display: flex;
+    align-items: center;
+    gap: var(--go-ui-spacing-md);
+    padding: var(--go-ui-spacing-md);
+    border: 1px solid var(--go-ui-color-separator);
+    border-radius: var(--go-ui-border-radius-md);
+    background-color: var(--go-ui-color-foreground);
+    transition: box-shadow 0.2s ease;
+}
+
+.fileItem:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.fileIcon {
+    font-size: 2rem;
+    flex-shrink: 0;
+}
+
+.fileDetails {
+    flex: 1;
+    min-width: 0;
+}
+
+.fileName {
+    display: block;
+    margin: 0 0 var(--go-ui-spacing-xs) 0;
+    padding: 0;
+    background: none;
+    border: none;
+    color: var(--go-ui-color-red);
+    font-size: var(--go-ui-font-size-md);
+    font-weight: var(--go-ui-font-weight-medium);
+    text-align: left;
+    text-decoration: underline;
+    cursor: pointer;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.fileName:hover {
+    color: var(--go-ui-color-red-hover);
+}
+
+.fileDescription {
+    margin: 0 0 var(--go-ui-spacing-xs) 0;
+    color: var(--go-ui-color-text-light);
+    font-size: var(--go-ui-font-size-sm);
+    line-height: 1.4;
+}
+
+.fileMeta {
+    display: flex;
+    align-items: center;
+    gap: var(--go-ui-spacing-sm);
+    color: var(--go-ui-color-text-light);
+    font-size: var(--go-ui-font-size-sm);
+}
+
+.fileSeparator {
+    opacity: 0.5;
+}
+
+.downloadButton {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--go-ui-color-gray-20);
+    border: 1px solid var(--go-ui-color-separator);
+    border-radius: var(--go-ui-border-radius-sm);
+    color: var(--go-ui-color-text);
+    font-size: var(--go-ui-font-size-lg);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.downloadButton:hover {
+    background-color: var(--go-ui-color-red);
+    color: var(--go-ui-color-white);
+    border-color: var(--go-ui-color-red);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .fileItem {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .fileIcon {
+        display: none;
+    }
+    
+    .fileName {
+        white-space: normal;
+        word-break: break-word;
+    }
+    
+    .downloadButton {
+        align-self: flex-end;
+        margin-top: var(--go-ui-spacing-sm);
+    }
+}

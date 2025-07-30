@@ -45,6 +45,7 @@ interface BudgetSummary {
 interface Metadata {
     dref_id: number;
     dref_title: string;
+    dref_appeal_code: string; // NEW - Added appeal code
     dref_date: string;
     dref_created_at: string;
     dref_budget_file: string;
@@ -65,14 +66,14 @@ interface Indicator {
 interface FutureAction {
     indicators: Indicator[];
     budget: number;
-    description: string;
     people_targeted_total: number | null;
+    needs_addressed: string; // NEW - Added needs addressed field
 }
 
 interface Sector {
     title: string;
     title_display: string;
-    actions_taken_summary: string;
+    actions_taken_summary?: string; // Made optional since some sectors don't have this
     needs_summary: string;
     future_actions: FutureAction[];
 }
@@ -94,7 +95,7 @@ export default function usePerDrefSummary(drefId?: number) {
     // Hardcode the ID for testing
     const hardcodedId = 6955;
     const cacheKey = `dref-summary-${hardcodedId}`;
-    
+        
     // Check cache
     const cachedData = useMemo(() => {
         const cached = cache.get(cacheKey);
@@ -103,7 +104,7 @@ export default function usePerDrefSummary(drefId?: number) {
         }
         return null;
     }, [cacheKey]);
-    
+        
     const { response, pending, error, refetch } = useRequest<PerDrefSummary>({
         skip: !!cachedData, // Skip if we have cached data
         url: '/api/v2/per-dref-summary/',
@@ -115,7 +116,7 @@ export default function usePerDrefSummary(drefId?: number) {
             }
         },
     });
-    
+        
     // Return cached data if available, otherwise return fresh response
     return {
         response: cachedData || response,

@@ -13,6 +13,7 @@ import useDisasterType from '#hooks/domain/useDisasterType';
 import useGlobalEnums from '#hooks/domain/useGlobalEnums';
 import useIfrcEvents from '#hooks/domain/useIfrcEvents';
 import usePerDrefSituationalOverview from '#hooks/domain/usePerDrefSituationalOverview';
+import useRapidResponse from '#hooks/domain/useRapidResponse'; // <-- added import here
 import { type EmergencyOutletContext } from '#utils/outletContext';
 
 import Contacts from './Contacts';
@@ -22,6 +23,7 @@ import KeyFigures from './KeyFigures';
 import Overview from './Overview';
 import PreviousCrises from './PreviousCrises';
 import SituationalOverview from './SituationalOverview';
+import RapidResponse from './RapidResponse';
 
 import styles from './styles.module.css';
 
@@ -91,6 +93,16 @@ export function Component() {
         pending: ifrcEventsPending,
         error: ifrcEventsError,
     } = useIfrcEvents(countryId, disasterTypeId);
+
+    // Call the rapid response hook with the same parameters
+    const {
+        response: rapidResponseData,
+        pending: rapidResponsePending,
+        error: rapidResponseError,
+    } = useRapidResponse({
+        country: countryId,
+        disaster_type: disasterTypeId,
+    });
 
     const visibilityMap = useMemo(
         () => listToMap(
@@ -185,6 +197,12 @@ export function Component() {
                 ifrcEventsError={ifrcEventsError}
             />
 
+            <RapidResponse
+                rapidResponseData={rapidResponseData}
+                rapidResponsePending={rapidResponsePending}
+                rapidResponseError={rapidResponseError}
+            />
+
             <div className={styles.mapKeyFigureContainer}>
                 {emergencyResponse && !emergencyResponse.hide_field_report_map && (
                     <Container
@@ -195,6 +213,7 @@ export function Component() {
                         <EmergencyMap event={emergencyResponse} />
                     </Container>
                 )}
+
                 {hasFieldReports
                     && isDefined(latestFieldReport)
                     && !emergencyResponse.hide_attached_field_reports && (

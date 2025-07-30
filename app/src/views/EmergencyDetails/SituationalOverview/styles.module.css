@@ -1,3 +1,5 @@
+/* SituationalOverview styles.module.css */
+
 .sectionLabel {
     border: 1px solid var(--go-ui-color-separator);
     border-radius: var(--go-ui-border-radius-sm);
@@ -56,6 +58,20 @@
     border-left: 4px solid var(--go-ui-color-red);
     padding-left: var(--go-ui-spacing-md);
     color: var(--go-ui-color-text-light);
+    font-style: italic;
+}
+
+.metadataDisplay {
+    margin-top: var(--go-ui-spacing-lg);
+    padding-top: var(--go-ui-spacing-md);
+    border-top: 1px solid var(--go-ui-color-separator);
+}
+
+.metadataLabel {
+    display: inline-block;
+    color: var(--go-ui-color-text-light);
+    font-size: var(--go-ui-font-size-sm);
+    font-weight: var(--go-ui-font-weight-normal);
     font-style: italic;
 }
 

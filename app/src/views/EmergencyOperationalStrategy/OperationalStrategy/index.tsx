@@ -83,7 +83,7 @@ function OperationalStrategy(props: Props) {
                 indicators: allIndicators,
                 needs: sector.needs_summary || '',
                 actionsTaken: sector.actions_taken_summary || '',
-                description: sector.future_actions[0]?.description || '',
+                description: sector.future_actions[0]?.needs_addressed || '',
             };
         });
 
@@ -95,6 +95,13 @@ function OperationalStrategy(props: Props) {
             newExpanded.add(sectorId);
         }
         setExpandedSectors(newExpanded);
+    };
+
+    const handleBudgetFileView = () => {
+        if (metadata?.dref_budget_file) {
+            // Open in new tab for viewing
+            window.open(metadata.dref_budget_file, '_blank', 'noopener,noreferrer');
+        }
     };
 
     if (perDrefSummaryPending) {
@@ -140,7 +147,7 @@ function OperationalStrategy(props: Props) {
                 </span>
             </div>
 
-            {/* Metadata Modal/Section */}
+            {/* Metadata Section - Using Rapid Response File Styles */}
             {showMetadata && metadata && (
                 <div className={styles.metadataSection}>
                     <div className={styles.metadataHeader}>
@@ -154,21 +161,52 @@ function OperationalStrategy(props: Props) {
                         </button>
                     </div>
                     <div className={styles.metadataContent}>
-                        <p><strong>DREF ID:</strong> {metadata.dref_id}</p>
-                        <p><strong>Title:</strong> {metadata.dref_title}</p>
-                        <p><strong>Date:</strong> {formatDate(metadata.dref_date)}</p>
-                        <p><strong>Created:</strong> {formatDate(metadata.dref_created_at)}</p>
-                        <p><strong>Type:</strong> {perDrefSummary?.dref_type}</p>
-                        <p><strong>Onset:</strong> {perDrefSummary?.dref_onset}</p>
-                        <p><strong>Operation Update Number:</strong> {metadata.dref_op_update_number}</p>
-                        {metadata.dref_budget_file && (
-                            <p>
-                                <strong>Budget File:</strong>{' '}
-                                <a href={metadata.dref_budget_file} target="_blank" rel="noopener noreferrer">
-                                    View Budget Document
-                                </a>
-                            </p>
-                        )}
+                        <div className={styles.metadataGrid}>
+                            <div className={styles.metadataInfo}>
+                                <p><strong>DREF ID:</strong> {metadata.dref_id}</p>
+                                <p><strong>Appeal Code:</strong> {metadata.dref_appeal_code}</p>
+                                <p><strong>Title:</strong> {metadata.dref_title}</p>
+                                <p><strong>Date:</strong> {formatDate(metadata.dref_date)}</p>
+                                <p><strong>Created:</strong> {formatDate(metadata.dref_created_at)}</p>
+                                <p><strong>Type:</strong> {perDrefSummary?.dref_type}</p>
+                                <p><strong>Onset:</strong> {perDrefSummary?.dref_onset}</p>
+                                <p><strong>Operation Update Number:</strong> {metadata.dref_op_update_number}</p>
+                            </div>
+                            
+                            {/* Budget File using Rapid Response styles */}
+                            {metadata.dref_budget_file && (
+                                <div className={styles.budgetFileSection}>
+                                    <h4 className={styles.budgetFileTitle}>Budget Document</h4>
+                                    <div className={styles.filesList}>
+                                        <div className={styles.fileItem}>
+                                            <div className={styles.fileIcon}>
+                                                📄
+                                            </div>
+                                            <div className={styles.fileDetails}>
+                                                <button
+                                                    type="button"
+                                                    className={styles.fileName}
+                                                    onClick={handleBudgetFileView}
+                                                    title="View Budget Document in new tab"
+                                                >
+                                                    {metadata.dref_title} - Budget Document
+                                                </button>
+                                                <p className={styles.fileDescription}>
+                                                    Official budget documentation for this DREF operation
+                                                </p>
+                                                <div className={styles.fileMeta}>
+                                                    <span className={styles.fileSize}>Budget Preview</span>
+                                                    <span className={styles.fileSeparator}>•</span>
+                                                    <span className={styles.fileDate}>
+                                                        {formatDate(metadata.dref_date)}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
             )}
@@ -319,7 +357,7 @@ function OperationalStrategy(props: Props) {
                                         {sector.description && (
                                             <div className={styles.plannedActionsSection}>
                                                 <h4 className={styles.subSectionTitle}>
-                                                    {strings.plannedActionsTitle || 'Planned Actions'}
+                                                    {strings.plannedActionsTitle || 'Needs Addressed'}
                                                 </h4>
                                                 <p className={styles.needsText}>
                                                     {sector.description}

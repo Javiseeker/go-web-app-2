@@ -23,21 +23,24 @@ function PreviousCrises(props: Props) {
         console.log('[PreviousCrises] ifrcEvents updated:', ifrcEvents);
     }, [ifrcEvents]);
 
+    const handleEmergencyClick = (eventId: number) => {
+        // Open in new tab to production site
+        window.open(`https://go.ifrc.org/emergencies/${eventId}/details`, '_blank');
+    };
+
     // Parse lessons
     const getLessons = () => {
         if (!ifrcEvents?.ai_structured_summary) return [];
 
+        // The API response always returns an array of lessons
         if (Array.isArray(ifrcEvents.ai_structured_summary)) {
             return ifrcEvents.ai_structured_summary.map((lesson) => ({
                 ...lesson,
-                sources: lesson.sources.map((source) =>
+                // Handle sources if they exist, otherwise create empty array
+                sources: lesson.sources?.map((source) =>
                     typeof source === 'string' ? { PAN: source } : source
-                ),
+                ) || [],
             }));
-        }
-
-        if (typeof ifrcEvents.ai_structured_summary === 'object') {
-            return ifrcEvents.ai_structured_summary.lessons || [];
         }
 
         return [];
@@ -45,12 +48,7 @@ function PreviousCrises(props: Props) {
 
     const lessons = getLessons();
 
-    const fallbackNote =
-        ifrcEvents?.fallback_note ||
-        (typeof ifrcEvents?.ai_structured_summary === 'object' &&
-        !Array.isArray(ifrcEvents.ai_structured_summary)
-            ? ifrcEvents.ai_structured_summary.fallback_note
-            : undefined);
+    const fallbackNote = ifrcEvents?.fallback_note;
 
     const INITIAL_DISPLAY_COUNT = 3;
     const displayedLessons = showAll ? lessons : lessons.slice(0, INITIAL_DISPLAY_COUNT);
@@ -73,20 +71,51 @@ function PreviousCrises(props: Props) {
                             <div className={styles.lessonsGrid}>
                                 {displayedLessons.map((lesson, index) => {
                                     const lessonKey = `${lesson.title}-${index}` || `${lesson.insight}-${index}`;
+                                    const eventIds = lesson.metadata?.eventID || [];
+                                    const operationalLearningSource = lesson.metadata?.operational_learning_source?.[0];
+                                    
                                     return (
                                         <div key={lessonKey} className={styles.lessonCard}>
                                             <h3 className={styles.lessonTitle}>{lesson.title}</h3>
                                             <p className={styles.lessonInsight}>{lesson.insight}</p>
-                                            <div className={styles.lessonSources}>
-                                                {lesson.sources?.map((source, sourceIndex) => (
-                                                    <span
-                                                        key={`${source.PAN}-${sourceIndex}`}
-                                                        className={styles.lessonSource}
-                                                    >
-                                                        {source.PAN}
-                                                    </span>
-                                                ))}
-                                            </div>
+                                            
+                                            {/* Sources section - only show if sources exist */}
+                                            {lesson.sources && lesson.sources.length > 0 && (
+                                                <div className={styles.lessonSources}>
+                                                    {lesson.sources.map((source, sourceIndex) => (
+                                                        <span
+                                                            key={`${source.PAN}-${sourceIndex}`}
+                                                            className={styles.lessonSource}
+                                                        >
+                                                            {source.PAN}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            )}
+
+                                            {/* Emergency link section */}
+                                            {operationalLearningSource && eventIds.length > 0 && (
+                                                <div className={styles.lessonSources}>
+                                                    {eventIds.map((eventId, eventIndex) => (
+                                                        <span
+                                                            key={`${eventId}-${eventIndex}`}
+                                                            className={styles.lessonSource}
+                                                            onClick={() => handleEmergencyClick(eventId)}
+                                                            onKeyDown={(e) => {
+                                                                if (e.key === 'Enter' || e.key === ' ') {
+                                                                    e.preventDefault();
+                                                                    handleEmergencyClick(eventId);
+                                                                }
+                                                            }}
+                                                            role="button"
+                                                            tabIndex={0}
+                                                            title={`View emergency details for ${operationalLearningSource} #${eventId}`}
+                                                        >
+                                                            {operationalLearningSource} #{eventId}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            )}
                                         </div>
                                     );
                                 })}
