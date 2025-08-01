@@ -4,15 +4,24 @@ import { useMemo, useEffect } from 'react';
 const cache = new Map<string, { data: IfrcEvent; timestamp: number }>();
 const CACHE_DURATION = 10 * 60 * 1000; // 10 minutes
 
+interface OperationalLearningSource {
+    id: number;
+    code: string;
+    name: string;
+    event_id: number;
+}
+
 interface LessonMetadata {
-    eventID: number[];
-    operational_learning_source: string[];
+    eventID?: number[];
+    operational_learning_source?: OperationalLearningSource[];
 }
 
 interface Lesson {
     title: string;
     insight: string;
-    metadata: LessonMetadata;
+    recommendations?: string[];
+    source_note?: string;
+    metadata?: LessonMetadata;
     sources?: LessonSource[] | string[]; // Keep this for backward compatibility if needed
 }
 

@@ -2,16 +2,6 @@
     padding: 0;
 }
 
-/* .placeholderText {
-    margin: var(--go-ui-spacing-md);
-    border-radius: var(--go-ui-border-radius-sm);
-    background-color: var(--go-ui-color-gray-20);
-    padding: var(--go-ui-spacing-lg);
-    text-align: center;
-    color: var(--go-ui-color-text-light);
-    font-style: italic;
-} */
-
 /* container grid */
 .lessonsGrid {
   display: grid;
@@ -42,15 +32,62 @@
 .lessonInsight {
     flex: 1;
     margin: 0;
-    margin-bottom: var(--go-ui-spacing-md);
+    margin-bottom: var(--go-ui-spacing-sm);
     line-height: 1.5;
     color: var(--go-ui-color-text-light);
     font-size: var(--go-ui-font-size-md);
 }
 
+/* Recommendations section styling */
+.recommendationsSection {
+    margin-bottom: var(--go-ui-spacing-md);
+}
+
+.recommendationsTitle {
+    margin: 0;
+    margin-bottom: var(--go-ui-spacing-sm);
+    font-size: var(--go-ui-font-size-md);
+    font-weight: var(--go-ui-font-weight-bold);
+    color: var(--go-ui-color-text);
+}
+
+.recommendationsList {
+    margin: 0;
+    padding-left: var(--go-ui-spacing-md);
+    list-style-type: disc;
+}
+
+.recommendationItem {
+    margin-bottom: var(--go-ui-spacing-xs);
+    line-height: 1.4;
+    color: var(--go-ui-color-text);
+    font-size: var(--go-ui-font-size-sm);
+}
+
+.recommendationItem:last-child {
+    margin-bottom: 0;
+}
+
+/* Source note styling */
+.sourceNote {
+    margin-bottom: var(--go-ui-spacing-sm);
+}
+
+.sourceNoteText {
+    margin: 0;
+    font-size: var(--go-ui-font-size-sm);
+    color: var(--go-ui-color-text-light);
+    font-style: italic;
+    background-color: var(--go-ui-color-gray-10);
+    padding: var(--go-ui-spacing-xs) var(--go-ui-spacing-sm);
+    border-radius: var(--go-ui-border-radius-sm);
+    border-left: 3px solid var(--go-ui-color-primary);
+}
+
 /* keep links at the bottom */
 .lessonSources {
-  margin-top: auto;           /* pushes footer down */
+    margin-top: auto;           /* pushes footer down */
+    margin-bottom: var(--go-ui-spacing-sm);
 }
 
 .lessonSource {
@@ -86,6 +123,90 @@
     margin-top: var(--go-ui-spacing-xs);
 }
 
+/* Operational sources styling */
+.operationalSources {
+    margin-top: auto;
+    padding-top: var(--go-ui-spacing-sm);
+    border-top: 1px solid var(--go-ui-color-separator-light);
+}
+
+.operationalSourcesTitle {
+    margin: 0;
+    margin-bottom: var(--go-ui-spacing-sm);
+    font-size: var(--go-ui-font-size-sm);
+    font-weight: var(--go-ui-font-weight-bold);
+    color: var(--go-ui-color-text);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.operationalSourceItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--go-ui-spacing-sm);
+    padding: var(--go-ui-spacing-sm);
+    background-color: var(--go-ui-color-gray-05);
+    border-radius: var(--go-ui-border-radius-sm);
+    border-left: 3px solid var(--go-ui-color-primary);
+}
+
+.operationalSourceItem:last-child {
+    margin-bottom: 0;
+}
+
+.sourceDetails {
+    flex: 1;
+    margin-right: var(--go-ui-spacing-sm);
+}
+
+.sourceNameCode {
+    font-size: var(--go-ui-font-size-sm);
+    color: var(--go-ui-color-text);
+    font-weight: var(--go-ui-font-weight-medium);
+    line-height: 1.3;
+    margin-bottom: var(--go-ui-spacing-xs);
+}
+
+.learningId {
+    font-size: var(--go-ui-font-size-xs);
+    color: var(--go-ui-color-text-light);
+    font-weight: var(--go-ui-font-weight-normal);
+}
+
+.opsLearningId {
+    font-size: var(--go-ui-font-size-sm);
+    color: var(--go-ui-color-text-light);
+    font-weight: var(--go-ui-font-weight-medium);
+}
+
+.eventLink {
+    font-size: var(--go-ui-font-size-sm);
+    color: var(--go-ui-color-primary);
+    font-weight: var(--go-ui-font-weight-medium);
+    text-decoration: underline;
+    text-decoration-color: var(--go-ui-color-primary);
+    text-underline-offset: 2px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    padding: var(--go-ui-spacing-xs) var(--go-ui-spacing-sm);
+    border-radius: var(--go-ui-border-radius-sm);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.eventLink:hover {
+    color: var(--go-ui-color-primary-dark);
+    text-decoration-thickness: 2px;
+    background-color: var(--go-ui-color-primary-light);
+}
+
+.eventLink:focus {
+    outline: 2px solid var(--go-ui-color-primary);
+    outline-offset: 2px;
+    border-radius: var(--go-ui-border-radius-sm);
+}
+
 .fallbackNote {
     margin: var(--go-ui-spacing-md);
     border-left: 4px solid var(--go-ui-color-red);
@@ -93,7 +214,6 @@
     background-color: var(--go-ui-color-gray-20);
     padding: var(--go-ui-spacing-md);
     color: var(--go-ui-color-text-light);
-    font-style: italic;
 }
 
 .fallbackNote p {
@@ -101,34 +221,31 @@
     font-size: var(--go-ui-font-size-sm);
 }
 
-.seeMoreContainer {
-    display: flex;
-    justify-content: center;
-    padding: var(--go-ui-spacing-md);
-    border-top: 1px solid var(--go-ui-color-separator);
-    margin: 0 var(--go-ui-spacing-md);
+.fallbackText {
+    font-size: var(--go-ui-font-size-md) !important;
+    font-weight: var(--go-ui-font-weight-normal);
+    font-style: normal;
+    color: var(--go-ui-color-text) !important;
 }
 
-.seeMoreButton {
-    border: 1px solid var(--go-ui-color-primary);
-    border-radius: var(--go-ui-border-radius-sm);
-    background-color: transparent;
-    padding: var(--go-ui-spacing-sm) var(--go-ui-spacing-lg);
-    color: var(--go-ui-color-primary);
-    cursor: pointer;
-    font-size: var(--go-ui-font-size-md);
-    font-weight: var(--go-ui-font-weight-medium);
-    transition: color 0.2s ease-in-out;
+.fallbackLink {
+    color: #0066cc;
     text-decoration: underline;
+    text-decoration-color: #0066cc;
+    text-underline-offset: 2px;
+    font-weight: var(--go-ui-font-weight-medium);
+    transition: all 0.2s ease-in-out;
 }
 
-.seeMoreButton:hover {
-    color: #dc2626 !important;
+.fallbackLink:hover {
+    color: #0052a3;
+    text-decoration-thickness: 2px;
 }
 
-.seeMoreButton:focus {
-    outline: 2px solid var(--go-ui-color-primary);
+.fallbackLink:focus {
+    outline: 2px solid #0066cc;
     outline-offset: 2px;
+    border-radius: var(--go-ui-border-radius-sm);
 }
 
 .seeMoreContainer {
@@ -174,5 +291,20 @@
 @media (max-width: 639px) {
   .lessonsGrid {
     grid-template-columns: 1fr;
+  }
+  
+  .operationalSourceItem {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--go-ui-spacing-xs);
+  }
+  
+  .sourceDetails {
+    margin-right: 0;
+    margin-bottom: var(--go-ui-spacing-xs);
+  }
+  
+  .eventLink {
+    align-self: flex-end;
   }
 }

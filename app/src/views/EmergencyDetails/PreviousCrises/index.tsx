@@ -68,17 +68,44 @@ function PreviousCrises(props: Props) {
                 <>
                     {lessons.length > 0 ? (
                         <>
+                            {/* AI Disclaimer - show when we have lessons */}
+                            <div className={styles.aiDisclaimer}>
+                                <span className={styles.disclaimerText}>
+                                    {strings.aiDisclaimerText}
+                                </span>
+                            </div>
+
                             <div className={styles.lessonsGrid}>
                                 {displayedLessons.map((lesson, index) => {
                                     const lessonKey = `${lesson.title}-${index}` || `${lesson.insight}-${index}`;
-                                    const eventIds = lesson.metadata?.eventID || [];
-                                    const operationalLearningSource = lesson.metadata?.operational_learning_source?.[0];
+                                    const operationalLearningSources = lesson.metadata?.operational_learning_source || [];
                                     
                                     return (
                                         <div key={lessonKey} className={styles.lessonCard}>
                                             <h3 className={styles.lessonTitle}>{lesson.title}</h3>
                                             <p className={styles.lessonInsight}>{lesson.insight}</p>
                                             
+                                            {/* Recommendations section */}
+                                            {lesson.recommendations && lesson.recommendations.length > 0 && (
+                                                <div className={styles.recommendationsSection}>
+                                                    <h4 className={styles.recommendationsTitle}>{strings.recommendations}</h4>
+                                                    <ul className={styles.recommendationsList}>
+                                                        {lesson.recommendations.map((recommendation, recIndex) => (
+                                                            <li key={recIndex} className={styles.recommendationItem}>
+                                                                {recommendation}
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                </div>
+                                            )}
+                                            
+                                            {/* Source note section */}
+                                            {lesson.source_note && (
+                                                <div className={styles.sourceNote}>
+                                                    <p className={styles.sourceNoteText}>{lesson.source_note}</p>
+                                                </div>
+                                            )}
+
                                             {/* Sources section - only show if sources exist */}
                                             {lesson.sources && lesson.sources.length > 0 && (
                                                 <div className={styles.lessonSources}>
@@ -93,26 +120,39 @@ function PreviousCrises(props: Props) {
                                                 </div>
                                             )}
 
-                                            {/* Emergency link section */}
-                                            {operationalLearningSource && eventIds.length > 0 && (
-                                                <div className={styles.lessonSources}>
-                                                    {eventIds.map((eventId, eventIndex) => (
-                                                        <span
-                                                            key={`${eventId}-${eventIndex}`}
-                                                            className={styles.lessonSource}
-                                                            onClick={() => handleEmergencyClick(eventId)}
-                                                            onKeyDown={(e) => {
-                                                                if (e.key === 'Enter' || e.key === ' ') {
-                                                                    e.preventDefault();
-                                                                    handleEmergencyClick(eventId);
-                                                                }
-                                                            }}
-                                                            role="button"
-                                                            tabIndex={0}
-                                                            title={`View emergency details for ${operationalLearningSource} #${eventId}`}
+                                            {/* Operational Learning Sources - show ops learning ID and clickable event link */}
+                                            {operationalLearningSources.length > 0 && (
+                                                <div className={styles.operationalSources}>
+                                                    <h4 className={styles.operationalSourcesTitle}>{strings.operationalLearningSources}</h4>
+                                                    {operationalLearningSources.map((source, sourceIndex) => (
+                                                        <div
+                                                            key={`${source.id}-${sourceIndex}`}
+                                                            className={styles.operationalSourceItem}
                                                         >
-                                                            {operationalLearningSource} #{eventId}
-                                                        </span>
+                                                            <div className={styles.sourceDetails}>
+                                                                <div className={styles.sourceNameCode}>
+                                                                    {source.name} ({source.code})
+                                                                </div>
+                                                                <div className={styles.learningId}>
+                                                                    Learning ID: {source.id}
+                                                                </div>
+                                                            </div>
+                                                            <span
+                                                                className={styles.eventLink}
+                                                                onClick={() => handleEmergencyClick(source.event_id)}
+                                                                onKeyDown={(e) => {
+                                                                    if (e.key === 'Enter' || e.key === ' ') {
+                                                                        e.preventDefault();
+                                                                        handleEmergencyClick(source.event_id);
+                                                                    }
+                                                                }}
+                                                                role="button"
+                                                                tabIndex={0}
+                                                                title={`View emergency details for ${source.name}`}
+                                                            >
+                                                                View Event
+                                                            </span>
+                                                        </div>
                                                     ))}
                                                 </div>
                                             )}
@@ -133,13 +173,31 @@ function PreviousCrises(props: Props) {
                                 </div>
                             )}
                         </>
-                    ) : (
-                        <p>{strings.noLessonsLearnedData}</p>
-                    )}
+                    ) : null}
 
                     {fallbackNote && (
                         <div className={styles.fallbackNote}>
-                            <p>{fallbackNote}</p>
+                            <p className={styles.fallbackText}>
+                                No operational learnings have been recorded in the system for this context yet. You're welcome to check the{' '}
+                                <a
+                                    href="https://go.ifrc.org/operational-learning"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className={styles.fallbackLink}
+                                >
+                                    Ops Learning dashboard
+                                </a>
+                                {' '}and the{' '}
+                                <a
+                                    href="https://www.ifrc.org/evaluations"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className={styles.fallbackLink}
+                                >
+                                    IFRC's evaluations database
+                                </a>
+                                {' '}to learn more.
+                            </p>
                         </div>
                     )}
                 </>

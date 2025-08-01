@@ -230,25 +230,6 @@ function OperationalStrategy(props: Props) {
                 </div>
             </div>
 
-            {/* Sectors Engaged */}
-            <div className={styles.sectionContainer}>
-                <h2 className={styles.sectionTitle}>
-                    {strings.sectorsEngagedTitle}
-                </h2>
-                <div className={styles.sectorsGrid}>
-                    {engagedSectors.map((sector) => (
-                        <div key={sector.id} className={styles.sectorCard}>
-                            <span className={styles.sectorIcon}>
-                                {sector.icon}
-                            </span>
-                            <span className={styles.sectorName}>
-                                {sector.name}
-                            </span>
-                        </div>
-                    ))}
-                </div>
-            </div>
-
             {/* Operational Sectoral Needs */}
             <div className={styles.sectionContainer}>
                 <h2 className={styles.sectionTitle}>

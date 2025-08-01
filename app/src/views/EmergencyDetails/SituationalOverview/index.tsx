@@ -50,7 +50,7 @@ function SituationalOverview(props: Props) {
             withHeaderBorder
             childrenContainerClassName={styles.situationalOverviewContent}
         >
-            {pending && <p>{strings.loading || 'Loading...'}</p>}
+            {pending && <p>{strings.loading || 'Loading Situational Overview...'}</p>}
             {error && <p>{strings.errorLoadingData || 'Error loading data'}</p>}
             {!pending && !error && situationalOverviewResponse && (
                 <>
