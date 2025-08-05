@@ -107,7 +107,7 @@ export default function usePerDrefSummary(drefId?: number) {
         
     const { response, pending, error, refetch } = useRequest<PerDrefSummary>({
         skip: !!cachedData, // Skip if we have cached data
-        url: '/api/v2/per-dref-summary/',
+        url: '/api/v1/ucl/dref-summary/',
         query: { id: hardcodedId },
         onSuccess: (data) => {
             // Cache the successful response

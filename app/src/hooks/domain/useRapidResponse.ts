@@ -35,7 +35,7 @@ export default function useRapidResponse(params: RapidResponseParams) {
 
     const { response, pending, error, refetch } = useRequest<RapidResponseData>({
         skip: !!cachedData || !country || !disaster_type, // Skip if we have cached data or missing params
-        url: '/api/v2/rr-capacity-questions/',
+        url: '/api/v1/ucl/rapid-response-capacity-questions/',
         query: {
             country,
             disaster_type,

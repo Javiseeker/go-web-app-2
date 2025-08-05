@@ -16,17 +16,19 @@ interface LessonMetadata {
     operational_learning_source?: OperationalLearningSource[];
 }
 
+interface LessonSource {
+    PAN: string;
+}
+
 interface Lesson {
     title: string;
     insight: string;
+    area?: string;
+    rr_questions?: string[];
     recommendations?: string[];
     source_note?: string;
     metadata?: LessonMetadata;
     sources?: LessonSource[] | string[]; // Keep this for backward compatibility if needed
-}
-
-interface LessonSource {
-    PAN: string;
 }
 
 export interface IfrcEvent {
@@ -61,7 +63,7 @@ export default function useIfrcEvents(
 
     const { response, pending, error, refetch } = useRequest<IfrcEvent>({
         skip: skip || !!cachedData,
-        url: '/api/v2/ifrc-events/',
+        url: '/api/v1/ucl/previous-crises-insights/',
         query: skip
             ? undefined
             : {
@@ -71,6 +73,12 @@ export default function useIfrcEvents(
         onSuccess: (data) => {
             if (data && !skip) {
                 console.log('[useIfrcEvents] Caching response for:', cacheKey);
+                console.log('[useIfrcEvents] Response data structure:', {
+                    hasAiSummary: !!data.ai_structured_summary,
+                    summaryLength: data.ai_structured_summary?.length || 0,
+                    hasFallbackNote: !!data.fallback_note,
+                    firstLesson: data.ai_structured_summary?.[0] || null
+                });
                 cache.set(cacheKey, { data, timestamp: Date.now() });
             }
         },
@@ -87,3 +95,6 @@ export default function useIfrcEvents(
         },
     };
 }
+
+// Export types for use in other components
+export type { Lesson, OperationalLearningSource, LessonMetadata, LessonSource };

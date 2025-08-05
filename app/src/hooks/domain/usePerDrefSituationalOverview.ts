@@ -30,7 +30,7 @@ interface PerDrefSituationalOverviewResponse {
 export default function usePerDrefSituationalOverview(eventId?: number) {
     return useRequest<PerDrefSituationalOverviewResponse>({
         skip: !eventId, // Still skip if no eventId is provided
-        url: '/api/v2/per-dref-situational-overview/',
+        url: '/api/v1/ucl/dref-situational-overview/',
         query: { id: 6955 }, // Always use hardcoded ID 6955
     });
 }
