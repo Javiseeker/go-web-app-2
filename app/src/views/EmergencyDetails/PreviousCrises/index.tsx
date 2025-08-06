@@ -1,7 +1,3 @@
-// -------------------------------------------------------
-// 3-column grid.  Collapsed card shows full insight.
-// -------------------------------------------------------
-
 import { useState, useMemo } from 'react';
 import { Container } from '@ifrc-go/ui';
 import { useTranslation } from '@ifrc-go/ui/hooks';
@@ -27,7 +23,7 @@ function PreviousCrises(props: Props) {
   const [showAll, setShowAll]   = useState(false);
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
-  /* ---------- normalise backend payload ---------- */
+  /* ---------- normalize backend payload ---------- */
   const rawLessons = ifrcEvents?.ai_structured_summary;
   const lessons = Array.isArray(rawLessons)
     ? rawLessons
@@ -71,7 +67,7 @@ function PreviousCrises(props: Props) {
 
       {!ifrcEventsPending && !ifrcEventsError && (
         <>
-          {lessons.length > 0 && (
+          {lessons.length > 0 ? (
             <>
               {/* AI disclaimer */}
               <div className={styles.fallbackNote}>
@@ -119,7 +115,6 @@ function PreviousCrises(props: Props) {
                                     {lesson.area && (
                                       <span
                                         className={styles.areaTag}
-                                        /* shrink font for long area names */
                                         style={{ fontSize: lesson.area.length > 15 ? '8px' : '10px' }}
                                       >
                                         {lesson.area}
@@ -188,18 +183,20 @@ function PreviousCrises(props: Props) {
                 </div>
               )}
             </>
-          )}
-
-          {fallbackNote && (
-            <div className={styles.fallbackNote}>
-              <p className={styles.fallbackText}>
-                No operational learnings recorded yet. Check the&nbsp;
-                <a href="https://go.ifrc.org/operational-learning" target="_blank" rel="noopener noreferrer" className={styles.fallbackLink}>Ops Learning dashboard</a>
-                &nbsp;or the&nbsp;
-                <a href="https://www.ifrc.org/evaluations" target="_blank" rel="noopener noreferrer" className={styles.fallbackLink}>IFRC evaluations database</a>
-                &nbsp;for more.
-              </p>
-            </div>
+          ) : (
+            fallbackNote ? (
+              <div className={styles.fallbackNote}>
+                <p className={styles.fallbackText}>
+                  No operational learnings recorded yet. Check the&nbsp;
+                  <a href="https://go.ifrc.org/operational-learning" target="_blank" rel="noopener noreferrer" className={styles.fallbackLink}>Ops Learning dashboard</a>
+                  &nbsp;or the&nbsp;
+                  <a href="https://www.ifrc.org/evaluations" target="_blank" rel="noopener noreferrer" className={styles.fallbackLink}>IFRC evaluations database</a>
+                  &nbsp;for more.
+                </p>
+              </div>
+            ) : (
+              <p>{strings.noPreviousCrisesData || 'No previous crises data available.'}</p>
+            )
           )}
         </>
       )}
