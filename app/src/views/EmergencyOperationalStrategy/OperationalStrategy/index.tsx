@@ -131,9 +131,6 @@ function OperationalStrategy(props: Props) {
         <div className={styles.operationalStrategy}>
             {/* AI Disclaimer - MOVED TO TOP */}
             <div className={styles.aiDisclaimer}>
-                <span className={styles.infoIcon}>
-                    ℹ️
-                </span>
                 <span className={styles.disclaimerText}>
                     The content below has been generated or summarised by AI models.{' '}
                     <button

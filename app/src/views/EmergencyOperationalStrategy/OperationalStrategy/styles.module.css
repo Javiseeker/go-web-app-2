@@ -63,12 +63,6 @@
     gap: var(--go-ui-spacing-sm);
 }
 
-.infoIcon {
-    flex-shrink: 0;
-    color: var(--go-ui-color-red);
-    font-size: var(--go-ui-font-size-lg);
-}
-
 .disclaimerText {
     line-height: 1.5;
     color: var(--go-ui-color-text-light);

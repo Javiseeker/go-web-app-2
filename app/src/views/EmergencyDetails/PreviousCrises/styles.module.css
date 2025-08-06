@@ -49,6 +49,24 @@
     hyphens: auto;
 }
 
+.areaTag{
+    display:inline-block;
+    max-width:110px;          /* keep chip narrow */
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+
+    padding:2px 6px;
+    background:var(--go-ui-color-red);
+    border-radius:8px;
+    color:#fff;
+    font-weight:var(--go-ui-font-weight-medium);
+    text-transform:uppercase;
+    /* default font-size now 10px; long labels are reduced inline */
+    font-size:10px;
+}
+
+
 /* ====== expand / collapse hint ====== */
 .expandHint {
     font-size: var(--go-ui-font-size-xs);
@@ -104,7 +122,7 @@
     padding:var(--go-ui-spacing-sm) var(--go-ui-spacing-lg);font-size:var(--go-ui-font-size-md);
     color:var(--go-ui-color-primary);cursor:pointer;text-decoration:underline;
 }
-.seeMoreButton:hover{background:var(--go-ui-color-primary);color:var(--go-ui-color-foreground);text-decoration:none;}
+.seeMoreButton:hover{background:var(--go-ui-color-primary);text-decoration:none;}
 
 /* ====== AI disclaimer ====== */
 .fallbackNote{margin:var(--go-ui-spacing-md);border-left:4px solid var(--go-ui-color-red);background:var(--go-ui-color-gray-20);border-radius:var(--go-ui-border-radius-sm);padding:var(--go-ui-spacing-md);}
