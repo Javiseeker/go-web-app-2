@@ -23,7 +23,6 @@ function RapidResponse({
 
     const handleFileDownload = () => {
         if (rapidResponseData?.file_url) {
-            // Create a temporary anchor element to trigger download
             const link = document.createElement('a');
             link.href = rapidResponseData.file_url;
             link.download = 'rapid_response_capacity_questions.xlsx';
@@ -68,20 +67,26 @@ function RapidResponse({
             withHeaderBorder
         >
             <div className={styles.rapidResponseContent}>
-                <p className={styles.rapidResponseDescription}>
-                    {strings.rapidResponseDescription || 'Access rapid response capacity assessment questions tailored for this emergency.'}
-                </p>
-                
                 <div className={styles.filesList}>
-                    <div className={styles.fileItem}>
-                        <div className={styles.fileIcon}>
-                            📊
-                        </div>
+                    <div
+                        className={styles.fileItem}
+                        tabIndex={0}
+                        role="button"
+                        onClick={handleFileDownload}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault();
+                                handleFileDownload();
+                            }
+                        }}
+                        aria-label={`${strings.rapidResponseDownloadFile || 'Download'} Rapid Response Capacity Questions`}
+                    >
+                        <div className={styles.fileIcon}>📊</div>
                         <div className={styles.fileDetails}>
                             <button
                                 type="button"
                                 className={styles.fileName}
-                                onClick={handleFileDownload}
+                                onClick={(e) => { e.stopPropagation(); handleFileDownload(); }}
                                 title={`${strings.rapidResponseDownloadFile || 'Download'}: Rapid Response Capacity Questions`}
                             >
                                 Rapid Response Capacity Questions.xlsx
@@ -100,7 +105,7 @@ function RapidResponse({
                         <button
                             type="button"
                             className={styles.downloadButton}
-                            onClick={handleFileDownload}
+                            onClick={(e) => { e.stopPropagation(); handleFileDownload(); }}
                             aria-label={`${strings.rapidResponseDownloadFile || 'Download'} Rapid Response Capacity Questions`}
                         >
                             ⬇

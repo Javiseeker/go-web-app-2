@@ -335,7 +335,7 @@ function OperationalStrategy(props: Props) {
                                         {sector.description && (
                                             <div className={styles.plannedActionsSection}>
                                                 <h4 className={styles.subSectionTitle}>
-                                                    {strings.plannedActionsTitle || 'Needs Addressed'}
+                                                    {strings.plannedActionsTitle || 'Intervention'}
                                                 </h4>
                                                 <p className={styles.needsText}>
                                                     {sector.description}

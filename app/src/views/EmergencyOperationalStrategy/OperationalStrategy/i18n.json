@@ -13,7 +13,7 @@
         "peopleTargetedLabel": "People Targeted",
         "indicatorsTitle": "Indicators",
         "targetedLabel": "Targeted",
-        "needsTitle": "Intervention",
+        "needsTitle": "Needs",
         "loadingOperationalStrategy": "Loading operational strategy data...",
         "errorLoadingOperationalStrategy": "Error loading operational strategy data"
     }

@@ -115,7 +115,7 @@ function PreviousCrises(props: Props) {
                               {lesson.rr_questions?.length > 0 && (
                                 <div className={styles.rrSection}>
                                   <div className={styles.rrHeader}>
-                                    <h4 className={styles.rrHeading}>Readiness & Response Questions</h4>
+                                    <h4 className={styles.rrHeading}>Rapid Response Questions</h4>
                                     {lesson.area && (
                                       <span
                                         className={styles.areaTag}

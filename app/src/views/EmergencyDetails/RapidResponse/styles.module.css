@@ -1,13 +1,9 @@
-/* Rapid Response Section */
+/* Container padding and background can be controlled by Container component or parent */
+
+/* Rapid Response Section Styling matching Operational Strategy */
+
 .rapidResponseContent {
     padding: var(--go-ui-spacing-md) 0;
-}
-
-.rapidResponseDescription {
-    margin: 0 0 var(--go-ui-spacing-lg) 0;
-    color: var(--go-ui-color-text-light);
-    font-size: var(--go-ui-font-size-md);
-    line-height: 1.5;
 }
 
 .filesList {
@@ -16,19 +12,23 @@
     gap: var(--go-ui-spacing-md);
 }
 
+/* Styled like sectoralNeedCard */
 .fileItem {
     display: flex;
     align-items: center;
     gap: var(--go-ui-spacing-md);
-    padding: var(--go-ui-spacing-md);
+    padding: var(--go-ui-spacing-lg);
     border: 1px solid var(--go-ui-color-separator);
     border-radius: var(--go-ui-border-radius-md);
     background-color: var(--go-ui-color-foreground);
-    transition: box-shadow 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    transition: box-shadow 0.2s ease, background-color 0.2s ease;
+    cursor: pointer;
 }
 
 .fileItem:hover {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    background-color: var(--go-ui-color-gray-20);
 }
 
 .fileIcon {
@@ -39,6 +39,7 @@
 .fileDetails {
     flex: 1;
     min-width: 0;
+    cursor: default; /* so cursor pointer only on whole card or buttons */
 }
 
 .fileName {
@@ -49,7 +50,7 @@
     border: none;
     color: var(--go-ui-color-red);
     font-size: var(--go-ui-font-size-md);
-    font-weight: var(--go-ui-font-weight-medium);
+    font-weight: var(--go-ui-font-weight-bold);
     text-align: left;
     text-decoration: underline;
     cursor: pointer;
@@ -103,7 +104,7 @@
     border-color: var(--go-ui-color-red);
 }
 
-/* Responsive */
+/* Responsive tweaks */
 @media (max-width: 768px) {
     .fileItem {
         flex-direction: column;
