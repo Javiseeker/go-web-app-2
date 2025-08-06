@@ -83,7 +83,7 @@ function OperationalStrategy(props: Props) {
                 indicators: allIndicators,
                 needs: sector.needs_summary || '',
                 actionsTaken: sector.actions_taken_summary || '',
-                description: sector.future_actions[0]?.needs_addressed || '',
+                description: sector.future_actions[0]?._description || '',
             };
         });
 
