@@ -1,0 +1,86 @@
+/* SituationalOverview styles.module.css */
+
+.sectionLabel {
+    border: 1px solid var(--go-ui-color-separator);
+    border-radius: var(--go-ui-border-radius-sm);
+    background-color: var(--go-ui-color-gray-20);
+    padding: var(--go-ui-spacing-xs) var(--go-ui-spacing-sm);
+    white-space: nowrap;
+    font-size: var(--go-ui-font-size-sm);
+    font-weight: var(--go-ui-font-weight-medium);
+}
+
+.situationalOverviewContent {
+    padding: var(--go-ui-spacing-md);
+}
+
+.placeholderText {
+    border-radius: var(--go-ui-border-radius-sm);
+    background-color: var(--go-ui-color-gray-20);
+    padding: var(--go-ui-spacing-lg);
+    text-align: center;
+    color: var(--go-ui-color-text-light);
+    font-style: italic;
+}
+
+.summaryContent {
+    line-height: 1.6;
+    color: var(--go-ui-color-text);
+}
+
+.summaryContent h1,
+.summaryContent h2,
+.summaryContent h3,
+.summaryContent h4,
+.summaryContent h5,
+.summaryContent h6 {
+    margin-bottom: var(--go-ui-spacing-sm);
+    color: var(--go-ui-color-text);
+    font-weight: var(--go-ui-font-weight-medium);
+}
+
+.summaryContent p {
+    margin-bottom: var(--go-ui-spacing-sm);
+}
+
+.summaryContent ul,
+.summaryContent ol {
+    margin-bottom: var(--go-ui-spacing-sm);
+    padding-left: var(--go-ui-spacing-lg);
+}
+
+.summaryContent li {
+    margin-bottom: var(--go-ui-spacing-xs);
+}
+
+.summaryContent blockquote {
+    margin: var(--go-ui-spacing-md) 0;
+    border-left: 4px solid var(--go-ui-color-red);
+    padding-left: var(--go-ui-spacing-md);
+    color: var(--go-ui-color-text-light);
+    font-style: italic;
+}
+
+.metadataDisplay {
+    margin-top: var(--go-ui-spacing-lg);
+    padding-top: var(--go-ui-spacing-md);
+    border-top: 1px solid var(--go-ui-color-separator);
+}
+
+.metadataLabel {
+    display: inline-block;
+    color: var(--go-ui-color-text-light);
+    font-size: var(--go-ui-font-size-sm);
+    font-weight: var(--go-ui-font-weight-normal);
+    font-style: italic;
+}
+
+@media (max-width: 768px) {
+    .sectionLabel {
+        align-self: flex-start;
+    }
+
+    .situationalOverviewContent {
+        padding: var(--go-ui-spacing-sm);
+    }
+}

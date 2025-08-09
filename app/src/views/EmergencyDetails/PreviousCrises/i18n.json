@@ -1,0 +1,14 @@
+{
+  "namespace": "emergencyDetails",
+  "strings": {
+    "lessonsLearnedTitle": "Insights from Previous Operations",
+    "loadingPreviousCrises": "Loading lessons learned data...",
+    "errorLoadingPreviousCrises": "Error loading lessons learned data",
+    "noLessonsLearnedData": "No lessons learned data available",
+    "seeMore": "See more",
+    "showLess": "Show less",
+    "recommendations": "Recommendations From Insights",
+    "aiDisclaimerText": "These insights and questions are generated from operational learnings using AI.",
+    "operationalLearningSources": "Operational Learning Sources"
+  }
+}

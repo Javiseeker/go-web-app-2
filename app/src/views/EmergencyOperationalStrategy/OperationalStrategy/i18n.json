@@ -1,0 +1,20 @@
+{
+    "namespace": "emergencyOperationalStrategy",
+    "strings": {
+        "operationalStrategyTitle": "Operational Strategy",
+        "lastUpdateLabel": "Last update:",
+        "operationObjectivesTitle": "OPERATION OBJECTIVES",
+        "operationStrategyTitle": "OPERATION STRATEGY",
+        "aiDisclaimerText": "The content below has been generated or summarised by AI models.",
+        "seeHereLink": "See original submission",
+        "sectorsEngagedTitle": "SECTORS ENGAGED",
+        "operationalSectoralNeedsTitle": "OPERATIONAL SECTORAL NEEDS",
+        "budgetLabel": "Budget (CHF)",
+        "peopleTargetedLabel": "People Targeted",
+        "indicatorsTitle": "Indicators",
+        "targetedLabel": "Targeted",
+        "needsTitle": "Needs",
+        "loadingOperationalStrategy": "Loading operational strategy data...",
+        "errorLoadingOperationalStrategy": "Error loading operational strategy data"
+    }
+}

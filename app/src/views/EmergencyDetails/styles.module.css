@@ -1,109 +1,241 @@
-.emergency-details {
+/* =================================================================== */
+/* =====================  EmergencyDetails Styles  =================== */
+/* =================================================================== */
+
+/* ===== EmergencyDetails main wrapper ===== */
+.emergencyDetails {
     display: flex;
     flex-direction: column;
-    padding: var(--go-ui-spacing-2xl) 0;
     gap: var(--go-ui-spacing-2xl);
+    padding: var(--go-ui-spacing-2xl) 0;
+}
 
-    .key-figure-list {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: var(--go-ui-spacing-md);
+/* ===== Key figures ===== */
+.keyFigureList {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--go-ui-spacing-md);
+    justify-content: center;
+}
 
-        .key-figure {
-            flex-basis: 20rem;
-            border-radius: var(--go-ui-border-radius-lg);
-            box-shadow: var(--go-ui-box-shadow-md);
-        }
-    }
+.keyFigure {
+    flex-basis: 20rem;
+    border-radius: var(--go-ui-border-radius-lg);
+    box-shadow: var(--go-ui-box-shadow-md);
+}
 
-    .overview-content {
-        display: grid;
-        grid-template-columns: 1fr 1fr 1fr 1fr;
-        grid-gap: var(--go-ui-spacing-md);
+/* ===== Overview grid ===== */
+.overviewContent {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: var(--go-ui-spacing-md);
+}
 
-        .overview-item {
-            display: contents;
-        }
+.overviewItem {
+    display: contents;
+}
 
-        .disaster-category-value {
-            display: flex;
-            gap: var(--go-ui-spacing-sm);
-        }
+.disasterCategoryValue {
+    display: flex;
+    gap: var(--go-ui-spacing-sm);
+}
 
-        @media screen and (max-width: 50rem) {
-            grid-template-columns: 1fr 1fr;
-        }
-    }
-
-    .map-key-figure-container {
-        display: flex;
-        flex-grow: 1;
-        gap: var(--go-ui-spacing-md);
-
-        .map-container {
-            flex-grow: 1;
-        }
-
-        .field-report-stats-container {
-            flex-basis: calc(8vw + 16rem);
-        }
-
-        @media screen and (max-width: 50rem) {
-            flex-direction: column;
-        }
-    }
-
-    .links-content {
-        display: grid;
+@media (max-width: 50rem) {
+    .overviewContent {
         grid-template-columns: 1fr 1fr;
-        grid-gap: var(--go-ui-spacing-md);
-
-        @media screen and (max-width: 50rem) {
-            grid-template-columns: 1fr;
-        }
-
-        .link-container {
-            display: flex;
-            flex-direction: column;
-            gap: var(--go-ui-spacing-xs);
-
-            .link {
-                color: var(--go-ui-color-text-black);
-            }
-        }
     }
+}
 
-    .contacts-content{
-        display: flex;
+/* ===== Map + key-figure side-by-side ===== */
+.mapKeyFigureContainer {
+    display: flex;
+    flex-grow: 1;
+    gap: var(--go-ui-spacing-md);
+}
+
+.mapContainer {
+    flex-grow: 1;
+}
+
+.fieldReportStatsContainer {
+    flex-basis: calc(8vw + 16rem);
+}
+
+@media (max-width: 50rem) {
+    .mapKeyFigureContainer {
         flex-direction: column;
-        gap: var(--go-ui-spacing-xl);
-        padding: var(--go-ui-spacing-md) 0;
-
-        .contact-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
-            grid-gap: var(--go-ui-spacing-md);
-
-            .contact {
-                display: flex;
-                flex-direction: column;
-                border-radius: var(--go-ui-border-radius-lg);
-                box-shadow: var(--go-ui-box-shadow-md);
-                padding: var(--go-ui-spacing-md);
-                gap: var(--go-ui-spacing-sm);
-
-                .name {
-                    font-size: var(--go-ui-font-size-lg);
-                    font-weight: var(--go-ui-font-weight-semibold);
-                }
-
-                .type,
-                .title {
-                    color: var(--go-ui-color-text-light);
-                    font-size: var(--go-ui-font-size-sm);
-                }
-            }
-        }
     }
+}
+
+/* ===== Links ===== */
+.linksContent {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--go-ui-spacing-md);
+}
+
+@media (max-width: 50rem) {
+    .linksContent {
+        grid-template-columns: 1fr;
+    }
+}
+
+.linkContainer {
+    display: flex;
+    flex-direction: column;
+    gap: var(--go-ui-spacing-xs);
+}
+
+.link {
+    color: var(--go-ui-color-text-black);
+}
+
+/* ===== Contacts ===== */
+.contactsContent {
+    display: flex;
+    flex-direction: column;
+    gap: var(--go-ui-spacing-xl);
+    padding: var(--go-ui-spacing-md) 0;
+}
+
+.contactList {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
+    gap: var(--go-ui-spacing-md);
+}
+
+.contact {
+    display: flex;
+    flex-direction: column;
+    gap: var(--go-ui-spacing-sm);
+    border-radius: var(--go-ui-border-radius-lg);
+    box-shadow: var(--go-ui-box-shadow-md);
+    padding: var(--go-ui-spacing-md);
+}
+
+.name {
+    /* Fix: color before font-weight and font-size */
+    color: var(--go-ui-color-text);
+    font-size: var(--go-ui-font-size-lg);
+    font-weight: var(--go-ui-font-weight-semibold);
+}
+
+.type,
+.title {
+    /* Fixed order: color before font-size */
+    color: var(--go-ui-color-text-light);
+    font-size: var(--go-ui-font-size-sm);
+}
+
+/* ------------------------------------------------------------------ */
+/* ===== Section heading row (left title / right controls-label) ===== */
+/* ------------------------------------------------------------------ */
+
+/* Grid lets the last column hug the far right without margin hacks */
+.sectionHeadingRow {
+    display: grid;
+    grid-template-columns: 1fr auto; /* title stretches, last item auto */
+    align-items: center; /* Changed from baseline to center for better alignment */
+    gap: var(--go-ui-spacing-md);
+    width: 100%;
+}
+
+/* Left-hand title - keep this larger and prominent */
+.sectionTitle {
+    line-height: 1.2;
+    /* Fixed order: color before font-size */
+    color: var(--go-ui-color-text);
+    font-size: 1.125rem; /* Increased from 1rem */
+    font-weight: var(--go-ui-font-weight-bold); /* Increased from semibold */
+}
+
+/* Right-hand label / controls / more button - make these smaller */
+.sectionLabel,
+.sectionControls,
+.moreButton {
+    display: flex;
+    align-items: center;
+    line-height: 1;
+    /* Fixed order: white-space before font-weight */
+    white-space: nowrap;
+    color: var(--go-ui-color-text-light);
+    font-size: 0.75rem; /* Reduced from 0.875rem */
+    font-weight: var(--go-ui-font-weight-normal); /* Reduced from semibold */
+    gap: var(--go-ui-spacing-sm); /* Reduced from md */
+}
+
+/* Make the label text slightly more prominent than buttons */
+.sectionLabel {
+    /* Fixed order: text-transform before letter-spacing */
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+    font-size: 0.6875rem; /* Even smaller for uppercase text */
+    font-weight: var(--go-ui-font-weight-medium);
+}
+
+/* Ensure buttons in sectionControls are also smaller */
+.sectionControls button {
+    font-size: 0.75rem !important;
+}
+
+/* ===== Specific content areas ===== */
+.situationalOverviewContent,
+.previousCrisesContent,
+.drefOperationalStrategyContent {
+    padding: var(--go-ui-spacing-md);
+}
+
+/* ===== Utility ===== */
+.placeholderText {
+    margin: var(--go-ui-spacing-md) 0;
+    color: var(--go-ui-color-text-light);
+    font-style: italic;
+}
+
+.sectionContent {
+    padding-block: var(--go-ui-spacing-sm) var(--go-ui-spacing-lg);
+}
+
+/* ===== Budget Summary Definition List Styling ===== */
+.budgetDefinitionList {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 0.25rem 1rem;
+    margin-top: var(--go-ui-spacing-md);
+}
+
+.budgetDefinitionList dt {
+    color: var(--go-ui-color-text);
+    font-weight: 600;
+}
+
+.budgetDefinitionList dd {
+    margin: 0;
+    color: var(--go-ui-color-text);
+}
+
+/* ===== More Button Styling for better visibility ===== */
+.moreButton {
+    display: inline-flex;
+    align-items: center;
+    /* Fix: transition before background-color */
+    transition: background-color 0.2s ease, color 0.2s ease;
+    margin-top: var(--go-ui-spacing-sm);
+    border: 1px solid var(--go-ui-color-separator);
+    border-radius: var(--go-ui-border-radius-md);
+    background-color: var(--go-ui-color-foreground);
+    cursor: pointer;
+    padding: 0.25rem 0.75rem;
+    /* Fix: color before font-size */
+    color: var(--go-ui-color-text);
+    font-size: 0.875rem;
+    font-weight: 700;
+    gap: 0.3rem;
+    user-select: none;
+}
+
+.moreButton:hover {
+    border-color: var(--go-ui-color-gray-60);
+    background-color: var(--go-ui-color-gray-10);
+    color: var(--go-ui-color-text-black);
 }

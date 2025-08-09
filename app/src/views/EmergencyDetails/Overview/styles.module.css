@@ -1,0 +1,27 @@
+/* grid wrapper */
+.overviewContent {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));   /* 2 cols */
+  row-gap: var(--go-ui-spacing-md);
+  column-gap: var(--go-ui-spacing-md);
+  padding: var(--go-ui-spacing-md);
+}
+
+/* phone breakpoint ➜ single column */
+@media (max-width: 639px) {
+  .overviewContent {
+    grid-template-columns: 1fr;
+    padding: var(--go-ui-spacing-sm);
+  }
+}
+
+.disasterCategoryValue {
+    display: flex;
+    align-items: center;
+    gap: var(--go-ui-spacing-sm);
+}
+
+.disasterCategoryValue span {
+    color: var(--go-ui-color-text);
+    font-weight: var(--go-ui-font-weight-medium);
+}

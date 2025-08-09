@@ -1,0 +1,613 @@
+/* Main Container */
+.operationalStrategy {
+    margin: 0 auto;
+    background-color: var(--go-ui-color-foreground);
+    padding: var(--go-ui-spacing-lg);
+    max-width: 1200px;
+}
+
+/* Last Update */
+.lastUpdate {
+    margin-bottom: var(--go-ui-spacing-lg);
+    color: var(--go-ui-color-text-light);
+    font-size: var(--go-ui-font-size-sm);
+}
+
+/* Full Width Section for single strategy card */
+.fullWidthSection {
+    margin-bottom: var(--go-ui-spacing-xl);
+}
+
+/* Top Two-Column Layout */
+.topSection {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--go-ui-spacing-lg);
+    margin-bottom: var(--go-ui-spacing-xl);
+}
+
+.objectivesCard,
+.strategyCard {
+    border: 1px solid var(--go-ui-color-separator);
+    border-radius: var(--go-ui-border-radius-md);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    background-color: var(--go-ui-color-foreground);
+    padding: var(--go-ui-spacing-lg);
+}
+
+.cardTitle {
+    margin: 0 0 var(--go-ui-spacing-md) 0;
+    border-bottom: 1px solid var(--go-ui-color-separator);
+    padding-bottom: var(--go-ui-spacing-sm);
+    color: var(--go-ui-color-text);
+    font-size: var(--go-ui-font-size-lg);
+    font-weight: var(--go-ui-font-weight-bold);
+}
+
+.contentText {
+    margin: 0;
+    line-height: 1.6;
+    color: var(--go-ui-color-text-light);
+    font-size: var(--go-ui-font-size-md);
+}
+
+/* AI Disclaimer */
+.aiDisclaimer {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: var(--go-ui-spacing-xl);
+    border: 1px solid var(--go-ui-color-separator);
+    border-radius: var(--go-ui-border-radius-sm);
+    background-color: var(--go-ui-color-gray-20);
+    padding: var(--go-ui-spacing-md);
+    gap: var(--go-ui-spacing-sm);
+}
+
+.disclaimerText {
+    line-height: 1.5;
+    color: var(--go-ui-color-text-light);
+    font-size: var(--go-ui-font-size-sm);
+    font-style: italic;
+}
+
+.seeHereLink {
+    text-decoration: underline;
+    color: var(--go-ui-color-red);
+    text-underline-offset: 2px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-style: italic;
+}
+
+/* Metadata Section */
+.metadataSection {
+    margin-bottom: var(--go-ui-spacing-xl);
+    border: 1px solid var(--go-ui-color-separator);
+    border-radius: var(--go-ui-border-radius-md);
+    background-color: var(--go-ui-color-foreground);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.metadataHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--go-ui-spacing-md);
+    border-bottom: 1px solid var(--go-ui-color-separator);
+    background-color: var(--go-ui-color-gray-20);
+}
+
+.metadataHeader h3 {
+    margin: 0;
+    font-size: var(--go-ui-font-size-md);
+    font-weight: var(--go-ui-font-weight-bold);
+}
+
+.closeButton {
+    background: none;
+    border: none;
+    font-size: var(--go-ui-font-size-lg);
+    cursor: pointer;
+    color: var(--go-ui-color-text-light);
+    padding: var(--go-ui-spacing-xs);
+}
+
+.closeButton:hover {
+    color: var(--go-ui-color-text);
+}
+
+.metadataContent {
+    padding: var(--go-ui-spacing-lg);
+}
+
+.metadataContent > .metadataGrid > .metadataInfo p {
+    margin: 0;
+    padding: var(--go-ui-spacing-sm) 0;
+    color: var(--go-ui-color-text);
+    font-size: var(--go-ui-font-size-sm);
+    line-height: 1.4;
+    border-bottom: 1px solid var(--go-ui-color-separator);
+}
+
+.metadataContent a {
+    color: var(--go-ui-color-red);
+    text-decoration: underline;
+}
+
+/* Metadata Grid Layout */
+.metadataGrid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: var(--go-ui-spacing-xl);
+    align-items: start;
+}
+
+.metadataInfo {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--go-ui-spacing-md) var(--go-ui-spacing-lg);
+    align-items: start;
+}
+
+.metadataInfo p {
+    margin: 0;
+    padding: var(--go-ui-spacing-sm) 0;
+    color: var(--go-ui-color-text);
+    font-size: var(--go-ui-font-size-sm);
+    line-height: 1.4;
+    border-bottom: 1px solid var(--go-ui-color-separator);
+}
+
+.metadataInfo p:last-child,
+.metadataInfo p:nth-last-child(2) {
+    border-bottom: none;
+}
+
+.metadataInfo p strong {
+    display: block;
+    margin-bottom: var(--go-ui-spacing-xs);
+    color: var(--go-ui-color-text-light);
+    font-size: var(--go-ui-font-size-xs);
+    font-weight: var(--go-ui-font-weight-medium);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.budgetFileSection {
+    display: flex;
+    flex-direction: column;
+    align-self: start;
+}
+
+.budgetFileTitle {
+    margin: 0 0 var(--go-ui-spacing-md) 0;
+    color: var(--go-ui-color-text);
+    font-size: var(--go-ui-font-size-md);
+    font-weight: var(--go-ui-font-weight-medium);
+}
+
+/* Rapid Response File Styles for Budget Document */
+.filesList {
+    display: flex;
+    flex-direction: column;
+    gap: var(--go-ui-spacing-md);
+}
+
+.fileItem {
+    display: flex;
+    align-items: center;
+    gap: var(--go-ui-spacing-md);
+    padding: var(--go-ui-spacing-md);
+    border: 1px solid var(--go-ui-color-separator);
+    border-radius: var(--go-ui-border-radius-md);
+    background-color: var(--go-ui-color-foreground);
+    transition: box-shadow 0.2s ease;
+}
+
+.fileItem:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.fileIcon {
+    font-size: 2rem;
+    flex-shrink: 0;
+}
+
+.fileDetails {
+    flex: 1;
+    min-width: 0;
+}
+
+.fileName {
+    display: block;
+    margin: 0 0 var(--go-ui-spacing-xs) 0;
+    padding: 0;
+    background: none;
+    border: none;
+    color: var(--go-ui-color-red);
+    font-size: var(--go-ui-font-size-md);
+    font-weight: var(--go-ui-font-weight-medium);
+    text-align: left;
+    text-decoration: underline;
+    cursor: pointer;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.fileName:hover {
+    color: var(--go-ui-color-red-hover);
+}
+
+.fileDescription {
+    margin: 0 0 var(--go-ui-spacing-xs) 0;
+    color: var(--go-ui-color-text-light);
+    font-size: var(--go-ui-font-size-sm);
+    line-height: 1.4;
+}
+
+.fileMeta {
+    display: flex;
+    align-items: center;
+    gap: var(--go-ui-spacing-sm);
+    color: var(--go-ui-color-text-light);
+    font-size: var(--go-ui-font-size-sm);
+}
+
+.fileSeparator {
+    opacity: 0.5;
+}
+
+.downloadButton {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--go-ui-color-gray-20);
+    border: 1px solid var(--go-ui-color-separator);
+    border-radius: var(--go-ui-border-radius-sm);
+    color: var(--go-ui-color-text);
+    font-size: var(--go-ui-font-size-lg);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.downloadButton:hover {
+    background-color: var(--go-ui-color-red);
+    color: var(--go-ui-color-white);
+    border-color: var(--go-ui-color-red);
+}
+
+/* Section Containers */
+.sectionContainer {
+    margin-bottom: var(--go-ui-spacing-xl);
+}
+
+.sectionTitle {
+    margin: 0 0 var(--go-ui-spacing-lg) 0;
+    letter-spacing: 0.5px;
+    color: var(--go-ui-color-text);
+    font-size: var(--go-ui-font-size-lg);
+    font-weight: var(--go-ui-font-weight-bold);
+}
+
+/* Sectors Engaged */
+.sectorsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--go-ui-spacing-md);
+}
+
+.sectorCard {
+    display: flex;
+    align-items: center;
+    border: 1px solid var(--go-ui-color-separator);
+    border-radius: var(--go-ui-border-radius-md);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    background-color: var(--go-ui-color-foreground);
+    padding: var(--go-ui-spacing-lg);
+    gap: var(--go-ui-spacing-md);
+}
+
+.sectorIcon {
+    font-size: var(--go-ui-font-size-2xl);
+}
+
+.sectorName {
+    color: var(--go-ui-color-text);
+    font-size: var(--go-ui-font-size-md);
+    font-weight: var(--go-ui-font-weight-medium);
+}
+
+/* Sectoral Needs */
+.sectoralNeedsContent {
+    display: flex;
+    flex-direction: column;
+    gap: var(--go-ui-spacing-md);
+}
+
+.sectoralNeedCard {
+    border: 1px solid var(--go-ui-color-separator);
+    border-radius: var(--go-ui-border-radius-md);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    background-color: var(--go-ui-color-foreground);
+}
+
+.sectorHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-radius: var(--go-ui-border-radius-md) var(--go-ui-border-radius-md) 0 0;
+    background-color: var(--go-ui-color-gray-20);
+    padding: var(--go-ui-spacing-lg);
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.2s ease;
+    width: 100%;
+    border: none;
+    font-family: inherit;
+    text-align: left;
+}
+
+.sectorHeader:hover {
+    background-color: var(--go-ui-color-gray-30);
+}
+
+.sectorHeader:active {
+    background-color: var(--go-ui-color-gray-40);
+}
+
+.sectorInfo {
+    display: flex;
+    align-items: center;
+    gap: var(--go-ui-spacing-md);
+    flex: 0 0 auto;
+    min-width: 300px;
+}
+
+.sectorTitle {
+    color: var(--go-ui-color-text);
+    font-size: var(--go-ui-font-size-lg);
+    font-weight: var(--go-ui-font-weight-bold);
+}
+
+.sectorMetrics {
+    display: flex;
+    gap: var(--go-ui-spacing-xl);
+    margin-left: auto;
+    margin-right: var(--go-ui-spacing-md);
+}
+
+.metricGroup {
+    display: flex;
+    align-items: center;
+    gap: var(--go-ui-spacing-sm);
+}
+
+.metricLabel {
+    color: var(--go-ui-color-text-light);
+    font-size: var(--go-ui-font-size-sm);
+}
+
+.metricValue {
+    color: var(--go-ui-color-text);
+    font-size: var(--go-ui-font-size-md);
+    font-weight: var(--go-ui-font-weight-bold);
+    min-width: 100px;
+    text-align: right;
+}
+
+.expandIcon {
+    flex-shrink: 0;
+    min-width: 40px;
+    color: var(--go-ui-color-text);
+    font-size: var(--go-ui-font-size-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+}
+
+/* Sector Details */
+.sectorDetails {
+    border-top: 1px solid var(--go-ui-color-separator);
+    padding: var(--go-ui-spacing-lg);
+}
+
+.indicatorsSection,
+.needsSection,
+.actionsTakenSection,
+.plannedActionsSection {
+    margin-bottom: var(--go-ui-spacing-lg);
+}
+
+.needsSection:last-child,
+.plannedActionsSection:last-child {
+    margin-bottom: 0;
+}
+
+.subSectionTitle {
+    margin: 0 0 var(--go-ui-spacing-md) 0;
+    color: var(--go-ui-color-text);
+    font-size: var(--go-ui-font-size-md);
+    font-weight: var(--go-ui-font-weight-medium);
+}
+
+/* Indicators Table */
+.indicatorsTable {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--go-ui-color-separator);
+    border-radius: var(--go-ui-border-radius-sm);
+}
+
+.tableHeader {
+    display: flex;
+    justify-content: flex-end;
+    border-bottom: 1px solid var(--go-ui-color-separator);
+    background-color: var(--go-ui-color-gray-20);
+    padding: var(--go-ui-spacing-sm) var(--go-ui-spacing-md);
+    color: var(--go-ui-color-text);
+    font-size: var(--go-ui-font-size-sm);
+    font-weight: var(--go-ui-font-weight-medium);
+}
+
+.indicatorRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--go-ui-color-separator);
+    padding: var(--go-ui-spacing-sm) var(--go-ui-spacing-md);
+}
+
+.indicatorRow:last-child {
+    border-bottom: none;
+}
+
+.indicatorName {
+    flex: 1;
+    color: var(--go-ui-color-text-light);
+    font-size: var(--go-ui-font-size-sm);
+}
+
+.indicatorValue {
+    min-width: 80px;
+    text-align: right;
+    color: var(--go-ui-color-text);
+    font-size: var(--go-ui-font-size-sm);
+    font-weight: var(--go-ui-font-weight-medium);
+}
+
+.needsText {
+    margin: 0;
+    line-height: 1.6;
+    color: var(--go-ui-color-text-light);
+    font-size: var(--go-ui-font-size-md);
+}
+
+/* Loading and Error States */
+.loadingContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+    gap: var(--go-ui-spacing-lg);
+}
+
+.loadingSpinner {
+    width: 48px;
+    height: 48px;
+    border: 3px solid var(--go-ui-color-gray-40);
+    border-top-color: var(--go-ui-color-red);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.loadingText {
+    color: var(--go-ui-color-text-light);
+    font-size: var(--go-ui-font-size-md);
+    margin: 0;
+}
+
+.errorText {
+    padding: var(--go-ui-spacing-xl);
+    text-align: center;
+    color: var(--go-ui-color-red);
+    font-size: var(--go-ui-font-size-md);
+    font-style: italic;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .operationalStrategy {
+        padding: var(--go-ui-spacing-md);
+    }
+
+    .topSection {
+        grid-template-columns: 1fr;
+        gap: var(--go-ui-spacing-md);
+    }
+
+    .metadataGrid {
+        grid-template-columns: 1fr;
+        gap: var(--go-ui-spacing-lg);
+    }
+
+    .metadataInfo {
+        grid-template-columns: 1fr;
+        gap: var(--go-ui-spacing-md);
+    }
+    
+    .fileItem {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+        
+    .fileIcon {
+        display: none;
+    }
+        
+    .fileName {
+        white-space: normal;
+        word-break: break-word;
+    }
+        
+    .downloadButton {
+        align-self: flex-end;
+        margin-top: var(--go-ui-spacing-sm);
+    }
+
+    .sectorHeader {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: var(--go-ui-spacing-md);
+    }
+
+    .sectorInfo {
+        min-width: unset;
+    }
+
+    .sectorMetrics {
+        flex-direction: row;
+        justify-content: space-between;
+        width: 100%;
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    .metricGroup {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--go-ui-spacing-xs);
+    }
+
+    .metricValue {
+        min-width: unset;
+        text-align: left;
+    }
+
+    .sectorsGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .indicatorRow {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: var(--go-ui-spacing-xs);
+    }
+
+    .indicatorValue {
+        min-width: unset;
+        text-align: left;
+    }
+}
