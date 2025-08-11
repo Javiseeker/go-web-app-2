@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Button } from '@ifrc-go/ui';
 import { useTranslation } from '@ifrc-go/ui/hooks';
 
 import type { PerDrefSummary } from '#hooks/domain/usePerDrefSummary';
@@ -28,6 +27,43 @@ interface Props {
     perDrefSummaryError?: unknown;
 }
 
+// Helper function to map sector titles to icons
+function getSectorIcon(sectorTitle: string): string {
+    const iconMap: Record<string, string> = {
+        health: '🏥',
+        shelter: '🏠',
+        shelter_housing_and_settlements: '🏠',
+        livelihoods: '🏘️',
+        livelihoods_and_basic_needs: '🏘️',
+        water_sanitation_and_hygiene: '💧',
+        protection_gender_and_inclusion: '👥',
+        community_engagement_and_accountability: '📢',
+        multi_purpose_cash: '💵',
+        risk_reduction_climate_adaptation_and_recovery: '🌍',
+        national_society_strengthening: '🏛️',
+        coordination_and_partnerships: '🤝',
+        secretariat_services: '📋',
+    };
+
+    return iconMap[sectorTitle] || '📌';
+}
+
+// Helper function to format date
+function formatDate(dateString?: string): string {
+    if (!dateString) return 'N/A';
+
+    try {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-GB', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+        });
+    } catch {
+        return dateString;
+    }
+}
+
 function OperationalStrategy(props: Props) {
     const {
         perDrefSummary,
@@ -41,49 +77,49 @@ function OperationalStrategy(props: Props) {
 
     // Extract data from API response
     const operationalSummary = perDrefSummary?.operational_summary || '';
-    const budgetOverview = perDrefSummary?.budget_summary?.budget_overview;
     const sectors = perDrefSummary?.sectors || [];
     const metadata = perDrefSummary?.metadata;
-    
-    // Map API sectors to engaged sectors display - SHOW ALL SECTORS
-    const engagedSectors = sectors
-        .filter((sector) => sector.future_actions && sector.future_actions.length > 0)
-        .map((sector) => ({
-            id: sector.title,
-            name: sector.title_display,
-            icon: getSectorIcon(sector.title),
-        }));
 
     // Map API sectors to sectoral needs data - SHOW ALL SECTORS
     const sectoralNeeds: SectorData[] = sectors
-        .filter((sector) => sector.future_actions && sector.future_actions.length > 0)
+        .filter((sector) => (
+            sector.future_actions && sector.future_actions.length > 0
+        ))
         .map((sector) => {
             // Calculate total budget for the sector
-            const totalBudget = sector.future_actions.reduce((sum, action) => sum + (action.budget || 0), 0);
-            
+            const totalBudget = sector.future_actions.reduce(
+                (sum, action) => sum + (action.budget || 0),
+                0,
+            );
+
             // Calculate total people targeted
-            const totalPeopleTargeted = sector.future_actions.reduce((sum, action) => {
-                return sum + (action.people_targeted_total || 0);
-            }, 0);
+            const totalPeopleTargeted = sector.future_actions.reduce(
+                (sum, action) => sum + (action.people_targeted_total || 0),
+                0,
+            );
 
             // Extract all indicators from all future actions
-            const allIndicators = sector.future_actions.flatMap((action) => 
-                action.indicators.map((indicator) => ({
+            const allIndicators = sector.future_actions.flatMap(
+                (action) => action.indicators.map((indicator) => ({
                     name: indicator.title,
                     targeted: indicator.people_targeted,
-                }))
+                })),
             );
 
             return {
                 id: sector.title,
                 name: sector.title_display.toUpperCase(),
                 icon: getSectorIcon(sector.title),
-                budget: totalBudget > 0 ? `${totalBudget.toLocaleString()} CHF` : '--',
-                peopleTargeted: totalPeopleTargeted > 0 ? totalPeopleTargeted.toLocaleString() : '--',
+                budget: totalBudget > 0
+                    ? `${totalBudget.toLocaleString()} CHF`
+                    : '--',
+                peopleTargeted: totalPeopleTargeted > 0
+                    ? totalPeopleTargeted.toLocaleString()
+                    : '--',
                 indicators: allIndicators,
                 needs: sector.needs_summary || '',
                 actionsTaken: sector.actions_taken_summary || '',
-                description: sector.future_actions[0]?._description || '',
+                description: sector.future_actions[0]?.description || '',
             };
         });
 
@@ -132,7 +168,8 @@ function OperationalStrategy(props: Props) {
             {/* AI Disclaimer - MOVED TO TOP */}
             <div className={styles.aiDisclaimer}>
                 <span className={styles.disclaimerText}>
-                    The content below has been generated or summarised by AI models.{' '}
+                    The content below has been generated or summarised by AI models.
+                    {' '}
                     <button
                         type="button"
                         className={styles.seeHereLink}
@@ -160,20 +197,54 @@ function OperationalStrategy(props: Props) {
                     <div className={styles.metadataContent}>
                         <div className={styles.metadataGrid}>
                             <div className={styles.metadataInfo}>
-                                <p><strong>DREF ID:</strong> {metadata.dref_id}</p>
-                                <p><strong>Appeal Code:</strong> {metadata.dref_appeal_code}</p>
-                                <p><strong>Title:</strong> {metadata.dref_title}</p>
-                                <p><strong>Date:</strong> {formatDate(metadata.dref_date)}</p>
-                                <p><strong>Created:</strong> {formatDate(metadata.dref_created_at)}</p>
-                                <p><strong>Type:</strong> {perDrefSummary?.dref_type}</p>
-                                <p><strong>Onset:</strong> {perDrefSummary?.dref_onset}</p>
-                                <p><strong>Operation Update Number:</strong> {metadata.dref_op_update_number}</p>
+                                <p>
+                                    <strong>DREF ID:</strong>
+                                    {' '}
+                                    {metadata.dref_id}
+                                </p>
+                                <p>
+                                    <strong>Appeal Code:</strong>
+                                    {' '}
+                                    {metadata.dref_appeal_code}
+                                </p>
+                                <p>
+                                    <strong>Title:</strong>
+                                    {' '}
+                                    {metadata.dref_title}
+                                </p>
+                                <p>
+                                    <strong>Date:</strong>
+                                    {' '}
+                                    {formatDate(metadata.dref_date)}
+                                </p>
+                                <p>
+                                    <strong>Created:</strong>
+                                    {' '}
+                                    {formatDate(metadata.dref_created_at)}
+                                </p>
+                                <p>
+                                    <strong>Type:</strong>
+                                    {' '}
+                                    {perDrefSummary?.dref_type}
+                                </p>
+                                <p>
+                                    <strong>Onset:</strong>
+                                    {' '}
+                                    {perDrefSummary?.dref_onset}
+                                </p>
+                                <p>
+                                    <strong>Operation Update Number:</strong>
+                                    {' '}
+                                    {metadata.dref_op_update_number}
+                                </p>
                             </div>
-                            
+
                             {/* Budget File using Rapid Response styles */}
                             {metadata.dref_budget_file && (
                                 <div className={styles.budgetFileSection}>
-                                    <h4 className={styles.budgetFileTitle}>Budget Document</h4>
+                                    <h4 className={styles.budgetFileTitle}>
+                                        Budget Document
+                                    </h4>
                                     <div className={styles.filesList}>
                                         <div className={styles.fileItem}>
                                             <div className={styles.fileIcon}>
@@ -186,14 +257,21 @@ function OperationalStrategy(props: Props) {
                                                     onClick={handleBudgetFileView}
                                                     title="View Budget Document in new tab"
                                                 >
-                                                    {metadata.dref_title} - Budget Document
+                                                    {metadata.dref_title}
+                                                    {' '}
+                                                    - Budget Document
                                                 </button>
                                                 <p className={styles.fileDescription}>
-                                                    Official budget documentation for this DREF operation
+                                                    Official budget documentation
+                                                    for this DREF operation
                                                 </p>
                                                 <div className={styles.fileMeta}>
-                                                    <span className={styles.fileSize}>Budget Preview</span>
-                                                    <span className={styles.fileSeparator}>•</span>
+                                                    <span className={styles.fileSize}>
+                                                        Budget Preview
+                                                    </span>
+                                                    <span className={styles.fileSeparator}>
+                                                        •
+                                                    </span>
                                                     <span className={styles.fileDate}>
                                                         {formatDate(metadata.dref_date)}
                                                     </span>
@@ -212,7 +290,8 @@ function OperationalStrategy(props: Props) {
             <div className={styles.lastUpdate}>
                 {strings.lastUpdateLabel}
                 {' '}
-                {formatDate(metadata?.dref_date || metadata?.dref_created_at) || '12 June, 2025'}
+                {formatDate(metadata?.dref_date || metadata?.dref_created_at)
+                    || '12 June, 2025'}
             </div>
 
             {/* Operation Strategy - Full Width */}
@@ -238,16 +317,16 @@ function OperationalStrategy(props: Props) {
                         return (
                             <div key={sector.id} className={styles.sectoralNeedCard}>
                                 <div
-                                  className={styles.sectorHeader}
-                                  onClick={() => toggleSectorExpansion(sector.id)}
-                                  role="button"
-                                  tabIndex={0}
-                                  onKeyDown={(e) => {
-                                    if (e.key === 'Enter' || e.key === ' ') {
-                                      toggleSectorExpansion(sector.id);
-                                    }
-                                  }}
-                                  aria-expanded={isExpanded}
+                                    className={styles.sectorHeader}
+                                    onClick={() => toggleSectorExpansion(sector.id)}
+                                    role="button"
+                                    tabIndex={0}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' || e.key === ' ') {
+                                            toggleSectorExpansion(sector.id);
+                                        }
+                                    }}
+                                    aria-expanded={isExpanded}
                                 >
                                     <div className={styles.sectorInfo}>
                                         <span className={styles.sectorIcon}>
@@ -260,7 +339,8 @@ function OperationalStrategy(props: Props) {
                                     <div className={styles.sectorMetrics}>
                                         <div className={styles.metricGroup}>
                                             <span className={styles.metricLabel}>
-                                                {strings.budgetLabel}:
+                                                {strings.budgetLabel}
+                                                :
                                             </span>
                                             <span className={styles.metricValue}>
                                                 {sector.budget}
@@ -268,7 +348,8 @@ function OperationalStrategy(props: Props) {
                                         </div>
                                         <div className={styles.metricGroup}>
                                             <span className={styles.metricLabel}>
-                                                {strings.peopleTargetedLabel}:
+                                                {strings.peopleTargetedLabel}
+                                                :
                                             </span>
                                             <span className={styles.metricValue}>
                                                 {sector.peopleTargeted}
@@ -315,9 +396,9 @@ function OperationalStrategy(props: Props) {
                                                             {strings.targetedLabel}
                                                         </span>
                                                     </div>
-                                                    {sector.indicators.map((indicator, index) => (
+                                                    {sector.indicators.map((indicator) => (
                                                         <div
-                                                            key={`${sector.id}-indicator-${index}`}
+                                                            key={`${sector.id}-${indicator.name}-${indicator.targeted}`}
                                                             className={styles.indicatorRow}
                                                         >
                                                             <span className={styles.indicatorName}>
@@ -351,43 +432,6 @@ function OperationalStrategy(props: Props) {
             </div>
         </div>
     );
-}
-
-// Helper function to map sector titles to icons
-function getSectorIcon(sectorTitle: string): string {
-    const iconMap: Record<string, string> = {
-        health: '🏥',
-        shelter: '🏠',
-        shelter_housing_and_settlements: '🏠',
-        livelihoods: '🏘️',
-        livelihoods_and_basic_needs: '🏘️',
-        water_sanitation_and_hygiene: '💧',
-        protection_gender_and_inclusion: '👥',
-        community_engagement_and_accountability: '📢',
-        multi_purpose_cash: '💵',
-        risk_reduction_climate_adaptation_and_recovery: '🌍',
-        national_society_strengthening: '🏛️',
-        coordination_and_partnerships: '🤝',
-        secretariat_services: '📋',
-    };
-
-    return iconMap[sectorTitle] || '📌';
-}
-
-// Helper function to format date
-function formatDate(dateString?: string): string {
-    if (!dateString) return 'N/A';
-    
-    try {
-        const date = new Date(dateString);
-        return date.toLocaleDateString('en-GB', {
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric',
-        });
-    } catch {
-        return dateString;
-    }
 }
 
 export default OperationalStrategy;

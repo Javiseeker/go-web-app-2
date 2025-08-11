@@ -1,5 +1,6 @@
-import { useRequest } from '#utils/restRequest';
 import { useMemo } from 'react';
+
+import { useRequest } from '#utils/restRequest';
 
 // Cache object to store responses
 const cache = new Map<string, { data: PerDrefSummary; timestamp: number }>();
@@ -54,7 +55,7 @@ export interface PerDrefSummary {
  * Usage:
  *   const { response, pending, error, refetch } = usePerDrefSummary(drefId);
  */
-export default function usePerDrefSummary(drefId?: number) {
+export default function usePerDrefSummary() {
     const hardcodedId = 6955;
     const cacheKey = `dref-summary-${hardcodedId}`;
 
@@ -66,7 +67,9 @@ export default function usePerDrefSummary(drefId?: number) {
         return null;
     }, [cacheKey]);
 
-    const { response, pending, error, refetch } = useRequest<PerDrefSummary>({
+    const {
+        response, pending, error, refetch,
+    } = useRequest<PerDrefSummary>({
         skip: !!cachedData,
         url: '/api/v1/ucl/dref-summary/',
         query: { id: hardcodedId },

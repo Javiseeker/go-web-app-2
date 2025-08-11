@@ -14,7 +14,6 @@ import useGlobalEnums from '#hooks/domain/useGlobalEnums';
 import useIfrcEvents from '#hooks/domain/useIfrcEvents';
 import usePerDrefSituationalOverview from '#hooks/domain/usePerDrefSituationalOverview';
 import useRapidResponse from '#hooks/domain/useRapidResponse';
-
 import { type EmergencyOutletContext } from '#utils/outletContext';
 
 import Contacts from './Contacts';
@@ -23,28 +22,31 @@ import FieldReportStats from './FieldReportStats';
 import KeyFigures from './KeyFigures';
 import Overview from './Overview';
 import PreviousCrises from './PreviousCrises';
-import SituationalOverview from './SituationalOverview';
 import RapidResponse from './RapidResponse';
+import SituationalOverview from './SituationalOverview';
 
 import styles from './styles.module.css';
 
 /* ------------------------------------------------------------------ */
-/* Helper types & functions                                            */
+/* Types & helpers                                                     */
 /* ------------------------------------------------------------------ */
 
 type EventItem = GoApiResponse<'/api/v2/event/{id}'>;
 type FieldReport = EventItem['field_reports'][number];
+type Appeal = EventItem['appeals'][number];
 
 function getFieldReport(
     reports: FieldReport[],
     compareFn: (a?: string, b?: string, direction?: number) => number,
     direction?: number,
 ): FieldReport | undefined {
-    if (!reports.length) return undefined;
+    if (!reports.length) {
+        return undefined;
+    }
     return reports.reduce<FieldReport | undefined>((sel, cur) => {
         if (
-            isNotDefined(sel) ||
-            compareFn(cur?.updated_at, sel.updated_at, direction) > 0
+            isNotDefined(sel)
+            || compareFn(cur?.updated_at, sel.updated_at, direction) > 0
         ) {
             return cur;
         }
@@ -56,6 +58,8 @@ function getFieldReport(
 /* Component                                                           */
 /* ------------------------------------------------------------------ */
 
+/** @knipignore */
+// eslint-disable-next-line import/prefer-default-export
 export function Component() {
     /* ---------------- base data ---------------- */
     const disasterTypes = useDisasterType();
@@ -68,10 +72,17 @@ export function Component() {
     const countryId = emergencyResponse?.countries?.[0]?.id;
     const disasterTypeId = disasterType?.id;
 
-    /* ---------------- situational overview logic ---------------- */
-    const manualSO = emergencyResponse?.situational_overview; // ← field directly on the event
+    /* ---------- DREF detection (appeals only) ---------- */
+    const hasDref = Boolean(
+        emergencyResponse?.appeals?.some((a: Appeal) => {
+            const label = a?.type_display ?? '';
+            return typeof label === 'string' && /dref/i.test(label);
+        }),
+    );
 
-    // AI hook runs only when manual overview is missing
+    /* ---------------- situational overview logic ---------------- */
+    const manualSO = emergencyResponse?.situational_overview;
+
     const {
         response: aiSO,
         pending: aiPending,
@@ -80,17 +91,22 @@ export function Component() {
         manualSO ? undefined : emergencyResponse?.id,
     );
 
-    const overviewText   = manualSO ?? aiSO?.situational_overview;
-    const overviewMeta   = manualSO ? undefined : aiSO?.metadata;
-    const overviewPending= manualSO ? false : aiPending;
-    const overviewError  = manualSO ? undefined : aiError;
+    const overviewText = manualSO ?? aiSO?.situational_overview;
+    const overviewMeta = manualSO ? undefined : aiSO?.metadata;
+    const overviewPending = manualSO ? false : aiPending;
+    const overviewError = manualSO ? undefined : aiError;
 
     /* ---------------- other hooks ---------------- */
+    const shouldFetchIfrc = !hasDref && isDefined(countryId) && isDefined(disasterTypeId);
+
     const {
         response: ifrcEvents,
         pending: ifrcEventsPending,
         error: ifrcEventsError,
-    } = useIfrcEvents(countryId, disasterTypeId);
+    } = useIfrcEvents(
+        shouldFetchIfrc ? countryId : undefined,
+        shouldFetchIfrc ? disasterTypeId : undefined,
+    );
 
     const {
         response: rapidResponseData,
@@ -100,23 +116,22 @@ export function Component() {
 
     /* ---------------- misc data build ---------------- */
     const visibilityMap = useMemo(
-        () =>
-            listToMap(
-                api_visibility_choices,
-                ({ key }) => key,
-                ({ value }) => value,
-            ),
+        () => listToMap(
+            api_visibility_choices,
+            ({ key }) => key,
+            ({ value }) => value,
+        ),
         [api_visibility_choices],
     );
 
-    const hasKeyFigures =
-        isDefined(emergencyResponse) && emergencyResponse.key_figures.length > 0;
+    const hasKeyFigures = isDefined(emergencyResponse) && emergencyResponse.key_figures.length > 0;
 
-    const mdrCode =
-        emergencyResponse?.appeals?.length ? emergencyResponse.appeals[0].code : undefined;
+    const hasFieldReports = emergencyResponse?.field_reports
+        && emergencyResponse.field_reports.length > 0;
 
-    const hasFieldReports =
-        emergencyResponse?.field_reports && emergencyResponse.field_reports.length > 0;
+    const mdrCode = emergencyResponse?.appeals?.length
+        ? emergencyResponse.appeals[0].code
+        : undefined;
 
     const firstFieldReport = hasFieldReports
         ? getFieldReport(emergencyResponse.field_reports, compareDate, -1)
@@ -134,19 +149,67 @@ export function Component() {
             'event'
         >;
         let contacts: Contact[] | undefined = emergencyResponse?.contacts;
-        if (!contacts?.length) contacts = latestFieldReport?.contacts;
+        if (!contacts?.length) {
+            contacts = latestFieldReport?.contacts;
+        }
 
         const grouped = listToGroupList(
-            contacts?.map((c) => {
-                if (isNotDefined(c)) return undefined;
-                const { ctype } = c;
-                if (isNotDefined(ctype)) return undefined;
-                return { ...c, ctype };
-            }).filter(isDefined) ?? [],
+            contacts
+                ?.map((c) => {
+                    if (isNotDefined(c)) {
+                        return undefined;
+                    }
+                    const { ctype } = c;
+                    if (isNotDefined(ctype)) {
+                        return undefined;
+                    }
+                    return { ...c, ctype };
+                })
+                .filter(isDefined) ?? [],
             (c) => (c.email.endsWith('ifrc.org') ? 'IFRC' : 'National Societies'),
         );
         return grouped;
     }, [emergencyResponse?.contacts, latestFieldReport]);
+
+    /* ---------------- precomputed nodes (helps linting) ---------------- */
+    const emergencyMapNode = useMemo(() => {
+        if (!emergencyResponse || emergencyResponse.hide_field_report_map) {
+            return null;
+        }
+
+        return (
+            <Container
+                className={styles.mapContainer}
+                heading="Emergency Map"
+                withHeaderBorder
+            >
+                <EmergencyMap event={emergencyResponse} />
+            </Container>
+        );
+    }, [emergencyResponse]);
+
+    const fieldReportStatsNode = useMemo(() => {
+        if (
+            !hasFieldReports
+            || !latestFieldReport
+            || emergencyResponse?.hide_attached_field_reports
+        ) {
+            return null;
+        }
+
+        return (
+            <Container
+                className={styles.fieldReportStatsContainer}
+                heading="Field Report Statistics"
+                withHeaderBorder
+            >
+                <FieldReportStats
+                    report={latestFieldReport}
+                    disasterType={emergencyResponse!.dtype}
+                />
+            </Container>
+        );
+    }, [hasFieldReports, latestFieldReport, emergencyResponse]);
 
     /* ---------------- render ---------------- */
     return (
@@ -173,11 +236,14 @@ export function Component() {
                 error={overviewError}
             />
 
-            <PreviousCrises
-                ifrcEvents={ifrcEvents}
-                ifrcEventsPending={ifrcEventsPending}
-                ifrcEventsError={ifrcEventsError}
-            />
+            {/* Hide PreviousCrises (and skip fetch) when this emergency has a DREF */}
+            {!hasDref && (
+                <PreviousCrises
+                    ifrcEvents={ifrcEvents}
+                    ifrcEventsPending={ifrcEventsPending}
+                    ifrcEventsError={ifrcEventsError}
+                />
+            )}
 
             <RapidResponse
                 rapidResponseData={rapidResponseData}
@@ -186,30 +252,8 @@ export function Component() {
             />
 
             <div className={styles.mapKeyFigureContainer}>
-                {emergencyResponse && !emergencyResponse.hide_field_report_map && (
-                    <Container
-                        className={styles.mapContainer}
-                        heading="Emergency Map"
-                        withHeaderBorder
-                    >
-                        <EmergencyMap event={emergencyResponse} />
-                    </Container>
-                )}
-
-                {hasFieldReports &&
-                    latestFieldReport &&
-                    !emergencyResponse?.hide_attached_field_reports && (
-                        <Container
-                            className={styles.fieldReportStatsContainer}
-                            heading="Field Report Statistics"
-                            withHeaderBorder
-                        >
-                            <FieldReportStats
-                                report={latestFieldReport}
-                                disasterType={emergencyResponse!.dtype}
-                            />
-                        </Container>
-                    )}
+                {emergencyMapNode}
+                {fieldReportStatsNode}
             </div>
 
             {groupedContacts && Object.keys(groupedContacts).length > 0 && (

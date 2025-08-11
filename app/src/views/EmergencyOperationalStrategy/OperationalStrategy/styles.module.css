@@ -71,13 +71,13 @@
 }
 
 .seeHereLink {
+    border: none;
+    background: none;
+    cursor: pointer;
     text-decoration: underline;
     color: var(--go-ui-color-red);
-    text-underline-offset: 2px;
-    background: none;
-    border: none;
-    cursor: pointer;
     font-style: italic;
+    text-underline-offset: 2px;
 }
 
 /* Metadata Section */
@@ -85,17 +85,17 @@
     margin-bottom: var(--go-ui-spacing-xl);
     border: 1px solid var(--go-ui-color-separator);
     border-radius: var(--go-ui-border-radius-md);
-    background-color: var(--go-ui-color-foreground);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    background-color: var(--go-ui-color-foreground);
 }
 
 .metadataHeader {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    padding: var(--go-ui-spacing-md);
+    justify-content: space-between;
     border-bottom: 1px solid var(--go-ui-color-separator);
     background-color: var(--go-ui-color-gray-20);
+    padding: var(--go-ui-spacing-md);
 }
 
 .metadataHeader h3 {
@@ -105,12 +105,12 @@
 }
 
 .closeButton {
-    background: none;
     border: none;
-    font-size: var(--go-ui-font-size-lg);
+    background: none;
     cursor: pointer;
-    color: var(--go-ui-color-text-light);
     padding: var(--go-ui-spacing-xs);
+    color: var(--go-ui-color-text-light);
+    font-size: var(--go-ui-font-size-lg);
 }
 
 .closeButton:hover {
@@ -121,18 +121,12 @@
     padding: var(--go-ui-spacing-lg);
 }
 
-.metadataContent > .metadataGrid > .metadataInfo p {
-    margin: 0;
-    padding: var(--go-ui-spacing-sm) 0;
-    color: var(--go-ui-color-text);
-    font-size: var(--go-ui-font-size-sm);
-    line-height: 1.4;
-    border-bottom: 1px solid var(--go-ui-color-separator);
-}
+/* Removed the overly specific rule that caused descending specificity:
+   .metadataContent > .metadataGrid > .metadataInfo p { ... } */
 
 .metadataContent a {
-    color: var(--go-ui-color-red);
     text-decoration: underline;
+    color: var(--go-ui-color-red);
 }
 
 /* Metadata Grid Layout */
@@ -152,11 +146,11 @@
 
 .metadataInfo p {
     margin: 0;
+    border-bottom: 1px solid var(--go-ui-color-separator);
     padding: var(--go-ui-spacing-sm) 0;
+    line-height: 1.4;
     color: var(--go-ui-color-text);
     font-size: var(--go-ui-font-size-sm);
-    line-height: 1.4;
-    border-bottom: 1px solid var(--go-ui-color-separator);
 }
 
 .metadataInfo p:last-child,
@@ -167,17 +161,17 @@
 .metadataInfo p strong {
     display: block;
     margin-bottom: var(--go-ui-spacing-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
     color: var(--go-ui-color-text-light);
     font-size: var(--go-ui-font-size-xs);
     font-weight: var(--go-ui-font-weight-medium);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
 }
 
 .budgetFileSection {
     display: flex;
-    flex-direction: column;
     align-self: start;
+    flex-direction: column;
 }
 
 .budgetFileTitle {
@@ -197,12 +191,12 @@
 .fileItem {
     display: flex;
     align-items: center;
-    gap: var(--go-ui-spacing-md);
-    padding: var(--go-ui-spacing-md);
+    transition: box-shadow 0.2s ease;
     border: 1px solid var(--go-ui-color-separator);
     border-radius: var(--go-ui-border-radius-md);
     background-color: var(--go-ui-color-foreground);
-    transition: box-shadow 0.2s ease;
+    padding: var(--go-ui-spacing-md);
+    gap: var(--go-ui-spacing-md);
 }
 
 .fileItem:hover {
@@ -210,8 +204,8 @@
 }
 
 .fileIcon {
-    font-size: 2rem;
     flex-shrink: 0;
+    font-size: 2rem;
 }
 
 .fileDetails {
@@ -222,18 +216,18 @@
 .fileName {
     display: block;
     margin: 0 0 var(--go-ui-spacing-xs) 0;
-    padding: 0;
-    background: none;
     border: none;
+    background: none;
+    cursor: pointer;
+    padding: 0;
+    overflow: hidden;
+    text-align: left;
+    text-decoration: underline;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     color: var(--go-ui-color-red);
     font-size: var(--go-ui-font-size-md);
     font-weight: var(--go-ui-font-weight-medium);
-    text-align: left;
-    text-decoration: underline;
-    cursor: pointer;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
 }
 
 .fileName:hover {
@@ -242,9 +236,9 @@
 
 .fileDescription {
     margin: 0 0 var(--go-ui-spacing-xs) 0;
+    line-height: 1.4;
     color: var(--go-ui-color-text-light);
     font-size: var(--go-ui-font-size-sm);
-    line-height: 1.4;
 }
 
 .fileMeta {
@@ -260,25 +254,25 @@
 }
 
 .downloadButton {
-    flex-shrink: 0;
-    width: 40px;
-    height: 40px;
     display: flex;
     align-items: center;
+    flex-shrink: 0;
     justify-content: center;
-    background-color: var(--go-ui-color-gray-20);
+    transition: all 0.2s ease;
     border: 1px solid var(--go-ui-color-separator);
     border-radius: var(--go-ui-border-radius-sm);
+    background-color: var(--go-ui-color-gray-20);
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
     color: var(--go-ui-color-text);
     font-size: var(--go-ui-font-size-lg);
-    cursor: pointer;
-    transition: all 0.2s ease;
 }
 
 .downloadButton:hover {
+    border-color: var(--go-ui-color-red);
     background-color: var(--go-ui-color-red);
     color: var(--go-ui-color-white);
-    border-color: var(--go-ui-color-red);
 }
 
 /* Section Containers */
@@ -340,16 +334,16 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    transition: background-color 0.2s ease;
+    border: none;
     border-radius: var(--go-ui-border-radius-md) var(--go-ui-border-radius-md) 0 0;
     background-color: var(--go-ui-color-gray-20);
-    padding: var(--go-ui-spacing-lg);
     cursor: pointer;
-    user-select: none;
-    transition: background-color 0.2s ease;
+    padding: var(--go-ui-spacing-lg);
     width: 100%;
-    border: none;
-    font-family: inherit;
     text-align: left;
+    font-family: inherit;
+    user-select: none;
 }
 
 .sectorHeader:hover {
@@ -376,9 +370,9 @@
 
 .sectorMetrics {
     display: flex;
-    gap: var(--go-ui-spacing-xl);
-    margin-left: auto;
     margin-right: var(--go-ui-spacing-md);
+    margin-left: auto;
+    gap: var(--go-ui-spacing-xl);
 }
 
 .metricGroup {
@@ -393,21 +387,21 @@
 }
 
 .metricValue {
+    min-width: 100px;
+    text-align: right;
     color: var(--go-ui-color-text);
     font-size: var(--go-ui-font-size-md);
     font-weight: var(--go-ui-font-weight-bold);
-    min-width: 100px;
-    text-align: right;
 }
 
 .expandIcon {
+    display: flex;
+    align-items: center;
     flex-shrink: 0;
+    justify-content: center;
     min-width: 40px;
     color: var(--go-ui-color-text);
     font-size: var(--go-ui-font-size-md);
-    display: flex;
-    align-items: center;
-    justify-content: center;
     pointer-events: none;
 }
 
@@ -491,19 +485,19 @@
 /* Loading and Error States */
 .loadingContainer {
     display: flex;
-    flex-direction: column;
     align-items: center;
+    flex-direction: column;
     justify-content: center;
     min-height: 400px;
     gap: var(--go-ui-spacing-lg);
 }
 
 .loadingSpinner {
+    border: 3px solid var(--go-ui-color-gray-40);
+    border-radius: 50%;
+    border-top-color: var(--go-ui-color-red);
     width: 48px;
     height: 48px;
-    border: 3px solid var(--go-ui-color-gray-40);
-    border-top-color: var(--go-ui-color-red);
-    border-radius: 50%;
     animation: spin 1s linear infinite;
 }
 
@@ -514,9 +508,9 @@
 }
 
 .loadingText {
+    margin: 0;
     color: var(--go-ui-color-text-light);
     font-size: var(--go-ui-font-size-md);
-    margin: 0;
 }
 
 .errorText {
@@ -549,8 +543,8 @@
     }
     
     .fileItem {
-        flex-direction: column;
         align-items: flex-start;
+        flex-direction: column;
     }
         
     .fileIcon {
@@ -559,7 +553,10 @@
         
     .fileName {
         white-space: normal;
-        word-break: break-word;
+        word-break: normal;
+        word-wrap: break-word;  /* fallback for older engines */
+        /* replace deprecated `word-break: break-word` */
+        overflow-wrap: anywhere;
     }
         
     .downloadButton {
@@ -580,14 +577,14 @@
     .sectorMetrics {
         flex-direction: row;
         justify-content: space-between;
-        width: 100%;
-        margin-left: 0;
         margin-right: 0;
+        margin-left: 0;
+        width: 100%;
     }
 
     .metricGroup {
-        flex-direction: column;
         align-items: flex-start;
+        flex-direction: column;
         gap: var(--go-ui-spacing-xs);
     }
 

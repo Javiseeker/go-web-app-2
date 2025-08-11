@@ -13,11 +13,11 @@ interface Props {
     rapidResponseError?: unknown;
 }
 
-function RapidResponse({ 
-    className, 
-    rapidResponseData, 
-    rapidResponsePending, 
-    rapidResponseError 
+function RapidResponse({
+    className,
+    rapidResponseData,
+    rapidResponsePending,
+    rapidResponseError,
 }: Props) {
     const strings = useTranslation(i18n);
 
