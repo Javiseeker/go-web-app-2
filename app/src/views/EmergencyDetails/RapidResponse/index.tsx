@@ -3,7 +3,7 @@ import { useTranslation } from '@ifrc-go/ui/hooks';
 
 import type { RapidResponseData } from '#hooks/domain/useRapidResponse';
 
-import i18n from './i18n.json';
+import i18n from '../i18n.json';
 import styles from './styles.module.css';
 
 interface Props {
