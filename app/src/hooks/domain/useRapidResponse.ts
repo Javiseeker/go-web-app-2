@@ -1,5 +1,6 @@
-import { useRequest } from '#utils/restRequest';
 import { useMemo } from 'react';
+
+import { useRequest } from '#utils/restRequest';
 
 // Cache object to store responses
 const cache = new Map<string, { data: RapidResponseData; timestamp: number }>();
@@ -16,14 +17,17 @@ interface RapidResponseParams {
 
 /**
  * Usage:
- *   const { response, pending, error, refetch } = useRapidResponse({ country: 46, disaster_type: 2 });
+ *   const { response, pending, error, refetch } = useRapidResponse({
+ *       country: 46,
+ *       disaster_type: 2
+ *   });
  */
 export default function useRapidResponse(params: RapidResponseParams) {
     const { country, disaster_type } = params;
-    
+
     // Create cache key based on parameters
     const cacheKey = `rr-capacity-${country}-${disaster_type}`;
-    
+
     // Check cache
     const cachedData = useMemo(() => {
         const cached = cache.get(cacheKey);
@@ -33,8 +37,14 @@ export default function useRapidResponse(params: RapidResponseParams) {
         return null;
     }, [cacheKey]);
 
-    const { response, pending, error, refetch } = useRequest<RapidResponseData>({
-        skip: !!cachedData || !country || !disaster_type, // Skip if we have cached data or missing params
+    const {
+        response,
+        pending,
+        error,
+        refetch,
+    } = useRequest<RapidResponseData>({
+        // Skip if we have cached data or missing params
+        skip: !!cachedData || !country || !disaster_type,
         url: '/api/v1/ucl/rapid-response-capacity-questions/',
         query: {
             country,
@@ -43,7 +53,10 @@ export default function useRapidResponse(params: RapidResponseParams) {
         onSuccess: (data) => {
             // Cache the successful response
             if (data) {
-                cache.set(cacheKey, { data, timestamp: Date.now() });
+                cache.set(cacheKey, {
+                    data,
+                    timestamp: Date.now(),
+                });
             }
         },
     });

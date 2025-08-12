@@ -1,4 +1,7 @@
-import { Container, HtmlOutput } from '@ifrc-go/ui';
+import {
+    Container,
+    HtmlOutput,
+} from '@ifrc-go/ui';
 import { useTranslation } from '@ifrc-go/ui/hooks';
 import { isTruthyString } from '@togglecorp/fujs';
 
@@ -29,13 +32,17 @@ interface Props {
 }
 
 function SituationalOverview(props: Props) {
-    const { overviewText, metadata, pending, error } = props;
+    const {
+        overviewText, metadata, pending, error,
+    } = props;
     const strings = useTranslation(i18n);
 
     /* Format "ABC123 Country Hazard 2025" */
     const formattedMeta = () => {
         if (!metadata) return '';
-        const { dref_appeal_code, country, disaster_type, dref_date } = metadata;
+        const {
+            dref_appeal_code, country, disaster_type, dref_date,
+        } = metadata;
         const year = dref_date ? new Date(dref_date).getFullYear() : undefined;
         return [dref_appeal_code, country, disaster_type, year]
             .filter(isTruthyString)

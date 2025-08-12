@@ -1,7 +1,4 @@
-import {
-    useContext,
-    useMemo,
-} from 'react';
+import { useMemo } from 'react';
 import {
     Outlet,
     useParams,
@@ -34,19 +31,66 @@ import NavigationTab from '#components/NavigationTab';
 import Page from '#components/Page';
 import { adminUrl } from '#config';
 import useAuth from '#hooks/domain/useAuth';
+import usePerDrefSummary from '#hooks/domain/usePerDrefSummary';
 import usePermissions from '#hooks/domain/usePermissions';
 import useRegion from '#hooks/domain/useRegion';
 import useUserMe from '#hooks/domain/useUserMe';
-import usePerDrefSummary from '#hooks/domain/usePerDrefSummary';
 import { resolveUrl } from '#utils/resolveUrl';
 import {
     useLazyRequest,
     useRequest,
 } from '#utils/restRequest';
 
-
 import i18n from './i18n.json';
 import styles from './styles.module.css';
+
+// Type definitions for better type safety
+interface Country {
+    id: number;
+    name: string;
+    region: number;
+}
+
+interface Appeal {
+    num_beneficiaries?: number;
+    amount_requested?: number;
+    amount_funded?: number;
+}
+
+interface EmergencyResponse {
+    id: number;
+    name: string;
+    countries?: Country[];
+    appeals?: Appeal[];
+    tab_one_title?: string;
+    tab_two_title?: string;
+    tab_three_title?: string;
+    response_activity_count?: number;
+    active_deployments?: number;
+    translation_module_original_language?: string;
+    dref_id?: number;
+}
+
+interface EmergencySnippet {
+    tab: number;
+    [key: string]: unknown;
+}
+
+interface EmergencySnippetResponse {
+    results?: EmergencySnippet[];
+}
+
+interface SurgeAlertsResponse {
+    count?: number;
+}
+
+interface AdditionalTab {
+    name: string;
+    tabId: string;
+    routeName: 'emergencyAdditionalInfoOne' | 'emergencyAdditionalInfoTwo' | 'emergencyAdditionalInfoThree';
+    infoPageId: 1 | 2 | 3;
+    snippets: EmergencySnippet[];
+}
 
 /* function getRouteIdFromName(text: string) {
     return text.toLowerCase().trim().split(' ').join('-');
@@ -56,7 +100,10 @@ import styles from './styles.module.css';
 // eslint-disable-next-line import/prefer-default-export
 export function Component() {
     const { emergencyId } = useParams<{ emergencyId: string }>();
-    const { response: emergencyResponse, pending: emergencyPending } = useRequest({
+    const {
+        response: emergencyResponse,
+        pending: emergencyPending,
+    } = useRequest<EmergencyResponse>({
         // FIXME: need to check if emergencyId can be ''
         skip: isNotDefined(emergencyId),
         url: '/api/v2/event/{id}/',
@@ -66,14 +113,14 @@ export function Component() {
     });
 
     // Optionally prime the cache, but not used directly here
-    usePerDrefSummary((emergencyResponse as any)?.dref_id);
+    usePerDrefSummary(emergencyResponse?.dref_id);
 
     const strings = useTranslation(i18n);
 
     const {
         response: emergencySnippetResponse,
         pending: emergencySnippetPending,
-    } = useRequest({
+    } = useRequest<EmergencySnippetResponse>({
         // FIXME: need to check if emergencyId can be ''
         skip: isNotDefined(emergencyId),
         url: '/api/v2/event_snippet/',
@@ -86,7 +133,7 @@ export function Component() {
     // This could be done by adding surge alert count to the emergency instance API in future
     const {
         response: surgeAlertsResponse,
-    } = useRequest({
+    } = useRequest<SurgeAlertsResponse>({
         url: '/api/v2/surge_alert/',
         preserveResponse: true,
         query: {
@@ -135,36 +182,38 @@ export function Component() {
         () => true,
     );
 
-    const isSubscribed = isDefined(emergencyId) ? subscriptionMap[Number(emergencyId)] : false;
+    const isSubscribed = isDefined(emergencyId)
+        ? subscriptionMap[Number(emergencyId)]
+        : false;
 
     const { isAuthenticated } = useAuth();
     const { isGuestUser } = usePermissions();
     const subscriptionPending = addSubscriptionPending || removeSubscriptionPending;
     const isPending = emergencyPending || emergencySnippetPending;
 
-    const country: any = (emergencyResponse as any)?.countries?.[0];
-    const region: any = useRegion({ id: Number(country?.region) });
+    const country: Country | undefined = emergencyResponse?.countries?.[0];
+    const region = useRegion({ id: Number(country?.region) });
 
     const peopleTargeted = sumSafe(
-        (emergencyResponse as any)?.appeals?.map(
-            (appeal: any) => appeal.num_beneficiaries,
+        emergencyResponse?.appeals?.map(
+            (appeal: Appeal) => appeal.num_beneficiaries,
         ),
     );
     const fundingRequirements = sumSafe(
-        (emergencyResponse as any)?.appeals?.map(
-            (appeal: any) => appeal.amount_requested,
+        emergencyResponse?.appeals?.map(
+            (appeal: Appeal) => appeal.amount_requested,
         ),
     );
 
     const funding = sumSafe(
-        (emergencyResponse as any)?.appeals?.map(
-            (appeal: any) => appeal.amount_funded,
+        emergencyResponse?.appeals?.map(
+            (appeal: Appeal) => appeal.amount_funded,
         ),
     );
 
-    const emergencyAdditionalTabs = useMemo(() => {
-        const er: any = emergencyResponse;
-        const esr: any = emergencySnippetResponse;
+    const emergencyAdditionalTabs = useMemo((): AdditionalTab[] => {
+        const er = emergencyResponse;
+        const esr = emergencySnippetResponse;
         if (
             isNotDefined(er)
             || isNotDefined(esr)
@@ -188,7 +237,7 @@ export function Component() {
                 routeName: 'emergencyAdditionalInfoOne' as const,
                 infoPageId: 1 as const,
                 snippets: esr.results.filter(
-                    (snippet: any) => snippet.tab === 1,
+                    (snippet: EmergencySnippet) => snippet.tab === 1,
                 ),
             },
             {
@@ -197,7 +246,7 @@ export function Component() {
                 routeName: 'emergencyAdditionalInfoTwo' as const,
                 infoPageId: 2 as const,
                 snippets: esr.results.filter(
-                    (snippet: any) => snippet.tab === 2,
+                    (snippet: EmergencySnippet) => snippet.tab === 2,
                 ),
             },
             {
@@ -206,7 +255,7 @@ export function Component() {
                 routeName: 'emergencyAdditionalInfoThree' as const,
                 infoPageId: 3 as const,
                 snippets: esr.results.filter(
-                    (snippet: any) => snippet.tab === 3,
+                    (snippet: EmergencySnippet) => snippet.tab === 3,
                 ),
             },
         ].filter((tabInfo) => tabInfo.snippets.length > 0);
@@ -220,10 +269,10 @@ export function Component() {
         [emergencyResponse, emergencyAdditionalTabs],
     );
 
-    const showSurgeTab = ((surgeAlertsResponse as any)?.count ?? 0) > 0
-        || ((emergencyResponse as any)?.active_deployments ?? 0) > 0;
+    const showSurgeTab = (surgeAlertsResponse?.count ?? 0) > 0
+        || (emergencyResponse?.active_deployments ?? 0) > 0;
 
-    const er: any = emergencyResponse;
+    const er = emergencyResponse;
     const pageTitle = (isDefined(er) && isDefined(er.name))
         ? resolveToString(
             strings.emergencyPageTitle,
@@ -256,14 +305,21 @@ export function Component() {
                         name={Number(emergencyId)}
                         variant="secondary"
                         disabled={subscriptionPending}
-                        onClick={isSubscribed ? triggerRemoveSubscription : triggerAddSubscription}
+                        onClick={isSubscribed
+                            ? triggerRemoveSubscription
+                            : triggerAddSubscription}
                     >
-                        {isSubscribed ? strings.emergencyUnfollow : strings.emergencyFollow}
+                        {isSubscribed
+                            ? strings.emergencyUnfollow
+                            : strings.emergencyFollow}
                     </Button>
                     {!isGuestUser && (
                         <Link
                             external
-                            href={resolveUrl(adminUrl, `api/event/${emergencyId}/change/`)}
+                            href={resolveUrl(
+                                adminUrl,
+                                `api/event/${emergencyId}/change/`,
+                            )}
                             variant="secondary"
                             icons={<PencilFillIcon />}
                             disabled={isPending}

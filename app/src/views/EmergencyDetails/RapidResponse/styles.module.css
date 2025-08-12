@@ -16,14 +16,14 @@
 .fileItem {
     display: flex;
     align-items: center;
-    gap: var(--go-ui-spacing-md);
-    padding: var(--go-ui-spacing-lg);
+    transition: box-shadow 0.2s ease, background-color 0.2s ease;
     border: 1px solid var(--go-ui-color-separator);
     border-radius: var(--go-ui-border-radius-md);
-    background-color: var(--go-ui-color-foreground);
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    transition: box-shadow 0.2s ease, background-color 0.2s ease;
+    background-color: var(--go-ui-color-foreground);
     cursor: pointer;
+    padding: var(--go-ui-spacing-lg);
+    gap: var(--go-ui-spacing-md);
 }
 
 .fileItem:hover {
@@ -32,31 +32,31 @@
 }
 
 .fileIcon {
-    font-size: 2rem;
     flex-shrink: 0;
+    font-size: 2rem;
 }
 
 .fileDetails {
     flex: 1;
-    min-width: 0;
     cursor: default; /* so cursor pointer only on whole card or buttons */
+    min-width: 0;
 }
 
 .fileName {
     display: block;
     margin: 0 0 var(--go-ui-spacing-xs) 0;
-    padding: 0;
-    background: none;
     border: none;
+    background: none;
+    cursor: pointer;
+    padding: 0;
+    overflow: hidden;
+    text-align: left;
+    text-decoration: underline;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     color: var(--go-ui-color-red);
     font-size: var(--go-ui-font-size-md);
     font-weight: var(--go-ui-font-weight-bold);
-    text-align: left;
-    text-decoration: underline;
-    cursor: pointer;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
 }
 
 .fileName:hover {
@@ -65,9 +65,9 @@
 
 .fileDescription {
     margin: 0 0 var(--go-ui-spacing-xs) 0;
+    line-height: 1.4;
     color: var(--go-ui-color-text-light);
     font-size: var(--go-ui-font-size-sm);
-    line-height: 1.4;
 }
 
 .fileMeta {
@@ -83,32 +83,32 @@
 }
 
 .downloadButton {
-    flex-shrink: 0;
-    width: 40px;
-    height: 40px;
     display: flex;
     align-items: center;
+    flex-shrink: 0;
     justify-content: center;
-    background-color: var(--go-ui-color-gray-20);
+    transition: all 0.2s ease;
     border: 1px solid var(--go-ui-color-separator);
     border-radius: var(--go-ui-border-radius-sm);
+    background-color: var(--go-ui-color-gray-20);
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
     color: var(--go-ui-color-text);
     font-size: var(--go-ui-font-size-lg);
-    cursor: pointer;
-    transition: all 0.2s ease;
 }
 
 .downloadButton:hover {
+    border-color: var(--go-ui-color-red);
     background-color: var(--go-ui-color-red);
     color: var(--go-ui-color-white);
-    border-color: var(--go-ui-color-red);
 }
 
 /* Responsive tweaks */
 @media (max-width: 768px) {
     .fileItem {
-        flex-direction: column;
         align-items: flex-start;
+        flex-direction: column;
     }
     
     .fileIcon {
@@ -117,7 +117,10 @@
     
     .fileName {
         white-space: normal;
-        word-break: break-word;
+        word-break: normal;
+        word-wrap: break-word; /* legacy fallback */
+        /* modern replacement for deprecated `word-break: break-word` */
+        overflow-wrap: anywhere;
     }
     
     .downloadButton {

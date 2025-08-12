@@ -7,7 +7,7 @@ import { isDefined } from '@togglecorp/fujs';
 
 import SeverityIndicator from '#components/domain/SeverityIndicator';
 
-import i18n from './i18n.json';
+import i18n from '../i18n.json';
 import styles from './styles.module.css';
 
 type EmergencyResponse = {

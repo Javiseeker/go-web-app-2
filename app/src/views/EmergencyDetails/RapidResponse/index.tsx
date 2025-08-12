@@ -3,7 +3,7 @@ import { useTranslation } from '@ifrc-go/ui/hooks';
 
 import type { RapidResponseData } from '#hooks/domain/useRapidResponse';
 
-import i18n from './i18n.json';
+import i18n from '../i18n.json';
 import styles from './styles.module.css';
 
 interface Props {
@@ -13,11 +13,11 @@ interface Props {
     rapidResponseError?: unknown;
 }
 
-function RapidResponse({ 
-    className, 
-    rapidResponseData, 
-    rapidResponsePending, 
-    rapidResponseError 
+function RapidResponse({
+    className,
+    rapidResponseData,
+    rapidResponsePending,
+    rapidResponseError,
 }: Props) {
     const strings = useTranslation(i18n);
 
