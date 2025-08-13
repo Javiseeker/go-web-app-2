@@ -24,13 +24,18 @@ interface PerDrefSituationalOverviewResponse {
 /**
  * Usage:
  *   const { response, pending, error, refetch } = usePerDrefSituationalOverview(eventId);
- *
- * Note: Always fetches data for ID 6955 regardless of the eventId parameter
  */
-export default function usePerDrefSituationalOverview(eventId?: number) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export default function usePerDrefSituationalOverview(_eventId?: number) {
+    // ⚠️ ⚠️ ⚠️ CRITICAL: HARDCODED ID FOR TESTING ONLY - MUST BE CHANGED IN PRODUCTION ⚠️ ⚠️ ⚠️
+    // TODO: Remove hardcoded ID and use dynamic eventId parameter in production
+    // Currently hardcoded to 6955 for testing purposes - shows same data on all emergencies
+
+    const hardcodedId = 6955; // ← THIS MUST BE CHANGED TO USE eventId PARAMETER IN PRODUCTION!
+
     return useRequest<PerDrefSituationalOverviewResponse>({
-        skip: !eventId, // Still skip if no eventId is provided
+        skip: false, // Always fetch since we're using hardcoded ID
         url: '/api/v1/ucl/dref-situational-overview/',
-        query: { id: 6955 }, // Always use hardcoded ID 6955
+        query: { id: hardcodedId }, // Use hardcoded ID instead of eventId
     });
 }

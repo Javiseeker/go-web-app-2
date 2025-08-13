@@ -44,10 +44,26 @@ function SituationalOverview(props: Props) {
             dref_appeal_code, country, disaster_type, dref_date,
         } = metadata;
         const year = dref_date ? new Date(dref_date).getFullYear() : undefined;
+
+        // Filter out falsy values, handling both strings and numbers
         return [dref_appeal_code, country, disaster_type, year]
-            .filter(isTruthyString)
+            .filter((item) => item !== undefined && item !== null && item !== '')
             .join(' ');
     };
+
+    // Check if there's any content to show
+    const hasContent = isTruthyString(overviewText);
+    const hasMetadata = formattedMeta();
+
+    // Check if error is 404 (not found) - treat as no data instead of error
+    const is404Error = error && (
+        (typeof error === 'object' && 'status' in error && error.status === 404)
+        || (typeof error === 'object' && 'response' in error && error.response?.status === 404)
+        || (typeof error === 'string' && error.includes('404'))
+    );
+
+    // Real errors (not 404)
+    const hasRealError = error && !is404Error;
 
     return (
         <Container
@@ -56,23 +72,33 @@ function SituationalOverview(props: Props) {
             childrenContainerClassName={styles.situationalOverviewContent}
         >
             {pending && (
-                <p>{strings.loadingSituationalOverview || 'Loading Situational Overview…'}</p>
-            )}
-            {error && (
-                <p>{strings.errorLoadingSituationalOverview || 'Error loading overview'}</p>
+                <p>
+                    {strings.loadingSituationalOverview
+                    || 'Loading Situational Overview…'}
+                </p>
             )}
 
-            {!pending && !error && (
+            {hasRealError && (
+                <p>
+                    {strings.errorLoadingSituationalOverview
+                    || 'Error loading overview'}
+                </p>
+            )}
+
+            {!pending && !hasRealError && (
                 <>
-                    {isTruthyString(overviewText) ? (
+                    {hasContent ? (
                         <HtmlOutput value={overviewText} className={styles.summaryContent} />
                     ) : (
-                        <p>{strings.situationalOverviewNoData}</p>
+                        <p>
+                            {strings.situationalOverviewNoData
+                            || 'No situational overview available'}
+                        </p>
                     )}
 
-                    {formattedMeta() && (
+                    {hasMetadata && (
                         <div className={styles.metadataDisplay}>
-                            <span className={styles.metadataLabel}>{formattedMeta()}</span>
+                            <span className={styles.metadataLabel}>{hasMetadata}</span>
                         </div>
                     )}
                 </>

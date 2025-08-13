@@ -55,8 +55,13 @@ export interface PerDrefSummary {
  * Usage:
  *   const { response, pending, error, refetch } = usePerDrefSummary(drefId);
  */
-export default function usePerDrefSummary() {
-    const hardcodedId = 6955;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export default function usePerDrefSummary(_drefId?: number) {
+    // ⚠️ ⚠️ ⚠️ CRITICAL: HARDCODED ID FOR TESTING ONLY - MUST BE CHANGED IN PRODUCTION ⚠️ ⚠️ ⚠️
+    // TODO: Remove hardcoded ID and use dynamic drefId parameter in production
+    // Currently hardcoded to 6955 for testing purposes - shows same data on all emergencies
+
+    const hardcodedId = 6955; // ← THIS MUST BE CHANGED TO USE drefId PARAMETER IN PRODUCTION!
     const cacheKey = `dref-summary-${hardcodedId}`;
 
     const cachedData = useMemo(() => {
@@ -84,6 +89,9 @@ export default function usePerDrefSummary() {
         response: cachedData || response,
         pending: !cachedData && pending,
         error: !cachedData ? error : undefined,
-        refetch,
+        refetch: () => {
+            cache.delete(cacheKey);
+            return refetch();
+        },
     };
 }

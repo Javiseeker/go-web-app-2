@@ -1,0 +1,4470 @@
+diff --git a/.env.example b/.env.example
+new file mode 100644
+index 0000000..c7c7a02
+--- /dev/null
++++ b/.env.example
+@@ -0,0 +1,6 @@
++APP_TITLE="Test App"
++APP_ENVIRONMENT="testing"
++APP_API_ENDPOINT="https://fake.api.endpoint"
++APP_MAPBOX_ACCESS_TOKEN="test-mapbox-token"
++APP_TINY_API_KEY="test-tiny-key"
++APP_RISK_API_ENDPOINT="https://fake.risk.endpoint"
+diff --git a/app/src/App/routes/index.tsx b/app/src/App/routes/index.tsx
+index decd653..266cee9 100644
+--- a/app/src/App/routes/index.tsx
++++ b/app/src/App/routes/index.tsx
+@@ -222,6 +222,19 @@ const emergencyDetails = customWrapRoute({
+     },
+ });
+ 
++const emergencyOperationalStrategy = customWrapRoute({
++    parent: emergenciesLayout,
++    path: 'operational-strategy',
++    component: {
++        render: () => import('#views/EmergencyOperationalStrategy'),
++        props: {},
++    },
++    context: {
++        title: 'Emergency Operational Strategy',
++        visibility: 'anything',
++    },
++});
++
+ const emergencyReportsAndDocuments = customWrapRoute({
+     parent: emergenciesLayout,
+     path: 'reports',
+@@ -1255,6 +1268,7 @@ const wrappedRoutes = {
+     emergencyFollow,
+     emergenciesLayout,
+     emergencyDetails,
++    emergencyOperationalStrategy,
+     emergencyIndex,
+     emergencyReportsAndDocuments,
+     emergencyActivities,
+diff --git a/app/src/components/LessonCard/index.tsx b/app/src/components/LessonCard/index.tsx
+new file mode 100644
+index 0000000..a6dea8e
+--- /dev/null
++++ b/app/src/components/LessonCard/index.tsx
+@@ -0,0 +1,181 @@
++import type {
++    KeyboardEvent,
++    MouseEvent,
++} from 'react';
++
++interface OperationalLearningSource {
++  id: number;
++  code: string;
++  name: string;
++  event_id: number;
++}
++
++interface Lesson {
++  title?: string;
++  insight?: string;
++  source_note?: string;
++  area?: string;
++  rr_questions?: string[];
++  metadata?: {
++    operational_learning_source?: OperationalLearningSource[];
++  };
++  // Allow extra fields without using `any`
++  [key: string]: unknown;
++}
++
++interface LessonCardProps {
++  lesson: Lesson;
++  cardKey: string;
++  isOpen: boolean;
++  onToggle: (key: string) => void;
++  styles: Record<string, string>;
++}
++
++export default function LessonCard({
++    lesson,
++    cardKey,
++    isOpen,
++    onToggle,
++    styles,
++}: LessonCardProps) {
++    const handleClick = (): void => {
++        onToggle(cardKey);
++    };
++
++    const handleKeyDown = (e: KeyboardEvent): void => {
++        if (e.key === 'Enter' || e.key === ' ') {
++            e.preventDefault();
++            onToggle(cardKey);
++        }
++    };
++
++    const sources = lesson?.metadata?.operational_learning_source ?? [];
++
++    const hasQuestions = Array.isArray(lesson.rr_questions)
++    && lesson.rr_questions.length > 0;
++
++    const hasAreaOnly = !hasQuestions && !!lesson.area;
++
++    const getAreaTagStyle = (area: string) => ({
++        fontSize: area.length > 15 ? '8px' : '10px',
++    });
++
++    const makeEventUrl = (id: number) => `https://go.ifrc.org/emergencies/${id}/details`;
++
++    return (
++        <div
++            className={`${styles.card} ${isOpen ? styles.open : ''}`}
++            onClick={handleClick}
++            onKeyDown={handleKeyDown}
++            role="button"
++            tabIndex={0}
++            aria-expanded={isOpen}
++            aria-controls={`details-${cardKey}`}
++        >
++            <h3 className={styles.title}>{lesson.title}</h3>
++
++            {lesson.insight && (
++                <p className={styles.insight}>{lesson.insight}</p>
++            )}
++
++            <div className={styles.expandHint}>
++                {isOpen ? 'Hide details ↑' : 'View details ↓'}
++            </div>
++
++            {isOpen && (
++                <div id={`details-${cardKey}`}>
++                    {lesson.source_note && (
++                        <div className={styles.sourceNote}>
++                            <p className={styles.sourceNoteText}>
++                                {lesson.source_note}
++                            </p>
++                        </div>
++                    )}
++
++                    {hasQuestions && (
++                        <div className={styles.rrSection}>
++                            <div className={styles.rrHeader}>
++                                <h4 className={styles.rrHeading}>
++                                    Rapid Response Questions
++                                </h4>
++                                {lesson.area && (
++                                    <span
++                                        className={styles.areaTag}
++                                        style={getAreaTagStyle(lesson.area)}
++                                    >
++                                        {lesson.area}
++                                    </span>
++                                )}
++                            </div>
++                            <ul className={styles.rrList}>
++                                {lesson.rr_questions!.map((q) => (
++                                    <li
++                                        key={`question-${cardKey}-${q.slice(0, 24)}`}
++                                        className={styles.rrItem}
++                                    >
++                                        {q}
++                                    </li>
++                                ))}
++                            </ul>
++                        </div>
++                    )}
++
++                    {hasAreaOnly && (
++                        <div className={styles.areaOnlySection}>
++                            <span
++                                className={styles.areaTag}
++                                style={getAreaTagStyle(lesson.area!)}
++                            >
++                                {lesson.area}
++                            </span>
++                        </div>
++                    )}
++
++                    {sources.length > 0 && (
++                        <div className={styles.sourcesBlock}>
++                            <h4 className={styles.sourcesHeading}>
++                                Operational Learning Resources
++                            </h4>
++
++                            {sources.map((source) => (
++                                <div
++                                    key={`source-${source.id}`}
++                                    className={styles.sourceRow}
++                                >
++                                    <div className={styles.sourceDetails}>
++                                        <div className={styles.sourceNameCode}>
++                                            {source.name}
++                                            {' '}
++                                            (
++                                            {source.code}
++                                            )
++                                        </div>
++
++                                        <div className={styles.learningId}>
++                                            Learning ID:
++                                            {' '}
++                                            {source.id}
++                                        </div>
++                                    </div>
++
++                                    {/* Use a real link; stop propagation so it doesn't toggle */}
++                                    <a
++                                        href={makeEventUrl(source.event_id)}
++                                        target="_blank"
++                                        rel="noopener noreferrer"
++                                        className={styles.eventLink}
++                                        onClick={(e: MouseEvent) => {
++                                            e.stopPropagation();
++                                        }}
++                                    >
++                                        View Event
++                                    </a>
++                                </div>
++                            ))}
++                        </div>
++                    )}
++                </div>
++            )}
++        </div>
++    );
++}
+diff --git a/app/src/hooks/domain/useIfrcEvents.ts b/app/src/hooks/domain/useIfrcEvents.ts
+new file mode 100644
+index 0000000..32efb5d
+--- /dev/null
++++ b/app/src/hooks/domain/useIfrcEvents.ts
+@@ -0,0 +1,83 @@
++import { useMemo } from 'react';
++
++import { useRequest } from '#utils/restRequest';
++
++const cache = new Map<string, { data: IfrcEvent; timestamp: number }>();
++const CACHE_DURATION = 10 * 60 * 1000; // 10 minutes
++
++interface OperationalLearningSource {
++  id: number;
++  code: string;
++  name: string;
++  event_id: number;
++}
++
++interface LessonMetadata {
++  eventID?: number[];
++  operational_learning_source?: OperationalLearningSource[];
++}
++
++interface Lesson {
++  title: string;
++  insight: string;
++  recommendations?: string[];
++  source_note?: string;
++  area?: string;
++  rr_questions?: string[];
++  metadata?: LessonMetadata;
++}
++
++export interface IfrcEvent {
++  ai_structured_summary: Lesson[];
++  fallback_note?: string;
++}
++
++export default function useIfrcEvents(
++    countryId?: number,
++    disasterTypeId?: number,
++) {
++    const skip = !(countryId && disasterTypeId);
++    const cacheKey = `ifrc-events-${countryId}-${disasterTypeId}`;
++
++    // Check cache
++    const cachedData = useMemo(() => {
++        if (skip) return null;
++        const cached = cache.get(cacheKey);
++        if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
++            return cached.data;
++        }
++        return null;
++    }, [cacheKey, skip]);
++
++    const {
++        response, pending, error, refetch,
++    } = useRequest<IfrcEvent>({
++        skip: skip || !!cachedData,
++        // v2 endpoint with the same query params
++        url: '/api/v2/ifrc-events/',
++        query: skip
++            ? undefined
++            : {
++                country: countryId,
++                disaster_type: disasterTypeId,
++            },
++        onSuccess: (data) => {
++            if (data && !skip) {
++                cache.set(cacheKey, {
++                    data,
++                    timestamp: Date.now(),
++                });
++            }
++        },
++    });
++
++    return {
++        response: cachedData || response,
++        pending: !cachedData && pending,
++        error: !cachedData ? error : undefined,
++        refetch: () => {
++            cache.delete(cacheKey);
++            return refetch();
++        },
++    };
++}
+diff --git a/app/src/hooks/domain/usePerDrefSituationalOverview.ts b/app/src/hooks/domain/usePerDrefSituationalOverview.ts
+new file mode 100644
+index 0000000..1bd1cf4
+--- /dev/null
++++ b/app/src/hooks/domain/usePerDrefSituationalOverview.ts
+@@ -0,0 +1,36 @@
++/* ------------------------------------------------------------------
++   hook: usePerDrefSituationalOverview
++   Fetch PER-DREF situational overview for emergency response details
++------------------------------------------------------------------- */
++
++import { useRequest } from '#utils/restRequest';
++
++interface PerDrefSituationalOverviewResponse {
++    situational_overview: string;
++    metadata: {
++        event_id: number;
++        event_name: string;
++        disaster_type: string;
++        country: string;
++        latest_update_number: number;
++        total_operational_updates: number;
++        dref_id: number;
++        dref_title: string;
++        dref_appeal_code: string; // Added appeal code
++        dref_date: string;
++    };
++}
++
++/**
++ * Usage:
++ *   const { response, pending, error, refetch } = usePerDrefSituationalOverview(eventId);
++ *
++ * Note: Always fetches data for ID 6955 regardless of the eventId parameter
++ */
++export default function usePerDrefSituationalOverview(eventId?: number) {
++    return useRequest<PerDrefSituationalOverviewResponse>({
++        skip: !eventId, // Still skip if no eventId is provided
++        url: '/api/v1/ucl/dref-situational-overview/',
++        query: { id: 6955 }, // Always use hardcoded ID 6955
++    });
++}
+diff --git a/app/src/hooks/domain/usePerDrefSummary.ts b/app/src/hooks/domain/usePerDrefSummary.ts
+new file mode 100644
+index 0000000..95a6a7c
+--- /dev/null
++++ b/app/src/hooks/domain/usePerDrefSummary.ts
+@@ -0,0 +1,89 @@
++import { useMemo } from 'react';
++
++import { useRequest } from '#utils/restRequest';
++
++// Cache object to store responses
++const cache = new Map<string, { data: PerDrefSummary; timestamp: number }>();
++const CACHE_DURATION = 10 * 60 * 1000; // 10 minutes
++
++interface Indicator {
++    title: string;
++    people_targeted: number;
++}
++
++interface FutureAction {
++    indicators: Indicator[];
++    budget: number;
++    people_targeted_total: number | null;
++    intervention_summary: string;
++    _description: string;
++}
++
++interface Sector {
++    title: string;
++    title_display: string;
++    actions_taken_summary?: string;
++    needs_summary: string;
++    future_actions: FutureAction[];
++}
++
++interface Metadata {
++    dref_id: number;
++    dref_title: string;
++    dref_appeal_code: string;
++    dref_date: string;
++    dref_created_at: string;
++    dref_budget_file: string;
++    dref_op_update_number: number;
++    dref_source?: string;
++    event_id?: number;
++    event_name?: string;
++    field_reports_count?: number;
++    status?: string;
++    errors?: string[];
++}
++
++export interface PerDrefSummary {
++    operational_summary: string;
++    sectors: Sector[];
++    dref_type: string;
++    dref_onset: string;
++    metadata?: Metadata;
++}
++
++/**
++ * Usage:
++ *   const { response, pending, error, refetch } = usePerDrefSummary(drefId);
++ */
++export default function usePerDrefSummary() {
++    const hardcodedId = 6955;
++    const cacheKey = `dref-summary-${hardcodedId}`;
++
++    const cachedData = useMemo(() => {
++        const cached = cache.get(cacheKey);
++        if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
++            return cached.data;
++        }
++        return null;
++    }, [cacheKey]);
++
++    const {
++        response, pending, error, refetch,
++    } = useRequest<PerDrefSummary>({
++        skip: !!cachedData,
++        url: '/api/v1/ucl/dref-summary/',
++        query: { id: hardcodedId },
++        onSuccess: (data) => {
++            if (data) {
++                cache.set(cacheKey, { data, timestamp: Date.now() });
++            }
++        },
++    });
++
++    return {
++        response: cachedData || response,
++        pending: !cachedData && pending,
++        error: !cachedData ? error : undefined,
++        refetch,
++    };
++}
+diff --git a/app/src/hooks/domain/useRapidResponse.ts b/app/src/hooks/domain/useRapidResponse.ts
+new file mode 100644
+index 0000000..16611ad
+--- /dev/null
++++ b/app/src/hooks/domain/useRapidResponse.ts
+@@ -0,0 +1,71 @@
++import { useMemo } from 'react';
++
++import { useRequest } from '#utils/restRequest';
++
++// Cache object to store responses
++const cache = new Map<string, { data: RapidResponseData; timestamp: number }>();
++const CACHE_DURATION = 10 * 60 * 1000; // 10 minutes in milliseconds
++
++export interface RapidResponseData {
++    file_url: string;
++}
++
++interface RapidResponseParams {
++    country?: number;
++    disaster_type?: number;
++}
++
++/**
++ * Usage:
++ *   const { response, pending, error, refetch } = useRapidResponse({
++ *       country: 46,
++ *       disaster_type: 2
++ *   });
++ */
++export default function useRapidResponse(params: RapidResponseParams) {
++    const { country, disaster_type } = params;
++
++    // Create cache key based on parameters
++    const cacheKey = `rr-capacity-${country}-${disaster_type}`;
++
++    // Check cache
++    const cachedData = useMemo(() => {
++        const cached = cache.get(cacheKey);
++        if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
++            return cached.data;
++        }
++        return null;
++    }, [cacheKey]);
++
++    const {
++        response,
++        pending,
++        error,
++        refetch,
++    } = useRequest<RapidResponseData>({
++        // Skip if we have cached data or missing params
++        skip: !!cachedData || !country || !disaster_type,
++        url: '/api/v1/ucl/rapid-response-capacity-questions/',
++        query: {
++            country,
++            disaster_type,
++        },
++        onSuccess: (data) => {
++            // Cache the successful response
++            if (data) {
++                cache.set(cacheKey, {
++                    data,
++                    timestamp: Date.now(),
++                });
++            }
++        },
++    });
++
++    // Return cached data if available, otherwise return fresh response
++    return {
++        response: cachedData || response,
++        pending: !cachedData && pending,
++        error: !cachedData ? error : undefined,
++        refetch,
++    };
++}
+diff --git a/app/src/views/Emergency/i18n.json b/app/src/views/Emergency/i18n.json
+index 0e4d37c..d491296 100644
+--- a/app/src/views/Emergency/i18n.json
++++ b/app/src/views/Emergency/i18n.json
+@@ -4,6 +4,7 @@
+         "emergencyPageTitle": "IFRC GO - Emergency - {emergencyName}",
+         "emergencyPageTitleFallback": "IFRC GO - Emergency",
+         "emergencyTabDetails":"Emergency Details",
++        "emergencyTabOperationalStrategy":"Operation Strategy",
+         "emergencyTabReports":"Reports/Documents",
+         "emergencyTabActivities":"Activities",
+         "emergencyTabSurge":"Surge",
+@@ -16,4 +17,4 @@
+         "emergencyFollow":"Follow",
+         "emergencyUnfollow":"Unfollow"
+     }
+-}
++}
+\ No newline at end of file
+diff --git a/app/src/views/Emergency/index.tsx b/app/src/views/Emergency/index.tsx
+index 973f82f..60b0e5d 100644
+--- a/app/src/views/Emergency/index.tsx
++++ b/app/src/views/Emergency/index.tsx
+@@ -1,7 +1,4 @@
+-import {
+-    useContext,
+-    useMemo,
+-} from 'react';
++import { useMemo } from 'react';
+ import {
+     Outlet,
+     useParams,
+@@ -33,12 +30,11 @@ import Link from '#components/Link';
+ import NavigationTab from '#components/NavigationTab';
+ import Page from '#components/Page';
+ import { adminUrl } from '#config';
+-import DomainContext from '#contexts/domain';
+ import useAuth from '#hooks/domain/useAuth';
++import usePerDrefSummary from '#hooks/domain/usePerDrefSummary';
+ import usePermissions from '#hooks/domain/usePermissions';
+ import useRegion from '#hooks/domain/useRegion';
+ import useUserMe from '#hooks/domain/useUserMe';
+-import { type EmergencyOutletContext } from '#utils/outletContext';
+ import { resolveUrl } from '#utils/resolveUrl';
+ import {
+     useLazyRequest,
+@@ -48,23 +44,66 @@ import {
+ import i18n from './i18n.json';
+ import styles from './styles.module.css';
+ 
+-/*
+-function getRouteIdFromName(text: string) {
+-    return text.toLowerCase().trim().split(' ').join('-');
++// Type definitions for better type safety
++interface Country {
++    id: number;
++    name: string;
++    region: number;
++}
++
++interface Appeal {
++    num_beneficiaries?: number;
++    amount_requested?: number;
++    amount_funded?: number;
++}
++
++interface EmergencyResponse {
++    id: number;
++    name: string;
++    countries?: Country[];
++    appeals?: Appeal[];
++    tab_one_title?: string;
++    tab_two_title?: string;
++    tab_three_title?: string;
++    response_activity_count?: number;
++    active_deployments?: number;
++    translation_module_original_language?: string;
++    dref_id?: number;
++}
++
++interface EmergencySnippet {
++    tab: number;
++    [key: string]: unknown;
++}
++
++interface EmergencySnippetResponse {
++    results?: EmergencySnippet[];
++}
++
++interface SurgeAlertsResponse {
++    count?: number;
++}
++
++interface AdditionalTab {
++    name: string;
++    tabId: string;
++    routeName: 'emergencyAdditionalInfoOne' | 'emergencyAdditionalInfoTwo' | 'emergencyAdditionalInfoThree';
++    infoPageId: 1 | 2 | 3;
++    snippets: EmergencySnippet[];
+ }
+-*/
++
++/* function getRouteIdFromName(text: string) {
++    return text.toLowerCase().trim().split(' ').join('-');
++} */
+ 
+ /** @knipignore */
+ // eslint-disable-next-line import/prefer-default-export
+ export function Component() {
+     const { emergencyId } = useParams<{ emergencyId: string }>();
+-    const strings = useTranslation(i18n);
+-    const { invalidate } = useContext(DomainContext);
+-
+     const {
+         response: emergencyResponse,
+         pending: emergencyPending,
+-    } = useRequest({
++    } = useRequest<EmergencyResponse>({
+         // FIXME: need to check if emergencyId can be ''
+         skip: isNotDefined(emergencyId),
+         url: '/api/v2/event/{id}/',
+@@ -73,10 +112,15 @@ export function Component() {
+         },
+     });
+ 
++    // Optionally prime the cache, but not used directly here
++    usePerDrefSummary(emergencyResponse?.dref_id);
++
++    const strings = useTranslation(i18n);
++
+     const {
+         response: emergencySnippetResponse,
+         pending: emergencySnippetPending,
+-    } = useRequest({
++    } = useRequest<EmergencySnippetResponse>({
+         // FIXME: need to check if emergencyId can be ''
+         skip: isNotDefined(emergencyId),
+         url: '/api/v2/event_snippet/',
+@@ -89,7 +133,7 @@ export function Component() {
+     // This could be done by adding surge alert count to the emergency instance API in future
+     const {
+         response: surgeAlertsResponse,
+-    } = useRequest({
++    } = useRequest<SurgeAlertsResponse>({
+         url: '/api/v2/surge_alert/',
+         preserveResponse: true,
+         query: {
+@@ -109,7 +153,7 @@ export function Component() {
+             value: eventId,
+         }]),
+         onSuccess: () => {
+-            invalidate('user-me');
++            // invalidate('user-me'); // Removed as per edit hint
+         },
+     });
+ 
+@@ -123,7 +167,7 @@ export function Component() {
+             value: eventId,
+         }]),
+         onSuccess: () => {
+-            invalidate('user-me');
++            // invalidate('user-me'); // Removed as per edit hint
+         },
+     });
+     const meResponse = useUserMe();
+@@ -138,45 +182,49 @@ export function Component() {
+         () => true,
+     );
+ 
+-    const isSubscribed = isDefined(emergencyId) ? subscriptionMap[Number(emergencyId)] : false;
++    const isSubscribed = isDefined(emergencyId)
++        ? subscriptionMap[Number(emergencyId)]
++        : false;
+ 
+     const { isAuthenticated } = useAuth();
+     const { isGuestUser } = usePermissions();
+     const subscriptionPending = addSubscriptionPending || removeSubscriptionPending;
+     const isPending = emergencyPending || emergencySnippetPending;
+ 
+-    const country = emergencyResponse?.countries[0];
++    const country: Country | undefined = emergencyResponse?.countries?.[0];
+     const region = useRegion({ id: Number(country?.region) });
+ 
+     const peopleTargeted = sumSafe(
+-        emergencyResponse?.appeals.map(
+-            (appeal) => appeal.num_beneficiaries,
++        emergencyResponse?.appeals?.map(
++            (appeal: Appeal) => appeal.num_beneficiaries,
+         ),
+     );
+     const fundingRequirements = sumSafe(
+-        emergencyResponse?.appeals.map(
+-            (appeal) => appeal.amount_requested,
++        emergencyResponse?.appeals?.map(
++            (appeal: Appeal) => appeal.amount_requested,
+         ),
+     );
+ 
+     const funding = sumSafe(
+-        emergencyResponse?.appeals.map(
+-            (appeal) => appeal.amount_funded,
++        emergencyResponse?.appeals?.map(
++            (appeal: Appeal) => appeal.amount_funded,
+         ),
+     );
+ 
+-    const emergencyAdditionalTabs = useMemo(() => {
++    const emergencyAdditionalTabs = useMemo((): AdditionalTab[] => {
++        const er = emergencyResponse;
++        const esr = emergencySnippetResponse;
+         if (
+-            isNotDefined(emergencyResponse)
+-            || isNotDefined(emergencySnippetResponse)
+-            || isNotDefined(emergencySnippetResponse.results)
++            isNotDefined(er)
++            || isNotDefined(esr)
++            || isNotDefined(esr.results)
+         ) {
+             return [];
+         }
+ 
+-        const tabOneTitle = emergencyResponse.tab_one_title || 'Additional Info 1';
+-        const tabTwoTitle = emergencyResponse.tab_two_title || 'Additional Info 2';
+-        const tabThreeTitle = emergencyResponse.tab_three_title || 'Additional Info 3';
++        const tabOneTitle = er.tab_one_title || 'Additional Info 1';
++        const tabTwoTitle = er.tab_two_title || 'Additional Info 2';
++        const tabThreeTitle = er.tab_three_title || 'Additional Info 3';
+ 
+         function toKebabCase(str: string) {
+             return str.toLocaleLowerCase().split(' ').join('-');
+@@ -188,8 +236,8 @@ export function Component() {
+                 tabId: toKebabCase(tabOneTitle),
+                 routeName: 'emergencyAdditionalInfoOne' as const,
+                 infoPageId: 1 as const,
+-                snippets: emergencySnippetResponse.results.filter(
+-                    (snippet) => snippet.tab === 1,
++                snippets: esr.results.filter(
++                    (snippet: EmergencySnippet) => snippet.tab === 1,
+                 ),
+             },
+             {
+@@ -197,8 +245,8 @@ export function Component() {
+                 tabId: toKebabCase(tabTwoTitle),
+                 routeName: 'emergencyAdditionalInfoTwo' as const,
+                 infoPageId: 2 as const,
+-                snippets: emergencySnippetResponse.results.filter(
+-                    (snippet) => snippet.tab === 2,
++                snippets: esr.results.filter(
++                    (snippet: EmergencySnippet) => snippet.tab === 2,
+                 ),
+             },
+             {
+@@ -206,14 +254,14 @@ export function Component() {
+                 tabId: toKebabCase(tabThreeTitle),
+                 routeName: 'emergencyAdditionalInfoThree' as const,
+                 infoPageId: 3 as const,
+-                snippets: emergencySnippetResponse.results.filter(
+-                    (snippet) => snippet.tab === 3,
++                snippets: esr.results.filter(
++                    (snippet: EmergencySnippet) => snippet.tab === 3,
+                 ),
+             },
+         ].filter((tabInfo) => tabInfo.snippets.length > 0);
+     }, [emergencyResponse, emergencySnippetResponse]);
+ 
+-    const outletContext = useMemo<EmergencyOutletContext>(
++    const outletContext = useMemo(
+         () => ({
+             emergencyResponse,
+             emergencyAdditionalTabs,
+@@ -224,10 +272,11 @@ export function Component() {
+     const showSurgeTab = (surgeAlertsResponse?.count ?? 0) > 0
+         || (emergencyResponse?.active_deployments ?? 0) > 0;
+ 
+-    const pageTitle = (isDefined(emergencyResponse) && isDefined(emergencyResponse.name))
++    const er = emergencyResponse;
++    const pageTitle = (isDefined(er) && isDefined(er.name))
+         ? resolveToString(
+             strings.emergencyPageTitle,
+-            { emergencyName: emergencyResponse.name },
++            { emergencyName: er.name },
+         ) : strings.emergencyPageTitleFallback;
+ 
+     return (
+@@ -246,7 +295,7 @@ export function Component() {
+                         to="emergencyDetails"
+                         urlParams={{ emergencyId }}
+                     >
+-                        {emergencyResponse?.name}
++                        {er?.name}
+                     </Link>
+                 </Breadcrumbs>
+             )}
+@@ -256,14 +305,21 @@ export function Component() {
+                         name={Number(emergencyId)}
+                         variant="secondary"
+                         disabled={subscriptionPending}
+-                        onClick={isSubscribed ? triggerRemoveSubscription : triggerAddSubscription}
++                        onClick={isSubscribed
++                            ? triggerRemoveSubscription
++                            : triggerAddSubscription}
+                     >
+-                        {isSubscribed ? strings.emergencyUnfollow : strings.emergencyFollow}
++                        {isSubscribed
++                            ? strings.emergencyUnfollow
++                            : strings.emergencyFollow}
+                     </Button>
+                     {!isGuestUser && (
+                         <Link
+                             external
+-                            href={resolveUrl(adminUrl, `api/event/${emergencyId}/change/`)}
++                            href={resolveUrl(
++                                adminUrl,
++                                `api/event/${emergencyId}/change/`,
++                            )}
+                             variant="secondary"
+                             icons={<PencilFillIcon />}
+                             disabled={isPending}
+@@ -273,7 +329,7 @@ export function Component() {
+                     )}
+                 </>
+             )}
+-            heading={emergencyResponse?.name ?? '--'}
++            heading={er?.name ?? '--'}
+             description={(
+                 <>
+                     <Link
+@@ -316,7 +372,6 @@ export function Component() {
+                             compactValue
+                             label={strings.emergencyFundingRequirementsLabel}
+                         />
+-
+                     )}
+                     {isDefined(funding) && (
+                         <KeyFigure
+@@ -329,7 +384,7 @@ export function Component() {
+                     )}
+                 </>
+             )}
+-            contentOriginalLanguage={emergencyResponse?.translation_module_original_language}
++            contentOriginalLanguage={er?.translation_module_original_language}
+         >
+             <NavigationTabList>
+                 <NavigationTab
+@@ -338,13 +393,19 @@ export function Component() {
+                 >
+                     {strings.emergencyTabDetails}
+                 </NavigationTab>
++                <NavigationTab
++                    to="emergencyOperationalStrategy"
++                    urlParams={{ emergencyId }}
++                >
++                    {strings.emergencyTabOperationalStrategy}
++                </NavigationTab>
+                 <NavigationTab
+                     to="emergencyReportsAndDocuments"
+                     urlParams={{ emergencyId }}
+                 >
+                     {strings.emergencyTabReports}
+                 </NavigationTab>
+-                {(emergencyResponse?.response_activity_count ?? 0) > 0 && (
++                {(er?.response_activity_count ?? 0) > 0 && (
+                     <NavigationTab
+                         to="emergencyActivities"
+                         urlParams={{ emergencyId }}
+@@ -375,7 +436,7 @@ export function Component() {
+                 ))}
+             </NavigationTabList>
+             <Outlet
+-                context={outletContext}
++                context={{ ...outletContext, drefId: er?.dref_id }}
+             />
+         </Page>
+     );
+diff --git a/app/src/views/EmergencyDetails/Contacts/i18n.json b/app/src/views/EmergencyDetails/Contacts/i18n.json
+new file mode 100644
+index 0000000..40f83da
+--- /dev/null
++++ b/app/src/views/EmergencyDetails/Contacts/i18n.json
+@@ -0,0 +1,8 @@
++{
++    "namespace": "emergencyDetails",
++    "strings": {
++      "contactsTitle": "Contacts",
++      "emergencyContactsTitle": "Emergency Contacts"
++    }
++  }
++  
+\ No newline at end of file
+diff --git a/app/src/views/EmergencyDetails/Contacts/index.tsx b/app/src/views/EmergencyDetails/Contacts/index.tsx
+new file mode 100644
+index 0000000..3070c6a
+--- /dev/null
++++ b/app/src/views/EmergencyDetails/Contacts/index.tsx
+@@ -0,0 +1,78 @@
++import {
++    Container,
++    TextOutput,
++} from '@ifrc-go/ui';
++import { useTranslation } from '@ifrc-go/ui/hooks';
++import { isTruthyString } from '@togglecorp/fujs';
++
++import Link from '#components/Link';
++
++import i18n from './i18n.json';
++import styles from './styles.module.css';
++
++type Contact = {
++    id: number;
++    name: string;
++    title: string;
++    ctype: string;
++    email?: string;
++    phone?: string;
++};
++
++interface Props {
++    groupedContacts: Record<string, Contact[]>;
++}
++
++function Contacts(props: Props) {
++    const { groupedContacts } = props;
++    const strings = useTranslation(i18n);
++
++    return (
++        <Container
++            heading={strings.contactsTitle}
++            childrenContainerClassName={styles.contactsContent}
++            withHeaderBorder
++        >
++            {Object.entries(groupedContacts).map(([contactGroup, contacts]) => (
++                <Container
++                    key={contactGroup}
++                    heading={contactGroup}
++                    childrenContainerClassName={styles.contactList}
++                    headingLevel={4}
++                >
++                    {contacts.map((contact) => (
++                        <div key={contact.id} className={styles.contact}>
++                            <div className={styles.details}>
++                                <div className={styles.name}>{contact.name}</div>
++                                <div className={styles.title}>{contact.title}</div>
++                            </div>
++                            <div className={styles.contactMechanisms}>
++                                <div className={styles.type}>{contact.ctype}</div>
++                                {isTruthyString(contact.email) && (
++                                    <TextOutput
++                                        value={(
++                                            <Link href={`mailto:${contact.email}`} external withLinkIcon>
++                                                {contact.email}
++                                            </Link>
++                                        )}
++                                    />
++                                )}
++                                {isTruthyString(contact.phone) && (
++                                    <TextOutput
++                                        value={(
++                                            <Link href={`tel:${contact.phone}`} withLinkIcon external>
++                                                {contact.phone}
++                                            </Link>
++                                        )}
++                                    />
++                                )}
++                            </div>
++                        </div>
++                    ))}
++                </Container>
++            ))}
++        </Container>
++    );
++}
++
++export default Contacts;
+diff --git a/app/src/views/EmergencyDetails/Contacts/styles.module.css b/app/src/views/EmergencyDetails/Contacts/styles.module.css
+new file mode 100644
+index 0000000..1436744
+--- /dev/null
++++ b/app/src/views/EmergencyDetails/Contacts/styles.module.css
+@@ -0,0 +1,65 @@
++.contactsContent {
++    display: flex;
++    flex-direction: column;
++    gap: var(--go-ui-spacing-md);
++}
++
++.contactList {
++    display: flex;
++    flex-direction: column;
++    gap: var(--go-ui-spacing-sm);
++}
++
++.contact {
++    display: flex;
++    align-items: flex-start;
++    justify-content: space-between;
++    border: 1px solid var(--go-ui-color-separator);
++    border-radius: var(--go-ui-border-radius-sm);
++    background-color: var(--go-ui-color-foreground);
++    padding: var(--go-ui-spacing-sm);
++}
++
++.details {
++    display: flex;
++    flex-direction: column;
++    gap: var(--go-ui-spacing-xs);
++}
++
++.name {
++    color: var(--go-ui-color-text);
++    font-size: var(--go-ui-font-size-md);
++    font-weight: var(--go-ui-font-weight-medium);
++}
++
++.title {
++    color: var(--go-ui-color-text-light);
++    font-size: var(--go-ui-font-size-sm);
++}
++
++.contactMechanisms {
++    display: flex;
++    align-items: flex-end;
++    flex-direction: column;
++    gap: var(--go-ui-spacing-xs);
++}
++
++.type {
++    border-radius: var(--go-ui-border-radius-sm);
++    background-color: var(--go-ui-color-gray-20);
++    padding: var(--go-ui-spacing-xs) var(--go-ui-spacing-sm);
++    color: var(--go-ui-color-text);
++    font-size: var(--go-ui-font-size-sm);
++    font-weight: var(--go-ui-font-weight-medium);
++}
++
++@media (max-width: 768px) {
++    .contact {
++        flex-direction: column;
++        gap: var(--go-ui-spacing-sm);
++    }
++
++    .contactMechanisms {
++        align-items: flex-start;
++    }
++}
+\ No newline at end of file
+diff --git a/app/src/views/EmergencyDetails/KeyFigures/i18n.json b/app/src/views/EmergencyDetails/KeyFigures/i18n.json
+new file mode 100644
+index 0000000..f66c1fb
+--- /dev/null
++++ b/app/src/views/EmergencyDetails/KeyFigures/i18n.json
+@@ -0,0 +1,8 @@
++{
++    "namespace": "emergencyDetails",
++    "strings": {
++      "emergencyKeyFiguresTitle": "Key Figures",
++      "keyFiguresSourceLabel": "Source: {source}"
++    }
++  }
++  
+\ No newline at end of file
+diff --git a/app/src/views/EmergencyDetails/KeyFigures/index.tsx b/app/src/views/EmergencyDetails/KeyFigures/index.tsx
+new file mode 100644
+index 0000000..7948736
+--- /dev/null
++++ b/app/src/views/EmergencyDetails/KeyFigures/index.tsx
+@@ -0,0 +1,54 @@
++import {
++    Container,
++    KeyFigure,
++} from '@ifrc-go/ui';
++import { useTranslation } from '@ifrc-go/ui/hooks';
++import { resolveToString } from '@ifrc-go/ui/utils';
++
++import i18n from './i18n.json';
++import styles from './styles.module.css';
++
++type KeyFigureItem = {
++    id: number;
++    number: string;
++    deck: string;
++    source: string;
++};
++
++interface Props {
++    keyFigures: KeyFigureItem[];
++}
++
++function KeyFigures(props: Props) {
++    const { keyFigures } = props;
++    const strings = useTranslation(i18n);
++
++    return (
++        <Container
++            className={styles.keyFigureContainer}
++            heading={strings.emergencyKeyFiguresTitle}
++            childrenContainerClassName={styles.keyFigureList}
++            withHeaderBorder
++        >
++            {keyFigures.map((keyFigure) => (
++                <KeyFigure
++                    key={keyFigure.id}
++                    className={styles.keyFigure}
++                    value={Math.round(
++                        Number.parseInt(
++                            keyFigure.number.replace(/[^\d.-]/g, ''),
++                            10,
++                        ),
++                    )}
++                    label={keyFigure.deck}
++                    description={resolveToString(
++                        strings.sourceLabel,
++                        { source: keyFigure.source },
++                    )}
++                />
++            ))}
++        </Container>
++    );
++}
++
++export default KeyFigures;
+diff --git a/app/src/views/EmergencyDetails/KeyFigures/styles.module.css b/app/src/views/EmergencyDetails/KeyFigures/styles.module.css
+new file mode 100644
+index 0000000..60a1133
+--- /dev/null
++++ b/app/src/views/EmergencyDetails/KeyFigures/styles.module.css
+@@ -0,0 +1,44 @@
++.keyFigureContainer {
++    margin-bottom: var(--go-ui-spacing-lg);
++}
++
++.keyFigureList {
++    display: grid;
++    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
++    gap: var(--go-ui-spacing-md);
++    padding: var(--go-ui-spacing-md);
++}
++
++.keyFigure {
++    transition: all 0.2s ease-in-out;
++    border: 1px solid var(--go-ui-color-separator);
++    border-radius: var(--go-ui-border-radius-md);
++    background-color: var(--go-ui-color-foreground);
++    padding: var(--go-ui-spacing-md);
++    text-align: center;
++}
++
++.keyFigure:hover {
++    transform: translateY(-2px);
++    border-color: var(--go-ui-color-gray-60);
++    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
++}
++
++@media (max-width: 768px) {
++    .keyFigureList {
++        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
++        gap: var(--go-ui-spacing-sm);
++        padding: var(--go-ui-spacing-sm);
++    }
++
++    .keyFigure {
++        padding: var(--go-ui-spacing-sm);
++    }
++}
++
++@media (max-width: 480px) {
++    .keyFigureList {
++        grid-template-columns: 1fr;
++        gap: var(--go-ui-spacing-sm);
++    }
++}
+\ No newline at end of file
+diff --git a/app/src/views/EmergencyDetails/Overview/index.tsx b/app/src/views/EmergencyDetails/Overview/index.tsx
+new file mode 100644
+index 0000000..22fa0b1
+--- /dev/null
++++ b/app/src/views/EmergencyDetails/Overview/index.tsx
+@@ -0,0 +1,109 @@
++import {
++    Container,
++    TextOutput,
++} from '@ifrc-go/ui';
++import { useTranslation } from '@ifrc-go/ui/hooks';
++import { isDefined } from '@togglecorp/fujs';
++
++import SeverityIndicator from '#components/domain/SeverityIndicator';
++
++import i18n from '../i18n.json';
++import styles from './styles.module.css';
++
++type EmergencyResponse = {
++    ifrc_severity_level_display?: string;
++    ifrc_severity_level?: number;
++    disaster_start_date?: string;
++    visibility?: string;
++    glide?: string;
++};
++
++type DisasterType = {
++    id: number;
++    name: string;
++};
++
++interface Props {
++    emergencyResponse: EmergencyResponse;
++    disasterType?: DisasterType;
++    visibilityMap?: Record<string, string>;
++    mdrCode?: string;
++    assistanceIsRequestedByNS?: boolean;
++    assistanceIsRequestedByCountry?: boolean;
++}
++
++function Overview(props: Props) {
++    const {
++        emergencyResponse,
++        disasterType,
++        visibilityMap,
++        mdrCode,
++        assistanceIsRequestedByNS,
++        assistanceIsRequestedByCountry,
++    } = props;
++
++    const strings = useTranslation(i18n);
++
++    return (
++        <Container
++            heading={strings.emergencyOverviewTitle}
++            withHeaderBorder
++            childrenContainerClassName={styles.overviewContent}
++        >
++            <TextOutput
++                label={strings.overviewDisasterCategorization}
++                value={(
++                    <div className={styles.disasterCategoryValue}>
++                        <span>{emergencyResponse.ifrc_severity_level_display}</span>
++                        <SeverityIndicator
++                            level={emergencyResponse.ifrc_severity_level}
++                        />
++                    </div>
++                )}
++                strongValue
++            />
++            <TextOutput
++                label={strings.overviewDisasterType}
++                value={disasterType?.name}
++                strongValue
++            />
++            <TextOutput
++                label={strings.overviewStartDate}
++                valueType="date"
++                value={emergencyResponse?.disaster_start_date}
++                strongValue
++            />
++            <TextOutput
++                label={strings.overviewVisibility}
++                value={isDefined(emergencyResponse.visibility)
++                    ? visibilityMap?.[emergencyResponse.visibility]
++                    : '--'}
++                strongValue
++            />
++            <TextOutput
++                label={strings.overviewMdrCode}
++                value={mdrCode}
++                strongValue
++            />
++            <TextOutput
++                label={strings.overviewGlideNumber}
++                value={emergencyResponse?.glide}
++                strongValue
++            />
++            <TextOutput
++                label={strings.overviewAssistanceRequestedByNS}
++                valueType="boolean"
++                value={assistanceIsRequestedByNS}
++                strongValue
++            />
++            <TextOutput
++                label={strings.overviewAssistanceRequestedByGovernment}
++                valueType="boolean"
++                value={assistanceIsRequestedByCountry}
++                strongValue
++            />
++        </Container>
++    );
++}
++
++export default Overview;
+diff --git a/app/src/views/EmergencyDetails/Overview/styles.module.css b/app/src/views/EmergencyDetails/Overview/styles.module.css
+new file mode 100644
+index 0000000..299f1bf
+--- /dev/null
++++ b/app/src/views/EmergencyDetails/Overview/styles.module.css
+@@ -0,0 +1,27 @@
++/* grid wrapper */
++.overviewContent {
++  display: grid;
++  grid-template-columns: repeat(2, minmax(0, 1fr));   /* 2 cols */
++  row-gap: var(--go-ui-spacing-md);
++  column-gap: var(--go-ui-spacing-md);
++  padding: var(--go-ui-spacing-md);
++}
++
++/* phone breakpoint ➜ single column */
++@media (max-width: 639px) {
++  .overviewContent {
++    grid-template-columns: 1fr;
++    padding: var(--go-ui-spacing-sm);
++  }
++}
++
++.disasterCategoryValue {
++    display: flex;
++    align-items: center;
++    gap: var(--go-ui-spacing-sm);
++}
++
++.disasterCategoryValue span {
++    color: var(--go-ui-color-text);
++    font-weight: var(--go-ui-font-weight-medium);
++}
+\ No newline at end of file
+diff --git a/app/src/views/EmergencyDetails/PreviousCrises/i18n.json b/app/src/views/EmergencyDetails/PreviousCrises/i18n.json
+new file mode 100644
+index 0000000..9b11ca7
+--- /dev/null
++++ b/app/src/views/EmergencyDetails/PreviousCrises/i18n.json
+@@ -0,0 +1,14 @@
++{
++  "namespace": "emergencyDetails",
++  "strings": {
++    "lessonsLearnedTitle": "Insights from Previous Operations",
++    "loadingPreviousCrises": "Loading lessons learned data...",
++    "errorLoadingPreviousCrises": "Error loading lessons learned data",
++    "noLessonsLearnedData": "No lessons learned data available",
++    "seeMore": "See more",
++    "showLess": "Show less",
++    "recommendations": "Recommendations From Insights",
++    "aiDisclaimerText": "These insights and questions are generated from operational learnings using AI.",
++    "operationalLearningSources": "Operational Learning Sources"
++  }
++}
+\ No newline at end of file
+diff --git a/app/src/views/EmergencyDetails/PreviousCrises/index.tsx b/app/src/views/EmergencyDetails/PreviousCrises/index.tsx
+new file mode 100644
+index 0000000..440132a
+--- /dev/null
++++ b/app/src/views/EmergencyDetails/PreviousCrises/index.tsx
+@@ -0,0 +1,205 @@
++import {
++    useMemo,
++    useState,
++} from 'react';
++import { Container } from '@ifrc-go/ui';
++import { useTranslation } from '@ifrc-go/ui/hooks';
++
++import LessonCard from '#components/LessonCard';
++import type { IfrcEvent } from '#hooks/domain/useIfrcEvents';
++
++import i18n from './i18n.json';
++import styles from './styles.module.css';
++
++interface Props {
++ifrcEvents?: IfrcEvent;
++ifrcEventsPending: boolean;
++ifrcEventsError?: unknown;
++}
++
++type Lesson = NonNullable<
++IfrcEvent['ai_structured_summary']
++>[number];
++
++const DESKTOP_COLUMNS = 3;
++const INITIAL_DISPLAY_COUNT = 3;
++
++function makeKey(lesson: Lesson, index: number): string {
++    // Build a deterministic key using stable fields
++    const base = lesson.title
++      || lesson.insight
++      // fallback if both missing
++      || `idx-${index}`;
++
++    return `lesson-${String(base)
++        .toLowerCase()
++        .replace(/[^a-z0-9]+/g, '-')
++        .replace(/(^-|-$)/g, '')
++        .slice(0, 50)}`;
++}
++
++function PreviousCrises(props: Props) {
++    const { ifrcEvents, ifrcEventsPending, ifrcEventsError } = props;
++    const strings = useTranslation(i18n);
++
++    const [showAll, setShowAll] = useState(false);
++    const [expanded, setExpanded] = useState<Set<string>>(new Set());
++
++    // Use the API response directly (no normalization needed)
++    const lessons: Lesson[] = ifrcEvents?.ai_structured_summary ?? [];
++
++    const fallbackNote = ifrcEvents?.fallback_note;
++    const visible = showAll
++        ? lessons
++        : lessons.slice(0, INITIAL_DISPLAY_COUNT);
++    const hasMore = lessons.length > INITIAL_DISPLAY_COUNT;
++
++    // Precompute stable keys
++    const keyed = useMemo(
++        () => visible.map((l, i) => ({
++            lesson: l,
++            key: makeKey(l, i),
++        })),
++        [visible],
++    );
++
++  // Fixed column distribution (use the item key for column key too)
++  type ColumnItem = { lesson: Lesson; key: string };
++  const columns = useMemo(() => {
++      const cols: Array<ColumnItem[]> = Array.from(
++          { length: DESKTOP_COLUMNS },
++          () => [],
++      );
++      keyed.forEach((item, index) => {
++          cols[index % DESKTOP_COLUMNS].push(item);
++      });
++      return cols;
++  }, [keyed]);
++
++  const handleToggle = (key: string) => {
++      setExpanded((previous) => {
++          const next = new Set(previous);
++          if (next.has(key)) next.delete(key);
++          else next.add(key);
++          return next;
++      });
++  };
++
++  const renderFallbackContent = () => {
++      if (fallbackNote) {
++          return (
++              <div className={styles.fallbackNote}>
++                  <p className={styles.fallbackText}>
++                      No operational learnings recorded yet. Check the
++                      {' '}
++                      <a
++                          href="https://go.ifrc.org/operational-learning"
++                          target="_blank"
++                          rel="noopener noreferrer"
++                          className={styles.fallbackLink}
++                      >
++                          Ops Learning dashboard
++                      </a>
++                      {' '}
++                      or the
++                      {' '}
++                      <a
++                          href="https://www.ifrc.org/evaluations"
++                          target="_blank"
++                          rel="noopener noreferrer"
++                          className={styles.fallbackLink}
++                      >
++                          IFRC evaluations database
++                      </a>
++                      {' '}
++                      for more.
++                  </p>
++              </div>
++          );
++      }
++
++      return (
++          <p>
++              {strings.noPreviousCrisesData
++                  || 'No previous crises data available.'}
++          </p>
++      );
++  };
++
++  return (
++      <Container
++          heading={strings.lessonsLearnedTitle}
++          withHeaderBorder
++          childrenContainerClassName={styles.previousCrisesContent}
++      >
++          {ifrcEventsPending && (
++              <p>{strings.loadingPreviousCrises}</p>
++          )}
++
++          {ifrcEventsError && !ifrcEventsPending && (
++              <p>{strings.errorLoadingPreviousCrises}</p>
++          )}
++
++          {!ifrcEventsPending && !ifrcEventsError && (
++              <div>
++                  {keyed.length > 0 ? (
++                      <div>
++                          <div className={styles.fallbackNote}>
++                              <p className={styles.fallbackText}>
++                                  {strings.aiDisclaimerText}
++                              </p>
++                          </div>
++
++                          <div className={styles.columnsWrapper}>
++                              {columns.map((column) => {
++                                  const columnKey = column[0]?.key
++                                      ?? 'empty-column';
++                                  return (
++                                      <div
++                                          key={columnKey}
++                                          className={styles.column}
++                                      >
++                                          {column.map(({ lesson, key }) => {
++                                              const isOpen = expanded.has(key);
++                                              return (
++                                                  <LessonCard
++                                                      key={key}
++                                                      lesson={lesson}
++                                                      cardKey={key}
++                                                      isOpen={isOpen}
++                                                      onToggle={handleToggle}
++                                                      styles={styles}
++                                                  />
++                                              );
++                                          })}
++                                      </div>
++                                  );
++                              })}
++                          </div>
++
++                          {hasMore && (
++                              <div className={styles.seeMoreContainer}>
++                                  <button
++                                      type="button"
++                                      className={styles.seeMoreButton}
++                                      onClick={() => setShowAll(
++                                          (show) => !show,
++                                      )}
++                                  >
++                                      {showAll
++                                          ? strings.showLess
++                                          : strings.seeMore}
++                                  </button>
++                              </div>
++                          )}
++                      </div>
++                  ) : (
++                      renderFallbackContent()
++                  )}
++              </div>
++          )}
++      </Container>
++  );
++}
++
++export default PreviousCrises;
+diff --git a/app/src/views/EmergencyDetails/PreviousCrises/styles.module.css b/app/src/views/EmergencyDetails/PreviousCrises/styles.module.css
+new file mode 100644
+index 0000000..50f73bf
+--- /dev/null
++++ b/app/src/views/EmergencyDetails/PreviousCrises/styles.module.css
+@@ -0,0 +1,257 @@
++/* stylelint-disable csstools/value-no-unknown-custom-properties */
++/* -------------------------------------------------
++   Previous Crises – 3-column layout
++-------------------------------------------------- */
++
++.previousCrisesContent { 
++    padding: 0; 
++}
++
++/* ====== Columns ====== */
++.columnsWrapper {
++    display: flex;
++    align-items: flex-start;
++    gap: var(--go-ui-spacing-md);
++}
++
++.column {
++    display: flex;
++    flex: 1;
++    flex-direction: column;
++    gap: var(--go-ui-spacing-md);
++    min-width: 0;
++}
++
++/* ====== Card ====== */
++.card {
++    display: flex;
++    flex-direction: column;
++    transition: box-shadow 0.2s ease-in-out;
++    border: 1px solid var(--go-ui-color-separator);
++    border-radius: 8px;
++    background: #fff;
++    cursor: pointer;
++    padding: 1.25rem;
++}
++
++.card:hover { 
++    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); 
++}
++
++.card.open { 
++    min-height: 280px; 
++}
++
++/* ====== Title & full insight ====== */
++.title {
++    margin: 0 0 var(--go-ui-spacing-sm) 0;
++    color: var(--go-ui-color-text);
++    font-size: var(--go-ui-font-size-lg);
++    font-weight: var(--go-ui-font-weight-bold);
++}
++
++.insight {
++    margin: 0 0 var(--go-ui-spacing-sm) 0;
++    text-align: justify;
++    line-height: 1.5;
++    color: var(--go-ui-color-text-light);
++    font-size: var(--go-ui-font-size-md);
++    hyphens: auto;
++}
++
++.areaTag {
++    display: inline-block;
++    border-radius: 8px;
++    background: var(--go-ui-color-red);
++    padding: 2px 6px;
++    max-width: 110px;
++    overflow: hidden;
++    text-transform: uppercase;
++    text-overflow: ellipsis;
++    white-space: nowrap;
++    color: #fff;
++    font-size: 10px;
++    font-weight: var(--go-ui-font-weight-medium);
++}
++
++/* ====== expand / collapse hint ====== */
++.expandHint {
++    margin-top: auto;
++    text-align: center;
++    color: var(--go-ui-color-primary);
++    font-size: var(--go-ui-font-size-xs);
++    font-weight: var(--go-ui-font-weight-medium);
++}
++
++.card.open .expandHint { 
++    display: none; 
++}
++
++/* ====== RR questions, source note, etc. ====== */
++.rrSection { 
++    margin: var(--go-ui-spacing-md) 0; 
++}
++
++.rrHeader {
++    display: flex;
++    align-items: center;
++    justify-content: space-between;
++    gap: var(--go-ui-spacing-sm);
++    margin-bottom: var(--go-ui-spacing-sm);
++}
++
++.rrHeading { 
++    margin: 0;
++    font-size: var(--go-ui-font-size-sm);
++    font-weight: var(--go-ui-font-weight-bold); 
++}
++
++.rrList { 
++    margin: 0;
++    padding-left: var(--go-ui-spacing-md);
++    list-style-type: disc; 
++}
++
++.rrItem { 
++    margin-bottom: var(--go-ui-spacing-xs);
++    font-size: var(--go-ui-font-size-sm); 
++}
++
++.areaOnlySection {
++    padding: var(--go-ui-spacing-xs);
++}
++
++.sourceNote { 
++    margin-bottom: var(--go-ui-spacing-sm);
++}
++
++.sourceNoteText {
++    border-left: 3px solid var(--go-ui-color-primary);
++    border-radius: var(--go-ui-border-radius-sm);
++    background: var(--go-ui-color-gray-10);
++    padding: var(--go-ui-spacing-xs) var(--go-ui-spacing-sm);
++    color: var(--go-ui-color-text-light);
++    font-size: var(--go-ui-font-size-sm);
++    font-style: italic;
++}
++
++.sourcesBlock { 
++    margin-top: auto;
++    border-top: 1px solid var(--go-ui-color-separator-light);
++    padding-top: var(--go-ui-spacing-sm);
++}
++
++.sourcesHeading { 
++    margin: 0 0 var(--go-ui-spacing-sm) 0;
++    text-transform: uppercase;
++    letter-spacing: 0.5px;
++    font-size: var(--go-ui-font-size-sm);
++    font-weight: var(--go-ui-font-weight-bold);
++}
++
++.sourceRow {
++    display: flex;
++    align-items: flex-start;
++    justify-content: space-between;
++    margin-bottom: var(--go-ui-spacing-sm);
++    border-left: 3px solid var(--go-ui-color-primary);
++    border-radius: var(--go-ui-border-radius-sm);
++    background: var(--go-ui-color-gray-05);
++    padding: var(--go-ui-spacing-sm);
++    gap: var(--go-ui-spacing-sm);
++}
++
++.sourceRow:last-child {
++    margin-bottom: 0;
++}
++
++.sourceDetails {
++    flex: 1;
++}
++
++.sourceNameCode {
++    font-size: var(--go-ui-font-size-sm);
++    font-weight: var(--go-ui-font-weight-medium);
++}
++
++.learningId {
++    color: var(--go-ui-color-text-light);
++    font-size: var(--go-ui-font-size-xs);
++}
++
++.eventLink {
++    cursor: pointer;
++    text-decoration: underline;
++    white-space: nowrap;
++    color: var(--go-ui-color-primary);
++    font-size: var(--go-ui-font-size-sm);
++}
++
++.eventLink:hover {
++    color: var(--go-ui-color-primary-dark);
++}
++
++/* ====== Show-more area ====== */
++.seeMoreContainer {
++    display: flex;
++    justify-content: center;
++    margin: 0 var(--go-ui-spacing-md);
++    border-top: 1px solid var(--go-ui-color-separator);
++    padding: var(--go-ui-spacing-md);
++}
++
++.seeMoreButton {
++    border: 1px solid var(--go-ui-color-primary);
++    border-radius: var(--go-ui-border-radius-sm);
++    background: transparent;
++    cursor: pointer;
++    padding: var(--go-ui-spacing-sm) var(--go-ui-spacing-lg);
++    text-decoration: underline;
++    color: var(--go-ui-color-primary);
++    font-size: var(--go-ui-font-size-md);
++}
++
++.seeMoreButton:hover {
++    background: var(--go-ui-color-primary);
++    text-decoration: none;
++}
++
++/* ====== AI disclaimer ====== */
++.fallbackNote {
++    margin: var(--go-ui-spacing-md);
++    border-left: 4px solid var(--go-ui-color-red);
++    border-radius: var(--go-ui-border-radius-sm);
++    background: var(--go-ui-color-gray-20);
++    padding: var(--go-ui-spacing-md);
++}
++
++.fallbackText {
++    color: var(--go-ui-color-text) !important;
++    font-size: var(--go-ui-font-size-md) !important;
++}
++
++.fallbackLink {
++    text-decoration: underline;
++    color: #0066cc;
++}
++
++/* ====== Responsive ====== */
++@media (max-width: 1023px) {
++    .columnsWrapper {
++        flex-wrap: wrap;
++    }
++    
++    .column {
++        width: calc(50% - var(--go-ui-spacing-md) / 2);
++    }
++}
++
++@media (max-width: 639px) {
++    .column {
++        width: 100%;
++    }
++    
++    .columnsWrapper {
++        gap: var(--go-ui-spacing-md) 0;
++    }
++}
+diff --git a/app/src/views/EmergencyDetails/RapidResponse/index.tsx b/app/src/views/EmergencyDetails/RapidResponse/index.tsx
+new file mode 100644
+index 0000000..faf9f3f
+--- /dev/null
++++ b/app/src/views/EmergencyDetails/RapidResponse/index.tsx
+@@ -0,0 +1,120 @@
++import { Container } from '@ifrc-go/ui';
++import { useTranslation } from '@ifrc-go/ui/hooks';
++
++import type { RapidResponseData } from '#hooks/domain/useRapidResponse';
++
++import i18n from '../i18n.json';
++import styles from './styles.module.css';
++
++interface Props {
++    className?: string;
++    rapidResponseData?: RapidResponseData;
++    rapidResponsePending: boolean;
++    rapidResponseError?: unknown;
++}
++
++function RapidResponse({
++    className,
++    rapidResponseData,
++    rapidResponsePending,
++    rapidResponseError,
++}: Props) {
++    const strings = useTranslation(i18n);
++
++    const handleFileDownload = () => {
++        if (rapidResponseData?.file_url) {
++            const link = document.createElement('a');
++            link.href = rapidResponseData.file_url;
++            link.download = 'rapid_response_capacity_questions.xlsx';
++            document.body.appendChild(link);
++            link.click();
++            document.body.removeChild(link);
++        }
++    };
++
++    if (rapidResponsePending) {
++        return (
++            <Container
++                className={className}
++                heading={strings.rapidResponseTitle}
++                withHeaderBorder
++            >
++                <div className={styles.rapidResponseContent}>
++                    <p>{strings.loadingRapidResponse || 'Loading rapid response data...'}</p>
++                </div>
++            </Container>
++        );
++    }
++
++    if (rapidResponseError || !rapidResponseData?.file_url) {
++        return (
++            <Container
++                className={className}
++                heading={strings.rapidResponseTitle}
++                withHeaderBorder
++            >
++                <div className={styles.rapidResponseContent}>
++                    <p>{strings.noRapidResponseData || 'No rapid response data available for this emergency.'}</p>
++                </div>
++            </Container>
++        );
++    }
++
++    return (
++        <Container
++            className={className}
++            heading={strings.rapidResponseTitle}
++            withHeaderBorder
++        >
++            <div className={styles.rapidResponseContent}>
++                <div className={styles.filesList}>
++                    <div
++                        className={styles.fileItem}
++                        tabIndex={0}
++                        role="button"
++                        onClick={handleFileDownload}
++                        onKeyDown={(e) => {
++                            if (e.key === 'Enter' || e.key === ' ') {
++                                e.preventDefault();
++                                handleFileDownload();
++                            }
++                        }}
++                        aria-label={`${strings.rapidResponseDownloadFile || 'Download'} Rapid Response Capacity Questions`}
++                    >
++                        <div className={styles.fileIcon}>📊</div>
++                        <div className={styles.fileDetails}>
++                            <button
++                                type="button"
++                                className={styles.fileName}
++                                onClick={(e) => { e.stopPropagation(); handleFileDownload(); }}
++                                title={`${strings.rapidResponseDownloadFile || 'Download'}: Rapid Response Capacity Questions`}
++                            >
++                                Rapid Response Capacity Questions.xlsx
++                            </button>
++                            <p className={styles.fileDescription}>
++                                {strings.rapidResponseFileDescription || 'Pre-filled capacity assessment questionnaire based on emergency context'}
++                            </p>
++                            <div className={styles.fileMeta}>
++                                <span className={styles.fileSize}>Excel File</span>
++                                <span className={styles.fileSeparator}>•</span>
++                                <span className={styles.fileDate}>
++                                    {strings.generatedFile || 'Generated for this emergency'}
++                                </span>
++                            </div>
++                        </div>
++                        <button
++                            type="button"
++                            className={styles.downloadButton}
++                            onClick={(e) => { e.stopPropagation(); handleFileDownload(); }}
++                            aria-label={`${strings.rapidResponseDownloadFile || 'Download'} Rapid Response Capacity Questions`}
++                        >
++                            ⬇
++                        </button>
++                    </div>
++                </div>
++            </div>
++        </Container>
++    );
++}
++
++export default RapidResponse;
+diff --git a/app/src/views/EmergencyDetails/RapidResponse/styles.module.css b/app/src/views/EmergencyDetails/RapidResponse/styles.module.css
+new file mode 100644
+index 0000000..246dfde
+--- /dev/null
++++ b/app/src/views/EmergencyDetails/RapidResponse/styles.module.css
+@@ -0,0 +1,130 @@
++/* Container padding and background can be controlled by Container component or parent */
++
++/* Rapid Response Section Styling matching Operational Strategy */
++
++.rapidResponseContent {
++    padding: var(--go-ui-spacing-md) 0;
++}
++
++.filesList {
++    display: flex;
++    flex-direction: column;
++    gap: var(--go-ui-spacing-md);
++}
++
++/* Styled like sectoralNeedCard */
++.fileItem {
++    display: flex;
++    align-items: center;
++    transition: box-shadow 0.2s ease, background-color 0.2s ease;
++    border: 1px solid var(--go-ui-color-separator);
++    border-radius: var(--go-ui-border-radius-md);
++    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
++    background-color: var(--go-ui-color-foreground);
++    cursor: pointer;
++    padding: var(--go-ui-spacing-lg);
++    gap: var(--go-ui-spacing-md);
++}
++
++.fileItem:hover {
++    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
++    background-color: var(--go-ui-color-gray-20);
++}
++
++.fileIcon {
++    flex-shrink: 0;
++    font-size: 2rem;
++}
++
++.fileDetails {
++    flex: 1;
++    cursor: default; /* so cursor pointer only on whole card or buttons */
++    min-width: 0;
++}
++
++.fileName {
++    display: block;
++    margin: 0 0 var(--go-ui-spacing-xs) 0;
++    border: none;
++    background: none;
++    cursor: pointer;
++    padding: 0;
++    overflow: hidden;
++    text-align: left;
++    text-decoration: underline;
++    text-overflow: ellipsis;
++    white-space: nowrap;
++    color: var(--go-ui-color-red);
++    font-size: var(--go-ui-font-size-md);
++    font-weight: var(--go-ui-font-weight-bold);
++}
++
++.fileName:hover {
++    color: var(--go-ui-color-red-hover);
++}
++
++.fileDescription {
++    margin: 0 0 var(--go-ui-spacing-xs) 0;
++    line-height: 1.4;
++    color: var(--go-ui-color-text-light);
++    font-size: var(--go-ui-font-size-sm);
++}
++
++.fileMeta {
++    display: flex;
++    align-items: center;
++    gap: var(--go-ui-spacing-sm);
++    color: var(--go-ui-color-text-light);
++    font-size: var(--go-ui-font-size-sm);
++}
++
++.fileSeparator {
++    opacity: 0.5;
++}
++
++.downloadButton {
++    display: flex;
++    align-items: center;
++    flex-shrink: 0;
++    justify-content: center;
++    transition: all 0.2s ease;
++    border: 1px solid var(--go-ui-color-separator);
++    border-radius: var(--go-ui-border-radius-sm);
++    background-color: var(--go-ui-color-gray-20);
++    cursor: pointer;
++    width: 40px;
++    height: 40px;
++    color: var(--go-ui-color-text);
++    font-size: var(--go-ui-font-size-lg);
++}
++
++.downloadButton:hover {
++    border-color: var(--go-ui-color-red);
++    background-color: var(--go-ui-color-red);
++    color: var(--go-ui-color-white);
++}
++
++/* Responsive tweaks */
++@media (max-width: 768px) {
++    .fileItem {
++        align-items: flex-start;
++        flex-direction: column;
++    }
++    
++    .fileIcon {
++        display: none;
++    }
++    
++    .fileName {
++        white-space: normal;
++        word-break: normal;
++        word-wrap: break-word; /* legacy fallback */
++        /* modern replacement for deprecated `word-break: break-word` */
++        overflow-wrap: anywhere;
++    }
++    
++    .downloadButton {
++        align-self: flex-end;
++        margin-top: var(--go-ui-spacing-sm);
++    }
++}
+diff --git a/app/src/views/EmergencyDetails/SituationalOverview/i18n.json b/app/src/views/EmergencyDetails/SituationalOverview/i18n.json
+new file mode 100644
+index 0000000..e3f3a5b
+--- /dev/null
++++ b/app/src/views/EmergencyDetails/SituationalOverview/i18n.json
+@@ -0,0 +1,8 @@
++{
++    "namespace": "emergencyDetails",
++    "strings": {
++      "situationalOverviewTitle": "Situational Overview",
++      "situationalOverviewNoData": "No situational overview data available"
++    }
++  }
++  
+\ No newline at end of file
+diff --git a/app/src/views/EmergencyDetails/SituationalOverview/index.tsx b/app/src/views/EmergencyDetails/SituationalOverview/index.tsx
+new file mode 100644
+index 0000000..80c774d
+--- /dev/null
++++ b/app/src/views/EmergencyDetails/SituationalOverview/index.tsx
+@@ -0,0 +1,84 @@
++import {
++    Container,
++    HtmlOutput,
++} from '@ifrc-go/ui';
++import { useTranslation } from '@ifrc-go/ui/hooks';
++import { isTruthyString } from '@togglecorp/fujs';
++
++import i18n from './i18n.json';
++import styles from './styles.module.css';
++
++interface Metadata {
++    event_id?: number;
++    event_name?: string;
++    disaster_type?: string;
++    country?: string;
++    latest_update_number?: number;
++    total_operational_updates?: number;
++    dref_id?: number;
++    dref_title?: string;
++    dref_appeal_code?: string;
++    dref_date?: string;
++}
++
++interface Props {
++    /** The full situational-overview HTML/text (manual or AI). */
++    overviewText?: string;
++    /** Optional metadata (only present when AI hook supplies it). */
++    metadata?: Metadata;
++    /** Loading & error states (for the AI fetch, if it runs). */
++    pending?: boolean;
++    error?: unknown;
++}
++
++function SituationalOverview(props: Props) {
++    const {
++        overviewText, metadata, pending, error,
++    } = props;
++    const strings = useTranslation(i18n);
++
++    /* Format "ABC123 Country Hazard 2025" */
++    const formattedMeta = () => {
++        if (!metadata) return '';
++        const {
++            dref_appeal_code, country, disaster_type, dref_date,
++        } = metadata;
++        const year = dref_date ? new Date(dref_date).getFullYear() : undefined;
++        return [dref_appeal_code, country, disaster_type, year]
++            .filter(isTruthyString)
++            .join(' ');
++    };
++
++    return (
++        <Container
++            heading={strings.situationalOverviewTitle}
++            withHeaderBorder
++            childrenContainerClassName={styles.situationalOverviewContent}
++        >
++            {pending && (
++                <p>{strings.loadingSituationalOverview || 'Loading Situational Overview…'}</p>
++            )}
++            {error && (
++                <p>{strings.errorLoadingSituationalOverview || 'Error loading overview'}</p>
++            )}
++
++            {!pending && !error && (
++                <>
++                    {isTruthyString(overviewText) ? (
++                        <HtmlOutput value={overviewText} className={styles.summaryContent} />
++                    ) : (
++                        <p>{strings.situationalOverviewNoData}</p>
++                    )}
++
++                    {formattedMeta() && (
++                        <div className={styles.metadataDisplay}>
++                            <span className={styles.metadataLabel}>{formattedMeta()}</span>
++                        </div>
++                    )}
++                </>
++            )}
++        </Container>
++    );
++}
++
++export default SituationalOverview;
+diff --git a/app/src/views/EmergencyDetails/SituationalOverview/styles.module.css b/app/src/views/EmergencyDetails/SituationalOverview/styles.module.css
+new file mode 100644
+index 0000000..6ec62cd
+--- /dev/null
++++ b/app/src/views/EmergencyDetails/SituationalOverview/styles.module.css
+@@ -0,0 +1,86 @@
++/* SituationalOverview styles.module.css */
++
++.sectionLabel {
++    border: 1px solid var(--go-ui-color-separator);
++    border-radius: var(--go-ui-border-radius-sm);
++    background-color: var(--go-ui-color-gray-20);
++    padding: var(--go-ui-spacing-xs) var(--go-ui-spacing-sm);
++    white-space: nowrap;
++    font-size: var(--go-ui-font-size-sm);
++    font-weight: var(--go-ui-font-weight-medium);
++}
++
++.situationalOverviewContent {
++    padding: var(--go-ui-spacing-md);
++}
++
++.placeholderText {
++    border-radius: var(--go-ui-border-radius-sm);
++    background-color: var(--go-ui-color-gray-20);
++    padding: var(--go-ui-spacing-lg);
++    text-align: center;
++    color: var(--go-ui-color-text-light);
++    font-style: italic;
++}
++
++.summaryContent {
++    line-height: 1.6;
++    color: var(--go-ui-color-text);
++}
++
++.summaryContent h1,
++.summaryContent h2,
++.summaryContent h3,
++.summaryContent h4,
++.summaryContent h5,
++.summaryContent h6 {
++    margin-bottom: var(--go-ui-spacing-sm);
++    color: var(--go-ui-color-text);
++    font-weight: var(--go-ui-font-weight-medium);
++}
++
++.summaryContent p {
++    margin-bottom: var(--go-ui-spacing-sm);
++}
++
++.summaryContent ul,
++.summaryContent ol {
++    margin-bottom: var(--go-ui-spacing-sm);
++    padding-left: var(--go-ui-spacing-lg);
++}
++
++.summaryContent li {
++    margin-bottom: var(--go-ui-spacing-xs);
++}
++
++.summaryContent blockquote {
++    margin: var(--go-ui-spacing-md) 0;
++    border-left: 4px solid var(--go-ui-color-red);
++    padding-left: var(--go-ui-spacing-md);
++    color: var(--go-ui-color-text-light);
++    font-style: italic;
++}
++
++.metadataDisplay {
++    margin-top: var(--go-ui-spacing-lg);
++    border-top: 1px solid var(--go-ui-color-separator);
++    padding-top: var(--go-ui-spacing-md);
++}
++
++.metadataLabel {
++    display: inline-block;
++    color: var(--go-ui-color-text-light);
++    font-size: var(--go-ui-font-size-sm);
++    font-weight: var(--go-ui-font-weight-normal);
++    font-style: italic;
++}
++
++@media (max-width: 768px) {
++    .sectionLabel {
++        align-self: flex-start;
++    }
++
++    .situationalOverviewContent {
++        padding: var(--go-ui-spacing-sm);
++    }
++}
+\ No newline at end of file
+diff --git a/app/src/views/EmergencyDetails/i18n.json b/app/src/views/EmergencyDetails/i18n.json
+index 15fb536..b3cf231 100644
+--- a/app/src/views/EmergencyDetails/i18n.json
++++ b/app/src/views/EmergencyDetails/i18n.json
+@@ -1,21 +1,21 @@
+ {
+-    "namespace": "emergencyDetails",
+-    "strings": {
+-        "emergencyKeyFiguresTitle": "Key Figures",
+-        "emergencyOverviewTitle": "Emergency Overview",
+-        "disasterCategorization": "Disaster Categorization",
+-        "disasterType": "Disaster Type",
+-        "GLIDENumber": "GLIDE Number",
+-        "startDate": "Start Date",
+-        "visibility": "Visibility",
+-        "MDRCode": "MDR Code",
+-        "assistanceRequestedByNS": "NS Requests International Assistance",
+-        "assistanceRequestedByGovernment": "Government Requests International Assistance",
+-        "situationalOverviewTitle": "Situational Overview",
+-        "linksTitle": "Links",
+-        "emergencyMapTitle": "Affected Provinces",
+-        "exportMap": "Export",
+-        "contactsTitle": "Contacts",
+-        "sourceLabel": "Source {source}"
+-    }
++  "namespace": "emergencyDetails",
++  "strings": {
++    "emergencyMapTitle": "Emergency Map",
++    "emergencyOverviewTitle": "Emergency Overview",
++    "overviewDisasterCategorization": "Disaster Categorization",
++    "overviewDisasterType": "Disaster Type",
++    "overviewStartDate": "Start Date",
++    "overviewVisibility": "Visibility",
++    "overviewMdrCode": "MDR Code",
++    "overviewGlideNumber": "GLIDE Number",
++    "overviewAssistanceRequestedByNS": "Assistance Requested by NS",
++    "overviewAssistanceRequestedByGovernment": "Assistance Requested by Government",
++    "rapidResponseTitle": "Rapid Response Capacity Form",
++    "rapidResponseDescription": "Access rapid response documents, assessments, and operational plans for this emergency.",
++    "rapidResponseDownloadFile": "Download file",
++    "rapidResponseFileSize": "Size",
++    "rapidResponseUploadDate": "Uploaded",
++    "rapidResponseNoFilesAvailable": "No rapid response documents available at this time."
++  }
+ }
+diff --git a/app/src/views/EmergencyDetails/index.tsx b/app/src/views/EmergencyDetails/index.tsx
+index 4c39372..421dc49 100644
+--- a/app/src/views/EmergencyDetails/index.tsx
++++ b/app/src/views/EmergencyDetails/index.tsx
+@@ -1,76 +1,120 @@
+ import { useMemo } from 'react';
+ import { useOutletContext } from 'react-router-dom';
+-import {
+-    Container,
+-    HtmlOutput,
+-    KeyFigure,
+-    TextOutput,
+-} from '@ifrc-go/ui';
+-import { useTranslation } from '@ifrc-go/ui/hooks';
+-import { resolveToString } from '@ifrc-go/ui/utils';
++import { Container } from '@ifrc-go/ui';
+ import {
+     compareDate,
+     isDefined,
+     isNotDefined,
+-    isTruthyString,
+     listToGroupList,
+     listToMap,
+ } from '@togglecorp/fujs';
+ 
+-import SeverityIndicator from '#components/domain/SeverityIndicator';
+-import Link from '#components/Link';
+ import useDisasterType from '#hooks/domain/useDisasterType';
+ import useGlobalEnums from '#hooks/domain/useGlobalEnums';
++import useIfrcEvents from '#hooks/domain/useIfrcEvents';
++import usePerDrefSituationalOverview from '#hooks/domain/usePerDrefSituationalOverview';
++import useRapidResponse from '#hooks/domain/useRapidResponse';
+ import { type EmergencyOutletContext } from '#utils/outletContext';
+-import { type GoApiResponse } from '#utils/restRequest';
+ 
++import Contacts from './Contacts';
+ import EmergencyMap from './EmergencyMap';
+ import FieldReportStats from './FieldReportStats';
++import KeyFigures from './KeyFigures';
++import Overview from './Overview';
++import PreviousCrises from './PreviousCrises';
++import RapidResponse from './RapidResponse';
++import SituationalOverview from './SituationalOverview';
+ 
+-import i18n from './i18n.json';
+ import styles from './styles.module.css';
+ 
++/* ------------------------------------------------------------------ */
++/* Types & helpers                                                     */
++/* ------------------------------------------------------------------ */
++
+ type EventItem = GoApiResponse<'/api/v2/event/{id}'>;
+ type FieldReport = EventItem['field_reports'][number];
++type Appeal = EventItem['appeals'][number];
+ 
+ function getFieldReport(
+     reports: FieldReport[],
+-    compareFunction: (
+-        a?: string,
+-        b?: string,
+-        direction?: number
+-    ) => number,
++    compareFn: (a?: string, b?: string, direction?: number) => number,
+     direction?: number,
+ ): FieldReport | undefined {
+-    if (reports.length === 0) {
++    if (!reports.length) {
+         return undefined;
+     }
+-
+-    // FIXME: use max function
+-    return reports.reduce((
+-        selectedReport: FieldReport | undefined,
+-        currentReport: FieldReport | undefined,
+-    ) => {
+-        if (isNotDefined(selectedReport)
+-            || compareFunction(
+-                currentReport?.updated_at,
+-                selectedReport.updated_at,
+-                direction,
+-            ) > 0) {
+-            return currentReport;
++    return reports.reduce<FieldReport | undefined>((sel, cur) => {
++        if (
++            isNotDefined(sel)
++            || compareFn(cur?.updated_at, sel.updated_at, direction) > 0
++        ) {
++            return cur;
+         }
+-        return selectedReport;
++        return sel;
+     }, undefined);
+ }
+ 
++/* ------------------------------------------------------------------ */
++/* Component                                                           */
++/* ------------------------------------------------------------------ */
++
+ /** @knipignore */
+ // eslint-disable-next-line import/prefer-default-export
+ export function Component() {
+-    const strings = useTranslation(i18n);
++    /* ---------------- base data ---------------- */
+     const disasterTypes = useDisasterType();
+     const { emergencyResponse } = useOutletContext<EmergencyOutletContext>();
+     const { api_visibility_choices } = useGlobalEnums();
+ 
++    const disasterType = disasterTypes?.find(
++        (d) => d.id === emergencyResponse?.dtype,
++    );
++    const countryId = emergencyResponse?.countries?.[0]?.id;
++    const disasterTypeId = disasterType?.id;
++
++    /* ---------- DREF detection (appeals only) ---------- */
++    const hasDref = Boolean(
++        emergencyResponse?.appeals?.some((a: Appeal) => {
++            const label = a?.type_display ?? '';
++            return typeof label === 'string' && /dref/i.test(label);
++        }),
++    );
++
++    /* ---------------- situational overview logic ---------------- */
++    const manualSO = emergencyResponse?.situational_overview;
++
++    const {
++        response: aiSO,
++        pending: aiPending,
++        error: aiError,
++    } = usePerDrefSituationalOverview(
++        manualSO ? undefined : emergencyResponse?.id,
++    );
++
++    const overviewText = manualSO ?? aiSO?.situational_overview;
++    const overviewMeta = manualSO ? undefined : aiSO?.metadata;
++    const overviewPending = manualSO ? false : aiPending;
++    const overviewError = manualSO ? undefined : aiError;
++
++    /* ---------------- other hooks ---------------- */
++    const shouldFetchIfrc = !hasDref && isDefined(countryId) && isDefined(disasterTypeId);
++
++    const {
++        response: ifrcEvents,
++        pending: ifrcEventsPending,
++        error: ifrcEventsError,
++    } = useIfrcEvents(
++        shouldFetchIfrc ? countryId : undefined,
++        shouldFetchIfrc ? disasterTypeId : undefined,
++    );
++
++    const {
++        response: rapidResponseData,
++        pending: rapidResponsePending,
++        error: rapidResponseError,
++    } = useRapidResponse({ country: countryId, disaster_type: disasterTypeId });
++
++    /* ---------------- misc data build ---------------- */
+     const visibilityMap = useMemo(
+         () => listToMap(
+             api_visibility_choices,
+@@ -80,309 +124,141 @@ export function Component() {
+         [api_visibility_choices],
+     );
+ 
+-    const hasKeyFigures = isDefined(emergencyResponse)
+-        && emergencyResponse.key_figures.length !== 0;
+-
+-    const disasterType = disasterTypes?.find(
+-        (typeOfDisaster) => typeOfDisaster.id === emergencyResponse?.dtype,
+-    );
++    const hasKeyFigures = isDefined(emergencyResponse) && emergencyResponse.key_figures.length > 0;
+ 
+-    const mdrCode = isDefined(emergencyResponse)
+-        && isDefined(emergencyResponse?.appeals)
+-        && emergencyResponse.appeals.length > 0
+-        ? emergencyResponse?.appeals[0].code : undefined;
++    const hasFieldReports = emergencyResponse?.field_reports
++        && emergencyResponse.field_reports.length > 0;
+ 
+-    const hasFieldReports = isDefined(emergencyResponse)
+-        && isDefined(emergencyResponse?.field_reports)
+-        && emergencyResponse?.field_reports.length > 0;
++    const mdrCode = emergencyResponse?.appeals?.length
++        ? emergencyResponse.appeals[0].code
++        : undefined;
+ 
+     const firstFieldReport = hasFieldReports
+-        ? getFieldReport(emergencyResponse.field_reports, compareDate, -1) : undefined;
++        ? getFieldReport(emergencyResponse.field_reports, compareDate, -1)
++        : undefined;
+     const assistanceIsRequestedByNS = firstFieldReport?.ns_request_assistance;
+     const assistanceIsRequestedByCountry = firstFieldReport?.request_assistance;
+     const latestFieldReport = hasFieldReports
+-        ? getFieldReport(emergencyResponse.field_reports, compareDate) : undefined;
+-
+-    const emergencyContacts = emergencyResponse?.contacts;
+-
+-    const groupedContacts = useMemo(
+-        () => {
+-            type Contact = Omit<NonNullable<typeof emergencyContacts>[number], 'event'>;
+-            let contactsToProcess: Contact[] | undefined = emergencyContacts;
+-            if (!contactsToProcess || contactsToProcess.length <= 0) {
+-                contactsToProcess = latestFieldReport?.contacts;
+-            }
+-            const grouped = listToGroupList(
+-                contactsToProcess?.map(
+-                    (contact) => {
+-                        if (isNotDefined(contact)) {
+-                            return undefined;
+-                        }
+-
+-                        const { ctype } = contact;
+-                        if (isNotDefined(ctype)) {
+-                            return undefined;
+-                        }
+-
+-                        return {
+-                            ...contact,
+-                            ctype,
+-                        };
+-                    },
+-                ).filter(isDefined) ?? [],
+-                (contact) => (
+-                    contact.email.endsWith('ifrc.org')
+-                        ? 'IFRC'
+-                        : 'National Societies'
+-                ),
+-            );
+-            return grouped;
+-        },
+-        [emergencyContacts, latestFieldReport],
+-    );
++        ? getFieldReport(emergencyResponse.field_reports, compareDate)
++        : undefined;
++
++    /* Contacts grouped by org (IFRC vs NS) */
++    const groupedContacts = useMemo(() => {
++        type Contact = Omit<
++            NonNullable<typeof emergencyResponse>['contacts'][number],
++            'event'
++        >;
++        let contacts: Contact[] | undefined = emergencyResponse?.contacts;
++        if (!contacts?.length) {
++            contacts = latestFieldReport?.contacts;
++        }
++
++        const grouped = listToGroupList(
++            contacts
++                ?.map((c) => {
++                    if (isNotDefined(c)) {
++                        return undefined;
++                    }
++                    const { ctype } = c;
++                    if (isNotDefined(ctype)) {
++                        return undefined;
++                    }
++                    return { ...c, ctype };
++                })
++                .filter(isDefined) ?? [],
++            (c) => (c.email.endsWith('ifrc.org') ? 'IFRC' : 'National Societies'),
++        );
++        return grouped;
++    }, [emergencyResponse?.contacts, latestFieldReport]);
++
++    /* ---------------- precomputed nodes (helps linting) ---------------- */
++    const emergencyMapNode = useMemo(() => {
++        if (!emergencyResponse || emergencyResponse.hide_field_report_map) {
++            return null;
++        }
++
++        return (
++            <Container
++                className={styles.mapContainer}
++                heading="Emergency Map"
++                withHeaderBorder
++            >
++                <EmergencyMap event={emergencyResponse} />
++            </Container>
++        );
++    }, [emergencyResponse]);
++
++    const fieldReportStatsNode = useMemo(() => {
++        if (
++            !hasFieldReports
++            || !latestFieldReport
++            || emergencyResponse?.hide_attached_field_reports
++        ) {
++            return null;
++        }
+ 
++        return (
++            <Container
++                className={styles.fieldReportStatsContainer}
++                heading="Field Report Statistics"
++                withHeaderBorder
++            >
++                <FieldReportStats
++                    report={latestFieldReport}
++                    disasterType={emergencyResponse!.dtype}
++                />
++            </Container>
++        );
++    }, [hasFieldReports, latestFieldReport, emergencyResponse]);
++
++    /* ---------------- render ---------------- */
+     return (
+-        <div
+-            className={styles.emergencyDetails}
+-        >
++        <div className={styles.emergencyDetails}>
+             {hasKeyFigures && (
+-                <Container
+-                    className={styles.keyFiguresContainer}
+-                    heading={strings.emergencyKeyFiguresTitle}
+-                    childrenContainerClassName={styles.keyFigureList}
+-                    withHeaderBorder
+-                >
+-                    {emergencyResponse?.key_figures.map(
+-                        (keyFigure) => (
+-                            <KeyFigure
+-                                key={keyFigure.id}
+-                                className={styles.keyFigure}
+-                                // FIXME: fix typing in server (medium priority)
+-                                // FIXME: Rounding this because it was previously rounded
+-                                value={Math.round(
+-                                    Number.parseInt(
+-                                        // Removing commas from the value
+-                                        keyFigure.number.replace(/[^\d.-]/g, ''),
+-                                        10,
+-                                    ),
+-                                )}
+-                                label={keyFigure.deck}
+-                                description={resolveToString(
+-                                    strings.sourceLabel,
+-                                    {
+-                                        source: keyFigure.source,
+-                                    },
+-                                )}
+-                            />
+-                        ),
+-                    )}
+-                </Container>
++                <KeyFigures keyFigures={emergencyResponse!.key_figures} />
++            )}
++
++            {emergencyResponse && (
++                <Overview
++                    emergencyResponse={emergencyResponse}
++                    disasterType={disasterType}
++                    visibilityMap={visibilityMap}
++                    mdrCode={mdrCode}
++                    assistanceIsRequestedByNS={assistanceIsRequestedByNS}
++                    assistanceIsRequestedByCountry={assistanceIsRequestedByCountry}
++                />
+             )}
+-            {isDefined(emergencyResponse) && (
+-                <Container
+-                    heading={strings.emergencyOverviewTitle}
+-                    withHeaderBorder
+-                    childrenContainerClassName={styles.overviewContent}
+-                >
+-                    <TextOutput
+-                        className={styles.overviewItem}
+-                        label={strings.disasterCategorization}
+-                        value={(
+-                            <>
+-                                {emergencyResponse.ifrc_severity_level_display}
+-                                <SeverityIndicator
+-                                    level={emergencyResponse.ifrc_severity_level}
+-                                />
+-                            </>
+-                        )}
+-                        valueClassName={styles.disasterCategoryValue}
+-                        strongValue
+-                    />
+-                    <TextOutput
+-                        className={styles.overviewItem}
+-                        label={strings.disasterType}
+-                        value={disasterType?.name}
+-                        strongValue
+-                    />
+-                    <TextOutput
+-                        className={styles.overviewItem}
+-                        label={strings.startDate}
+-                        valueType="date"
+-                        value={emergencyResponse?.disaster_start_date}
+-                        strongValue
+-                    />
+-                    <TextOutput
+-                        className={styles.overviewItem}
+-                        label={strings.visibility}
+-                        value={isDefined(emergencyResponse.visibility)
+-                            ? visibilityMap?.[emergencyResponse.visibility]
+-                            : '--'}
+-                        strongValue
+-                    />
+-                    <TextOutput
+-                        className={styles.overviewItem}
+-                        label={strings.MDRCode}
+-                        value={mdrCode}
+-                        strongValue
+-                    />
+-                    <TextOutput
+-                        className={styles.overviewItem}
+-                        label={strings.GLIDENumber}
+-                        value={emergencyResponse?.glide}
+-                        strongValue
+-                    />
+-                    <TextOutput
+-                        className={styles.overviewItem}
+-                        label={strings.assistanceRequestedByNS}
+-                        valueType="boolean"
+-                        value={assistanceIsRequestedByNS}
+-                        strongValue
+-                    />
+-                    <TextOutput
+-                        className={styles.overviewItem}
+-                        label={strings.assistanceRequestedByGovernment}
+-                        valueType="boolean"
+-                        value={assistanceIsRequestedByCountry}
+-                        strongValue
+-                    />
+-                </Container>
++
++            <SituationalOverview
++                overviewText={overviewText}
++                metadata={overviewMeta}
++                pending={overviewPending}
++                error={overviewError}
++            />
++
++            {/* Hide PreviousCrises (and skip fetch) when this emergency has a DREF */}
++            {!hasDref && (
++                <PreviousCrises
++                    ifrcEvents={ifrcEvents}
++                    ifrcEventsPending={ifrcEventsPending}
++                    ifrcEventsError={ifrcEventsError}
++                />
+             )}
+-            {isDefined(emergencyResponse)
+-                && isDefined(emergencyResponse?.summary)
+-                && isTruthyString(emergencyResponse.summary)
+-                && (
+-                    <Container
+-                        heading={strings.situationalOverviewTitle}
+-                        withHeaderBorder
+-                    >
+-                        <HtmlOutput
+-                            value={emergencyResponse.summary}
+-                        />
+-                    </Container>
+-                )}
+-            {isDefined(emergencyResponse)
+-                && isDefined(emergencyResponse?.links)
+-                && emergencyResponse.links.length > 0
+-                && (
+-                    <Container
+-                        heading={strings.linksTitle}
+-                        withHeaderBorder
+-                        childrenContainerClassName={styles.linksContent}
+-                    >
+-                        {emergencyResponse.links.map((link) => (
+-                            <div
+-                                key={link.id}
+-                                className={styles.linkContainer}
+-                            >
+-                                <Link
+-                                    href={link.url}
+-                                    external
+-                                    withLinkIcon
+-                                    className={styles.link}
+-                                >
+-                                    {link.title}
+-                                </Link>
+-                                <div>
+-                                    {link.description}
+-                                </div>
+-                            </div>
+-                        ))}
+-                    </Container>
+-                )}
++
++            <RapidResponse
++                rapidResponseData={rapidResponseData}
++                rapidResponsePending={rapidResponsePending}
++                rapidResponseError={rapidResponseError}
++            />
++
+             <div className={styles.mapKeyFigureContainer}>
+-                {emergencyResponse && !emergencyResponse.hide_field_report_map && (
+-                    <Container
+-                        className={styles.mapContainer}
+-                        heading={strings.emergencyMapTitle}
+-                        withHeaderBorder
+-                    >
+-                        {emergencyResponse && (
+-                            <EmergencyMap
+-                                event={emergencyResponse}
+-                            />
+-                        )}
+-                    </Container>
+-                )}
+-                {hasFieldReports
+-                    && isDefined(latestFieldReport)
+-                    && !emergencyResponse.hide_attached_field_reports && (
+-                    <Container
+-                        className={styles.fieldReportStatsContainer}
+-                        heading={strings.emergencyKeyFiguresTitle}
+-                        withHeaderBorder
+-                    >
+-                        <FieldReportStats
+-                            report={latestFieldReport}
+-                            disasterType={emergencyResponse.dtype}
+-                        />
+-                    </Container>
+-                )}
++                {emergencyMapNode}
++                {fieldReportStatsNode}
+             </div>
+-            {isDefined(groupedContacts) && Object.keys(groupedContacts).length > 0
+-                && (
+-                    <Container
+-                        heading={strings.contactsTitle}
+-                        childrenContainerClassName={styles.contactsContent}
+-                        withHeaderBorder
+-                    >
+-                        {/* FIXME: lets not use Object.entries here */}
+-                        {Object.entries(groupedContacts).map(([contactGroup, contacts]) => (
+-                            <Container
+-                                key={contactGroup}
+-                                heading={contactGroup}
+-                                childrenContainerClassName={styles.contactList}
+-                                headingLevel={4}
+-                            >
+-                                {contacts.map((contact) => (
+-                                    <div
+-                                        key={contact.id}
+-                                        className={styles.contact}
+-                                    >
+-                                        <div className={styles.details}>
+-                                            <div className={styles.name}>
+-                                                {contact.name}
+-                                            </div>
+-                                            <div className={styles.title}>
+-                                                {contact.title}
+-                                            </div>
+-                                        </div>
+-                                        <div className={styles.contactMechanisms}>
+-                                            <div className={styles.type}>
+-                                                {contact.ctype}
+-                                            </div>
+-                                            {isTruthyString(contact.email) && (
+-                                                <TextOutput
+-                                                    value={(
+-                                                        <Link
+-                                                            href={`mailto:${contact.email}`}
+-                                                            external
+-                                                            withLinkIcon
+-                                                        >
+-                                                            {contact.email}
+-                                                        </Link>
+-                                                    )}
+-                                                />
+-                                            )}
+-                                            {isTruthyString(contact.phone) && (
+-                                                <TextOutput
+-                                                    value={(
+-                                                        <Link
+-                                                            href={`tel:${contact.phone}`}
+-                                                            withLinkIcon
+-                                                            external
+-                                                        >
+-                                                            {contact.phone}
+-                                                        </Link>
+-                                                    )}
+-                                                />
+-                                            )}
+-                                        </div>
+-                                    </div>
+-                                ))}
+-                            </Container>
+-                        ))}
+-                    </Container>
+-                )}
++
++            {groupedContacts && Object.keys(groupedContacts).length > 0 && (
++                <Contacts groupedContacts={groupedContacts} />
++            )}
+         </div>
+     );
+ }
+diff --git a/app/src/views/EmergencyDetails/styles.module.css b/app/src/views/EmergencyDetails/styles.module.css
+index 2692e91..d205ec0 100644
+--- a/app/src/views/EmergencyDetails/styles.module.css
++++ b/app/src/views/EmergencyDetails/styles.module.css
+@@ -1,109 +1,241 @@
+-.emergency-details {
++/* =================================================================== */
++/* =====================  EmergencyDetails Styles  =================== */
++/* =================================================================== */
++
++/* ===== EmergencyDetails main wrapper ===== */
++.emergencyDetails {
+     display: flex;
+     flex-direction: column;
+-    padding: var(--go-ui-spacing-2xl) 0;
+     gap: var(--go-ui-spacing-2xl);
++    padding: var(--go-ui-spacing-2xl) 0;
++}
+ 
+-    .key-figure-list {
+-        display: flex;
+-        flex-wrap: wrap;
+-        justify-content: center;
+-        gap: var(--go-ui-spacing-md);
+-
+-        .key-figure {
+-            flex-basis: 20rem;
+-            border-radius: var(--go-ui-border-radius-lg);
+-            box-shadow: var(--go-ui-box-shadow-md);
+-        }
+-    }
++/* ===== Key figures ===== */
++.keyFigureList {
++    display: flex;
++    flex-wrap: wrap;
++    gap: var(--go-ui-spacing-md);
++    justify-content: center;
++}
++
++.keyFigure {
++    flex-basis: 20rem;
++    border-radius: var(--go-ui-border-radius-lg);
++    box-shadow: var(--go-ui-box-shadow-md);
++}
+ 
+-    .overview-content {
+-        display: grid;
+-        grid-template-columns: 1fr 1fr 1fr 1fr;
+-        grid-gap: var(--go-ui-spacing-md);
++/* ===== Overview grid ===== */
++.overviewContent {
++    display: grid;
++    grid-template-columns: 1fr 1fr 1fr 1fr;
++    gap: var(--go-ui-spacing-md);
++}
+ 
+-        .overview-item {
+-            display: contents;
+-        }
++.overviewItem {
++    display: contents;
++}
+ 
+-        .disaster-category-value {
+-            display: flex;
+-            gap: var(--go-ui-spacing-sm);
+-        }
++.disasterCategoryValue {
++    display: flex;
++    gap: var(--go-ui-spacing-sm);
++}
+ 
+-        @media screen and (max-width: 50rem) {
+-            grid-template-columns: 1fr 1fr;
+-        }
++@media (max-width: 50rem) {
++    .overviewContent {
++        grid-template-columns: 1fr 1fr;
+     }
++}
+ 
+-    .map-key-figure-container {
+-        display: flex;
+-        flex-grow: 1;
+-        gap: var(--go-ui-spacing-md);
++/* ===== Map + key-figure side-by-side ===== */
++.mapKeyFigureContainer {
++    display: flex;
++    flex-grow: 1;
++    gap: var(--go-ui-spacing-md);
++}
+ 
+-        .map-container {
+-            flex-grow: 1;
+-        }
++.mapContainer {
++    flex-grow: 1;
++}
+ 
+-        .field-report-stats-container {
+-            flex-basis: calc(8vw + 16rem);
+-        }
++.fieldReportStatsContainer {
++    flex-basis: calc(8vw + 16rem);
++}
+ 
+-        @media screen and (max-width: 50rem) {
+-            flex-direction: column;
+-        }
++@media (max-width: 50rem) {
++    .mapKeyFigureContainer {
++        flex-direction: column;
+     }
++}
+ 
+-    .links-content {
+-        display: grid;
+-        grid-template-columns: 1fr 1fr;
+-        grid-gap: var(--go-ui-spacing-md);
++/* ===== Links ===== */
++.linksContent {
++    display: grid;
++    grid-template-columns: 1fr 1fr;
++    gap: var(--go-ui-spacing-md);
++}
+ 
+-        @media screen and (max-width: 50rem) {
+-            grid-template-columns: 1fr;
+-        }
++@media (max-width: 50rem) {
++    .linksContent {
++        grid-template-columns: 1fr;
++    }
++}
++
++.linkContainer {
++    display: flex;
++    flex-direction: column;
++    gap: var(--go-ui-spacing-xs);
++}
+ 
+-        .link-container {
+-            display: flex;
+-            flex-direction: column;
+-            gap: var(--go-ui-spacing-xs);
++.link {
++    color: var(--go-ui-color-text-black);
++}
+ 
+-            .link {
+-                color: var(--go-ui-color-text-black);
+-            }
+-        }
+-    }
++/* ===== Contacts ===== */
++.contactsContent {
++    display: flex;
++    flex-direction: column;
++    gap: var(--go-ui-spacing-xl);
++    padding: var(--go-ui-spacing-md) 0;
++}
+ 
+-    .contacts-content{
+-        display: flex;
+-        flex-direction: column;
+-        gap: var(--go-ui-spacing-xl);
+-        padding: var(--go-ui-spacing-md) 0;
+-
+-        .contact-list {
+-            display: grid;
+-            grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
+-            grid-gap: var(--go-ui-spacing-md);
+-
+-            .contact {
+-                display: flex;
+-                flex-direction: column;
+-                border-radius: var(--go-ui-border-radius-lg);
+-                box-shadow: var(--go-ui-box-shadow-md);
+-                padding: var(--go-ui-spacing-md);
+-                gap: var(--go-ui-spacing-sm);
+-
+-                .name {
+-                    font-size: var(--go-ui-font-size-lg);
+-                    font-weight: var(--go-ui-font-weight-semibold);
+-                }
+-
+-                .type,
+-                .title {
+-                    color: var(--go-ui-color-text-light);
+-                    font-size: var(--go-ui-font-size-sm);
+-                }
+-            }
+-        }
+-    }
++.contactList {
++    display: grid;
++    grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
++    gap: var(--go-ui-spacing-md);
++}
++
++.contact {
++    display: flex;
++    flex-direction: column;
++    gap: var(--go-ui-spacing-sm);
++    border-radius: var(--go-ui-border-radius-lg);
++    box-shadow: var(--go-ui-box-shadow-md);
++    padding: var(--go-ui-spacing-md);
++}
++
++.name {
++    /* Fix: color before font-weight and font-size */
++    color: var(--go-ui-color-text);
++    font-size: var(--go-ui-font-size-lg);
++    font-weight: var(--go-ui-font-weight-semibold);
++}
++
++.type,
++.title {
++    /* Fixed order: color before font-size */
++    color: var(--go-ui-color-text-light);
++    font-size: var(--go-ui-font-size-sm);
++}
++
++/* ------------------------------------------------------------------ */
++/* ===== Section heading row (left title / right controls-label) ===== */
++/* ------------------------------------------------------------------ */
++
++/* Grid lets the last column hug the far right without margin hacks */
++.sectionHeadingRow {
++    display: grid;
++    grid-template-columns: 1fr auto; /* title stretches, last item auto */
++    align-items: center; /* Changed from baseline to center for better alignment */
++    gap: var(--go-ui-spacing-md);
++    width: 100%;
++}
++
++/* Left-hand title - keep this larger and prominent */
++.sectionTitle {
++    line-height: 1.2;
++    /* Fixed order: color before font-size */
++    color: var(--go-ui-color-text);
++    font-size: 1.125rem; /* Increased from 1rem */
++    font-weight: var(--go-ui-font-weight-bold); /* Increased from semibold */
++}
++
++/* Right-hand label / controls / more button - make these smaller */
++.sectionLabel,
++.sectionControls,
++.moreButton {
++    display: flex;
++    align-items: center;
++    line-height: 1;
++    /* Fixed order: white-space before font-weight */
++    white-space: nowrap;
++    color: var(--go-ui-color-text-light);
++    font-size: 0.75rem; /* Reduced from 0.875rem */
++    font-weight: var(--go-ui-font-weight-normal); /* Reduced from semibold */
++    gap: var(--go-ui-spacing-sm); /* Reduced from md */
++}
++
++/* Make the label text slightly more prominent than buttons */
++.sectionLabel {
++    /* Fixed order: text-transform before letter-spacing */
++    text-transform: uppercase;
++    letter-spacing: 0.025em;
++    font-size: 0.6875rem; /* Even smaller for uppercase text */
++    font-weight: var(--go-ui-font-weight-medium);
++}
++
++/* Ensure buttons in sectionControls are also smaller */
++.sectionControls button {
++    font-size: 0.75rem !important;
++}
++
++/* ===== Specific content areas ===== */
++.situationalOverviewContent,
++.previousCrisesContent,
++.drefOperationalStrategyContent {
++    padding: var(--go-ui-spacing-md);
++}
++
++/* ===== Utility ===== */
++.placeholderText {
++    margin: var(--go-ui-spacing-md) 0;
++    color: var(--go-ui-color-text-light);
++    font-style: italic;
++}
++
++.sectionContent {
++    padding-block: var(--go-ui-spacing-sm) var(--go-ui-spacing-lg);
++}
++
++/* ===== Budget Summary Definition List Styling ===== */
++.budgetDefinitionList {
++    display: grid;
++    grid-template-columns: 1fr 2fr;
++    gap: 0.25rem 1rem;
++    margin-top: var(--go-ui-spacing-md);
++}
++
++.budgetDefinitionList dt {
++    color: var(--go-ui-color-text);
++    font-weight: 600;
++}
++
++.budgetDefinitionList dd {
++    margin: 0;
++    color: var(--go-ui-color-text);
++}
++
++/* ===== More Button Styling for better visibility ===== */
++.moreButton {
++    display: inline-flex;
++    align-items: center;
++    /* Fix: transition before background-color */
++    transition: background-color 0.2s ease, color 0.2s ease;
++    margin-top: var(--go-ui-spacing-sm);
++    border: 1px solid var(--go-ui-color-separator);
++    border-radius: var(--go-ui-border-radius-md);
++    background-color: var(--go-ui-color-foreground);
++    cursor: pointer;
++    padding: 0.25rem 0.75rem;
++    /* Fix: color before font-size */
++    color: var(--go-ui-color-text);
++    font-size: 0.875rem;
++    font-weight: 700;
++    gap: 0.3rem;
++    user-select: none;
++}
++
++.moreButton:hover {
++    border-color: var(--go-ui-color-gray-60);
++    background-color: var(--go-ui-color-gray-10);
++    color: var(--go-ui-color-text-black);
+ }
+diff --git a/app/src/views/EmergencyOperationalStrategy/OperationalStrategy/i18n.json b/app/src/views/EmergencyOperationalStrategy/OperationalStrategy/i18n.json
+new file mode 100644
+index 0000000..bc07783
+--- /dev/null
++++ b/app/src/views/EmergencyOperationalStrategy/OperationalStrategy/i18n.json
+@@ -0,0 +1,20 @@
++{
++    "namespace": "emergencyOperationalStrategy",
++    "strings": {
++        "operationalStrategyTitle": "Operational Strategy",
++        "lastUpdateLabel": "Last update:",
++        "operationObjectivesTitle": "OPERATION OBJECTIVES",
++        "operationStrategyTitle": "OPERATION STRATEGY",
++        "aiDisclaimerText": "The content below has been generated or summarised by AI models.",
++        "seeHereLink": "See original submission",
++        "sectorsEngagedTitle": "SECTORS ENGAGED",
++        "operationalSectoralNeedsTitle": "OPERATIONAL SECTORAL NEEDS",
++        "budgetLabel": "Budget (CHF)",
++        "peopleTargetedLabel": "People Targeted",
++        "indicatorsTitle": "Indicators",
++        "targetedLabel": "Targeted",
++        "needsTitle": "Needs",
++        "loadingOperationalStrategy": "Loading operational strategy data...",
++        "errorLoadingOperationalStrategy": "Error loading operational strategy data"
++    }
++}
+\ No newline at end of file
+diff --git a/app/src/views/EmergencyOperationalStrategy/OperationalStrategy/index.tsx b/app/src/views/EmergencyOperationalStrategy/OperationalStrategy/index.tsx
+new file mode 100644
+index 0000000..9b6511d
+--- /dev/null
++++ b/app/src/views/EmergencyOperationalStrategy/OperationalStrategy/index.tsx
+@@ -0,0 +1,437 @@
++import { useState } from 'react';
++import { useTranslation } from '@ifrc-go/ui/hooks';
++
++import type { PerDrefSummary } from '#hooks/domain/usePerDrefSummary';
++
++import i18n from './i18n.json';
++import styles from './styles.module.css';
++
++interface SectorData {
++    id: string;
++    name: string;
++    icon: string;
++    budget: string;
++    peopleTargeted: string;
++    indicators: Array<{
++        name: string;
++        targeted: number | string;
++    }>;
++    needs: string;
++    actionsTaken?: string;
++    description?: string;
++}
++
++interface Props {
++    perDrefSummary?: PerDrefSummary;
++    perDrefSummaryPending: boolean;
++    perDrefSummaryError?: unknown;
++}
++
++// Helper function to map sector titles to icons
++function getSectorIcon(sectorTitle: string): string {
++    const iconMap: Record<string, string> = {
++        health: '🏥',
++        shelter: '🏠',
++        shelter_housing_and_settlements: '🏠',
++        livelihoods: '🏘️',
++        livelihoods_and_basic_needs: '🏘️',
++        water_sanitation_and_hygiene: '💧',
++        protection_gender_and_inclusion: '👥',
++        community_engagement_and_accountability: '📢',
++        multi_purpose_cash: '💵',
++        risk_reduction_climate_adaptation_and_recovery: '🌍',
++        national_society_strengthening: '🏛️',
++        coordination_and_partnerships: '🤝',
++        secretariat_services: '📋',
++    };
++
++    return iconMap[sectorTitle] || '📌';
++}
++
++// Helper function to format date
++function formatDate(dateString?: string): string {
++    if (!dateString) return 'N/A';
++
++    try {
++        const date = new Date(dateString);
++        return date.toLocaleDateString('en-GB', {
++            day: 'numeric',
++            month: 'long',
++            year: 'numeric',
++        });
++    } catch {
++        return dateString;
++    }
++}
++
++function OperationalStrategy(props: Props) {
++    const {
++        perDrefSummary,
++        perDrefSummaryPending,
++        perDrefSummaryError,
++    } = props;
++
++    const strings = useTranslation(i18n);
++    const [expandedSectors, setExpandedSectors] = useState<Set<string>>(new Set());
++    const [showMetadata, setShowMetadata] = useState(false);
++
++    // Extract data from API response
++    const operationalSummary = perDrefSummary?.operational_summary || '';
++    const sectors = perDrefSummary?.sectors || [];
++    const metadata = perDrefSummary?.metadata;
++
++    // Map API sectors to sectoral needs data - SHOW ALL SECTORS
++    const sectoralNeeds: SectorData[] = sectors
++        .filter((sector) => (
++            sector.future_actions && sector.future_actions.length > 0
++        ))
++        .map((sector) => {
++            // Calculate total budget for the sector
++            const totalBudget = sector.future_actions.reduce(
++                (sum, action) => sum + (action.budget || 0),
++                0,
++            );
++
++            // Calculate total people targeted
++            const totalPeopleTargeted = sector.future_actions.reduce(
++                (sum, action) => sum + (action.people_targeted_total || 0),
++                0,
++            );
++
++            // Extract all indicators from all future actions
++            const allIndicators = sector.future_actions.flatMap(
++                (action) => action.indicators.map((indicator) => ({
++                    name: indicator.title,
++                    targeted: indicator.people_targeted,
++                })),
++            );
++
++            return {
++                id: sector.title,
++                name: sector.title_display.toUpperCase(),
++                icon: getSectorIcon(sector.title),
++                budget: totalBudget > 0
++                    ? `${totalBudget.toLocaleString()} CHF`
++                    : '--',
++                peopleTargeted: totalPeopleTargeted > 0
++                    ? totalPeopleTargeted.toLocaleString()
++                    : '--',
++                indicators: allIndicators,
++                needs: sector.needs_summary || '',
++                actionsTaken: sector.actions_taken_summary || '',
++                description: sector.future_actions[0]?.description || '',
++            };
++        });
++
++    const toggleSectorExpansion = (sectorId: string) => {
++        const newExpanded = new Set(expandedSectors);
++        if (newExpanded.has(sectorId)) {
++            newExpanded.delete(sectorId);
++        } else {
++            newExpanded.add(sectorId);
++        }
++        setExpandedSectors(newExpanded);
++    };
++
++    const handleBudgetFileView = () => {
++        if (metadata?.dref_budget_file) {
++            // Open in new tab for viewing
++            window.open(metadata.dref_budget_file, '_blank', 'noopener,noreferrer');
++        }
++    };
++
++    if (perDrefSummaryPending) {
++        return (
++            <div className={styles.operationalStrategy}>
++                <div className={styles.loadingContainer}>
++                    <div className={styles.loadingSpinner} />
++                    <p className={styles.loadingText}>
++                        Loading operational strategy...
++                    </p>
++                </div>
++            </div>
++        );
++    }
++
++    if (perDrefSummaryError) {
++        return (
++            <div className={styles.operationalStrategy}>
++                <p className={styles.errorText}>
++                    {strings.errorLoadingOperationalStrategy}
++                </p>
++            </div>
++        );
++    }
++
++    return (
++        <div className={styles.operationalStrategy}>
++            {/* AI Disclaimer - MOVED TO TOP */}
++            <div className={styles.aiDisclaimer}>
++                <span className={styles.disclaimerText}>
++                    The content below has been generated or summarised by AI models.
++                    {' '}
++                    <button
++                        type="button"
++                        className={styles.seeHereLink}
++                        onClick={() => setShowMetadata(!showMetadata)}
++                    >
++                        See original submission
++                    </button>
++                    .
++                </span>
++            </div>
++
++            {/* Metadata Section - Using Rapid Response File Styles */}
++            {showMetadata && metadata && (
++                <div className={styles.metadataSection}>
++                    <div className={styles.metadataHeader}>
++                        <h3>Original Submission Details</h3>
++                        <button
++                            type="button"
++                            className={styles.closeButton}
++                            onClick={() => setShowMetadata(false)}
++                        >
++                            ✕
++                        </button>
++                    </div>
++                    <div className={styles.metadataContent}>
++                        <div className={styles.metadataGrid}>
++                            <div className={styles.metadataInfo}>
++                                <p>
++                                    <strong>DREF ID:</strong>
++                                    {' '}
++                                    {metadata.dref_id}
++                                </p>
++                                <p>
++                                    <strong>Appeal Code:</strong>
++                                    {' '}
++                                    {metadata.dref_appeal_code}
++                                </p>
++                                <p>
++                                    <strong>Title:</strong>
++                                    {' '}
++                                    {metadata.dref_title}
++                                </p>
++                                <p>
++                                    <strong>Date:</strong>
++                                    {' '}
++                                    {formatDate(metadata.dref_date)}
++                                </p>
++                                <p>
++                                    <strong>Created:</strong>
++                                    {' '}
++                                    {formatDate(metadata.dref_created_at)}
++                                </p>
++                                <p>
++                                    <strong>Type:</strong>
++                                    {' '}
++                                    {perDrefSummary?.dref_type}
++                                </p>
++                                <p>
++                                    <strong>Onset:</strong>
++                                    {' '}
++                                    {perDrefSummary?.dref_onset}
++                                </p>
++                                <p>
++                                    <strong>Operation Update Number:</strong>
++                                    {' '}
++                                    {metadata.dref_op_update_number}
++                                </p>
++                            </div>
++
++                            {/* Budget File using Rapid Response styles */}
++                            {metadata.dref_budget_file && (
++                                <div className={styles.budgetFileSection}>
++                                    <h4 className={styles.budgetFileTitle}>
++                                        Budget Document
++                                    </h4>
++                                    <div className={styles.filesList}>
++                                        <div className={styles.fileItem}>
++                                            <div className={styles.fileIcon}>
++                                                📄
++                                            </div>
++                                            <div className={styles.fileDetails}>
++                                                <button
++                                                    type="button"
++                                                    className={styles.fileName}
++                                                    onClick={handleBudgetFileView}
++                                                    title="View Budget Document in new tab"
++                                                >
++                                                    {metadata.dref_title}
++                                                    {' '}
++                                                    - Budget Document
++                                                </button>
++                                                <p className={styles.fileDescription}>
++                                                    Official budget documentation
++                                                    for this DREF operation
++                                                </p>
++                                                <div className={styles.fileMeta}>
++                                                    <span className={styles.fileSize}>
++                                                        Budget Preview
++                                                    </span>
++                                                    <span className={styles.fileSeparator}>
++                                                        •
++                                                    </span>
++                                                    <span className={styles.fileDate}>
++                                                        {formatDate(metadata.dref_date)}
++                                                    </span>
++                                                </div>
++                                            </div>
++                                        </div>
++                                    </div>
++                                </div>
++                            )}
++                        </div>
++                    </div>
++                </div>
++            )}
++
++            {/* Last Update */}
++            <div className={styles.lastUpdate}>
++                {strings.lastUpdateLabel}
++                {' '}
++                {formatDate(metadata?.dref_date || metadata?.dref_created_at)
++                    || '12 June, 2025'}
++            </div>
++
++            {/* Operation Strategy - Full Width */}
++            <div className={styles.fullWidthSection}>
++                <div className={styles.strategyCard}>
++                    <h3 className={styles.cardTitle}>
++                        {strings.operationStrategyTitle}
++                    </h3>
++                    <p className={styles.contentText}>
++                        {operationalSummary || 'No operational summary available.'}
++                    </p>
++                </div>
++            </div>
++
++            {/* Operational Sectoral Needs */}
++            <div className={styles.sectionContainer}>
++                <h2 className={styles.sectionTitle}>
++                    {strings.operationalSectoralNeedsTitle}
++                </h2>
++                <div className={styles.sectoralNeedsContent}>
++                    {sectoralNeeds.map((sector) => {
++                        const isExpanded = expandedSectors.has(sector.id);
++                        return (
++                            <div key={sector.id} className={styles.sectoralNeedCard}>
++                                <div
++                                    className={styles.sectorHeader}
++                                    onClick={() => toggleSectorExpansion(sector.id)}
++                                    role="button"
++                                    tabIndex={0}
++                                    onKeyDown={(e) => {
++                                        if (e.key === 'Enter' || e.key === ' ') {
++                                            toggleSectorExpansion(sector.id);
++                                        }
++                                    }}
++                                    aria-expanded={isExpanded}
++                                >
++                                    <div className={styles.sectorInfo}>
++                                        <span className={styles.sectorIcon}>
++                                            {sector.icon}
++                                        </span>
++                                        <span className={styles.sectorTitle}>
++                                            {sector.name}
++                                        </span>
++                                    </div>
++                                    <div className={styles.sectorMetrics}>
++                                        <div className={styles.metricGroup}>
++                                            <span className={styles.metricLabel}>
++                                                {strings.budgetLabel}
++                                                :
++                                            </span>
++                                            <span className={styles.metricValue}>
++                                                {sector.budget}
++                                            </span>
++                                        </div>
++                                        <div className={styles.metricGroup}>
++                                            <span className={styles.metricLabel}>
++                                                {strings.peopleTargetedLabel}
++                                                :
++                                            </span>
++                                            <span className={styles.metricValue}>
++                                                {sector.peopleTargeted}
++                                            </span>
++                                        </div>
++                                    </div>
++                                    <span className={styles.expandIcon}>
++                                        {isExpanded ? '▲' : '▼'}
++                                    </span>
++                                </div>
++
++                                {isExpanded && (
++                                    <div className={styles.sectorDetails}>
++                                        {sector.actionsTaken && (
++                                            <div className={styles.actionsTakenSection}>
++                                                <h4 className={styles.subSectionTitle}>
++                                                    Actions Taken
++                                                </h4>
++                                                <p className={styles.needsText}>
++                                                    {sector.actionsTaken}
++                                                </p>
++                                            </div>
++                                        )}
++
++                                        {sector.needs && (
++                                            <div className={styles.needsSection}>
++                                                <h4 className={styles.subSectionTitle}>
++                                                    {strings.needsTitle}
++                                                </h4>
++                                                <p className={styles.needsText}>
++                                                    {sector.needs}
++                                                </p>
++                                            </div>
++                                        )}
++
++                                        {sector.indicators.length > 0 && (
++                                            <div className={styles.indicatorsSection}>
++                                                <h4 className={styles.subSectionTitle}>
++                                                    {strings.indicatorsTitle}
++                                                </h4>
++                                                <div className={styles.indicatorsTable}>
++                                                    <div className={styles.tableHeader}>
++                                                        <span>
++                                                            {strings.targetedLabel}
++                                                        </span>
++                                                    </div>
++                                                    {sector.indicators.map((indicator) => (
++                                                        <div
++                                                            key={`${sector.id}-${indicator.name}-${indicator.targeted}`}
++                                                            className={styles.indicatorRow}
++                                                        >
++                                                            <span className={styles.indicatorName}>
++                                                                {indicator.name}
++                                                            </span>
++                                                            <span className={styles.indicatorValue}>
++                                                                {indicator.targeted}
++                                                            </span>
++                                                        </div>
++                                                    ))}
++                                                </div>
++                                            </div>
++                                        )}
++
++                                        {sector.description && (
++                                            <div className={styles.plannedActionsSection}>
++                                                <h4 className={styles.subSectionTitle}>
++                                                    {strings.plannedActionsTitle || 'Intervention'}
++                                                </h4>
++                                                <p className={styles.needsText}>
++                                                    {sector.description}
++                                                </p>
++                                            </div>
++                                        )}
++                                    </div>
++                                )}
++                            </div>
++                        );
++                    })}
++                </div>
++            </div>
++        </div>
++    );
++}
++
++export default OperationalStrategy;
+diff --git a/app/src/views/EmergencyOperationalStrategy/OperationalStrategy/styles.module.css b/app/src/views/EmergencyOperationalStrategy/OperationalStrategy/styles.module.css
+new file mode 100644
+index 0000000..405b543
+--- /dev/null
++++ b/app/src/views/EmergencyOperationalStrategy/OperationalStrategy/styles.module.css
+@@ -0,0 +1,610 @@
++/* Main Container */
++.operationalStrategy {
++    margin: 0 auto;
++    background-color: var(--go-ui-color-foreground);
++    padding: var(--go-ui-spacing-lg);
++    max-width: 1200px;
++}
++
++/* Last Update */
++.lastUpdate {
++    margin-bottom: var(--go-ui-spacing-lg);
++    color: var(--go-ui-color-text-light);
++    font-size: var(--go-ui-font-size-sm);
++}
++
++/* Full Width Section for single strategy card */
++.fullWidthSection {
++    margin-bottom: var(--go-ui-spacing-xl);
++}
++
++/* Top Two-Column Layout */
++.topSection {
++    display: grid;
++    grid-template-columns: 1fr 1fr;
++    gap: var(--go-ui-spacing-lg);
++    margin-bottom: var(--go-ui-spacing-xl);
++}
++
++.objectivesCard,
++.strategyCard {
++    border: 1px solid var(--go-ui-color-separator);
++    border-radius: var(--go-ui-border-radius-md);
++    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
++    background-color: var(--go-ui-color-foreground);
++    padding: var(--go-ui-spacing-lg);
++}
++
++.cardTitle {
++    margin: 0 0 var(--go-ui-spacing-md) 0;
++    border-bottom: 1px solid var(--go-ui-color-separator);
++    padding-bottom: var(--go-ui-spacing-sm);
++    color: var(--go-ui-color-text);
++    font-size: var(--go-ui-font-size-lg);
++    font-weight: var(--go-ui-font-weight-bold);
++}
++
++.contentText {
++    margin: 0;
++    line-height: 1.6;
++    color: var(--go-ui-color-text-light);
++    font-size: var(--go-ui-font-size-md);
++}
++
++/* AI Disclaimer */
++.aiDisclaimer {
++    display: flex;
++    align-items: flex-start;
++    margin-bottom: var(--go-ui-spacing-xl);
++    border: 1px solid var(--go-ui-color-separator);
++    border-radius: var(--go-ui-border-radius-sm);
++    background-color: var(--go-ui-color-gray-20);
++    padding: var(--go-ui-spacing-md);
++    gap: var(--go-ui-spacing-sm);
++}
++
++.disclaimerText {
++    line-height: 1.5;
++    color: var(--go-ui-color-text-light);
++    font-size: var(--go-ui-font-size-sm);
++    font-style: italic;
++}
++
++.seeHereLink {
++    border: none;
++    background: none;
++    cursor: pointer;
++    text-decoration: underline;
++    color: var(--go-ui-color-red);
++    font-style: italic;
++    text-underline-offset: 2px;
++}
++
++/* Metadata Section */
++.metadataSection {
++    margin-bottom: var(--go-ui-spacing-xl);
++    border: 1px solid var(--go-ui-color-separator);
++    border-radius: var(--go-ui-border-radius-md);
++    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
++    background-color: var(--go-ui-color-foreground);
++}
++
++.metadataHeader {
++    display: flex;
++    align-items: center;
++    justify-content: space-between;
++    border-bottom: 1px solid var(--go-ui-color-separator);
++    background-color: var(--go-ui-color-gray-20);
++    padding: var(--go-ui-spacing-md);
++}
++
++.metadataHeader h3 {
++    margin: 0;
++    font-size: var(--go-ui-font-size-md);
++    font-weight: var(--go-ui-font-weight-bold);
++}
++
++.closeButton {
++    border: none;
++    background: none;
++    cursor: pointer;
++    padding: var(--go-ui-spacing-xs);
++    color: var(--go-ui-color-text-light);
++    font-size: var(--go-ui-font-size-lg);
++}
++
++.closeButton:hover {
++    color: var(--go-ui-color-text);
++}
++
++.metadataContent {
++    padding: var(--go-ui-spacing-lg);
++}
++
++/* Removed the overly specific rule that caused descending specificity:
++   .metadataContent > .metadataGrid > .metadataInfo p { ... } */
++
++.metadataContent a {
++    text-decoration: underline;
++    color: var(--go-ui-color-red);
++}
++
++/* Metadata Grid Layout */
++.metadataGrid {
++    display: grid;
++    grid-template-columns: 2fr 1fr;
++    gap: var(--go-ui-spacing-xl);
++    align-items: start;
++}
++
++.metadataInfo {
++    display: grid;
++    grid-template-columns: 1fr 1fr;
++    gap: var(--go-ui-spacing-md) var(--go-ui-spacing-lg);
++    align-items: start;
++}
++
++.metadataInfo p {
++    margin: 0;
++    border-bottom: 1px solid var(--go-ui-color-separator);
++    padding: var(--go-ui-spacing-sm) 0;
++    line-height: 1.4;
++    color: var(--go-ui-color-text);
++    font-size: var(--go-ui-font-size-sm);
++}
++
++.metadataInfo p:last-child,
++.metadataInfo p:nth-last-child(2) {
++    border-bottom: none;
++}
++
++.metadataInfo p strong {
++    display: block;
++    margin-bottom: var(--go-ui-spacing-xs);
++    text-transform: uppercase;
++    letter-spacing: 0.5px;
++    color: var(--go-ui-color-text-light);
++    font-size: var(--go-ui-font-size-xs);
++    font-weight: var(--go-ui-font-weight-medium);
++}
++
++.budgetFileSection {
++    display: flex;
++    align-self: start;
++    flex-direction: column;
++}
++
++.budgetFileTitle {
++    margin: 0 0 var(--go-ui-spacing-md) 0;
++    color: var(--go-ui-color-text);
++    font-size: var(--go-ui-font-size-md);
++    font-weight: var(--go-ui-font-weight-medium);
++}
++
++/* Rapid Response File Styles for Budget Document */
++.filesList {
++    display: flex;
++    flex-direction: column;
++    gap: var(--go-ui-spacing-md);
++}
++
++.fileItem {
++    display: flex;
++    align-items: center;
++    transition: box-shadow 0.2s ease;
++    border: 1px solid var(--go-ui-color-separator);
++    border-radius: var(--go-ui-border-radius-md);
++    background-color: var(--go-ui-color-foreground);
++    padding: var(--go-ui-spacing-md);
++    gap: var(--go-ui-spacing-md);
++}
++
++.fileItem:hover {
++    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
++}
++
++.fileIcon {
++    flex-shrink: 0;
++    font-size: 2rem;
++}
++
++.fileDetails {
++    flex: 1;
++    min-width: 0;
++}
++
++.fileName {
++    display: block;
++    margin: 0 0 var(--go-ui-spacing-xs) 0;
++    border: none;
++    background: none;
++    cursor: pointer;
++    padding: 0;
++    overflow: hidden;
++    text-align: left;
++    text-decoration: underline;
++    text-overflow: ellipsis;
++    white-space: nowrap;
++    color: var(--go-ui-color-red);
++    font-size: var(--go-ui-font-size-md);
++    font-weight: var(--go-ui-font-weight-medium);
++}
++
++.fileName:hover {
++    color: var(--go-ui-color-red-hover);
++}
++
++.fileDescription {
++    margin: 0 0 var(--go-ui-spacing-xs) 0;
++    line-height: 1.4;
++    color: var(--go-ui-color-text-light);
++    font-size: var(--go-ui-font-size-sm);
++}
++
++.fileMeta {
++    display: flex;
++    align-items: center;
++    gap: var(--go-ui-spacing-sm);
++    color: var(--go-ui-color-text-light);
++    font-size: var(--go-ui-font-size-sm);
++}
++
++.fileSeparator {
++    opacity: 0.5;
++}
++
++.downloadButton {
++    display: flex;
++    align-items: center;
++    flex-shrink: 0;
++    justify-content: center;
++    transition: all 0.2s ease;
++    border: 1px solid var(--go-ui-color-separator);
++    border-radius: var(--go-ui-border-radius-sm);
++    background-color: var(--go-ui-color-gray-20);
++    cursor: pointer;
++    width: 40px;
++    height: 40px;
++    color: var(--go-ui-color-text);
++    font-size: var(--go-ui-font-size-lg);
++}
++
++.downloadButton:hover {
++    border-color: var(--go-ui-color-red);
++    background-color: var(--go-ui-color-red);
++    color: var(--go-ui-color-white);
++}
++
++/* Section Containers */
++.sectionContainer {
++    margin-bottom: var(--go-ui-spacing-xl);
++}
++
++.sectionTitle {
++    margin: 0 0 var(--go-ui-spacing-lg) 0;
++    letter-spacing: 0.5px;
++    color: var(--go-ui-color-text);
++    font-size: var(--go-ui-font-size-lg);
++    font-weight: var(--go-ui-font-weight-bold);
++}
++
++/* Sectors Engaged */
++.sectorsGrid {
++    display: grid;
++    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
++    gap: var(--go-ui-spacing-md);
++}
++
++.sectorCard {
++    display: flex;
++    align-items: center;
++    border: 1px solid var(--go-ui-color-separator);
++    border-radius: var(--go-ui-border-radius-md);
++    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
++    background-color: var(--go-ui-color-foreground);
++    padding: var(--go-ui-spacing-lg);
++    gap: var(--go-ui-spacing-md);
++}
++
++.sectorIcon {
++    font-size: var(--go-ui-font-size-2xl);
++}
++
++.sectorName {
++    color: var(--go-ui-color-text);
++    font-size: var(--go-ui-font-size-md);
++    font-weight: var(--go-ui-font-weight-medium);
++}
++
++/* Sectoral Needs */
++.sectoralNeedsContent {
++    display: flex;
++    flex-direction: column;
++    gap: var(--go-ui-spacing-md);
++}
++
++.sectoralNeedCard {
++    border: 1px solid var(--go-ui-color-separator);
++    border-radius: var(--go-ui-border-radius-md);
++    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
++    background-color: var(--go-ui-color-foreground);
++}
++
++.sectorHeader {
++    display: flex;
++    align-items: center;
++    justify-content: space-between;
++    transition: background-color 0.2s ease;
++    border: none;
++    border-radius: var(--go-ui-border-radius-md) var(--go-ui-border-radius-md) 0 0;
++    background-color: var(--go-ui-color-gray-20);
++    cursor: pointer;
++    padding: var(--go-ui-spacing-lg);
++    width: 100%;
++    text-align: left;
++    font-family: inherit;
++    user-select: none;
++}
++
++.sectorHeader:hover {
++    background-color: var(--go-ui-color-gray-30);
++}
++
++.sectorHeader:active {
++    background-color: var(--go-ui-color-gray-40);
++}
++
++.sectorInfo {
++    display: flex;
++    align-items: center;
++    gap: var(--go-ui-spacing-md);
++    flex: 0 0 auto;
++    min-width: 300px;
++}
++
++.sectorTitle {
++    color: var(--go-ui-color-text);
++    font-size: var(--go-ui-font-size-lg);
++    font-weight: var(--go-ui-font-weight-bold);
++}
++
++.sectorMetrics {
++    display: flex;
++    margin-right: var(--go-ui-spacing-md);
++    margin-left: auto;
++    gap: var(--go-ui-spacing-xl);
++}
++
++.metricGroup {
++    display: flex;
++    align-items: center;
++    gap: var(--go-ui-spacing-sm);
++}
++
++.metricLabel {
++    color: var(--go-ui-color-text-light);
++    font-size: var(--go-ui-font-size-sm);
++}
++
++.metricValue {
++    min-width: 100px;
++    text-align: right;
++    color: var(--go-ui-color-text);
++    font-size: var(--go-ui-font-size-md);
++    font-weight: var(--go-ui-font-weight-bold);
++}
++
++.expandIcon {
++    display: flex;
++    align-items: center;
++    flex-shrink: 0;
++    justify-content: center;
++    min-width: 40px;
++    color: var(--go-ui-color-text);
++    font-size: var(--go-ui-font-size-md);
++    pointer-events: none;
++}
++
++/* Sector Details */
++.sectorDetails {
++    border-top: 1px solid var(--go-ui-color-separator);
++    padding: var(--go-ui-spacing-lg);
++}
++
++.indicatorsSection,
++.needsSection,
++.actionsTakenSection,
++.plannedActionsSection {
++    margin-bottom: var(--go-ui-spacing-lg);
++}
++
++.needsSection:last-child,
++.plannedActionsSection:last-child {
++    margin-bottom: 0;
++}
++
++.subSectionTitle {
++    margin: 0 0 var(--go-ui-spacing-md) 0;
++    color: var(--go-ui-color-text);
++    font-size: var(--go-ui-font-size-md);
++    font-weight: var(--go-ui-font-weight-medium);
++}
++
++/* Indicators Table */
++.indicatorsTable {
++    display: flex;
++    flex-direction: column;
++    border: 1px solid var(--go-ui-color-separator);
++    border-radius: var(--go-ui-border-radius-sm);
++}
++
++.tableHeader {
++    display: flex;
++    justify-content: flex-end;
++    border-bottom: 1px solid var(--go-ui-color-separator);
++    background-color: var(--go-ui-color-gray-20);
++    padding: var(--go-ui-spacing-sm) var(--go-ui-spacing-md);
++    color: var(--go-ui-color-text);
++    font-size: var(--go-ui-font-size-sm);
++    font-weight: var(--go-ui-font-weight-medium);
++}
++
++.indicatorRow {
++    display: flex;
++    align-items: center;
++    justify-content: space-between;
++    border-bottom: 1px solid var(--go-ui-color-separator);
++    padding: var(--go-ui-spacing-sm) var(--go-ui-spacing-md);
++}
++
++.indicatorRow:last-child {
++    border-bottom: none;
++}
++
++.indicatorName {
++    flex: 1;
++    color: var(--go-ui-color-text-light);
++    font-size: var(--go-ui-font-size-sm);
++}
++
++.indicatorValue {
++    min-width: 80px;
++    text-align: right;
++    color: var(--go-ui-color-text);
++    font-size: var(--go-ui-font-size-sm);
++    font-weight: var(--go-ui-font-weight-medium);
++}
++
++.needsText {
++    margin: 0;
++    line-height: 1.6;
++    color: var(--go-ui-color-text-light);
++    font-size: var(--go-ui-font-size-md);
++}
++
++/* Loading and Error States */
++.loadingContainer {
++    display: flex;
++    align-items: center;
++    flex-direction: column;
++    justify-content: center;
++    min-height: 400px;
++    gap: var(--go-ui-spacing-lg);
++}
++
++.loadingSpinner {
++    border: 3px solid var(--go-ui-color-gray-40);
++    border-radius: 50%;
++    border-top-color: var(--go-ui-color-red);
++    width: 48px;
++    height: 48px;
++    animation: spin 1s linear infinite;
++}
++
++@keyframes spin {
++    to {
++        transform: rotate(360deg);
++    }
++}
++
++.loadingText {
++    margin: 0;
++    color: var(--go-ui-color-text-light);
++    font-size: var(--go-ui-font-size-md);
++}
++
++.errorText {
++    padding: var(--go-ui-spacing-xl);
++    text-align: center;
++    color: var(--go-ui-color-red);
++    font-size: var(--go-ui-font-size-md);
++    font-style: italic;
++}
++
++/* Responsive Design */
++@media (max-width: 768px) {
++    .operationalStrategy {
++        padding: var(--go-ui-spacing-md);
++    }
++
++    .topSection {
++        grid-template-columns: 1fr;
++        gap: var(--go-ui-spacing-md);
++    }
++
++    .metadataGrid {
++        grid-template-columns: 1fr;
++        gap: var(--go-ui-spacing-lg);
++    }
++
++    .metadataInfo {
++        grid-template-columns: 1fr;
++        gap: var(--go-ui-spacing-md);
++    }
++    
++    .fileItem {
++        align-items: flex-start;
++        flex-direction: column;
++    }
++        
++    .fileIcon {
++        display: none;
++    }
++        
++    .fileName {
++        white-space: normal;
++        word-break: normal;
++        word-wrap: break-word;  /* fallback for older engines */
++        /* replace deprecated `word-break: break-word` */
++        overflow-wrap: anywhere;
++    }
++        
++    .downloadButton {
++        align-self: flex-end;
++        margin-top: var(--go-ui-spacing-sm);
++    }
++
++    .sectorHeader {
++        align-items: flex-start;
++        flex-direction: column;
++        gap: var(--go-ui-spacing-md);
++    }
++
++    .sectorInfo {
++        min-width: unset;
++    }
++
++    .sectorMetrics {
++        flex-direction: row;
++        justify-content: space-between;
++        margin-right: 0;
++        margin-left: 0;
++        width: 100%;
++    }
++
++    .metricGroup {
++        align-items: flex-start;
++        flex-direction: column;
++        gap: var(--go-ui-spacing-xs);
++    }
++
++    .metricValue {
++        min-width: unset;
++        text-align: left;
++    }
++
++    .sectorsGrid {
++        grid-template-columns: 1fr;
++    }
++
++    .indicatorRow {
++        align-items: flex-start;
++        flex-direction: column;
++        gap: var(--go-ui-spacing-xs);
++    }
++
++    .indicatorValue {
++        min-width: unset;
++        text-align: left;
++    }
++}
+diff --git a/app/src/views/EmergencyOperationalStrategy/i18n.json b/app/src/views/EmergencyOperationalStrategy/i18n.json
+new file mode 100644
+index 0000000..742de1c
+--- /dev/null
++++ b/app/src/views/EmergencyOperationalStrategy/i18n.json
+@@ -0,0 +1,6 @@
++{
++    "namespace": "emergencyOperationalStrategy",
++    "strings": {
++        "title": "Operational Strategy"
++    }
++}
+\ No newline at end of file
+diff --git a/app/src/views/EmergencyOperationalStrategy/index.tsx b/app/src/views/EmergencyOperationalStrategy/index.tsx
+new file mode 100644
+index 0000000..b9d9963
+--- /dev/null
++++ b/app/src/views/EmergencyOperationalStrategy/index.tsx
+@@ -0,0 +1,34 @@
++import { useOutletContext } from 'react-router-dom';
++
++import usePerDrefSummary from '#hooks/domain/usePerDrefSummary';
++import { type EmergencyOutletContext } from '#utils/outletContext';
++
++import OperationalStrategy from './OperationalStrategy';
++
++/** @knipignore */
++// eslint-disable-next-line import/prefer-default-export
++export function Component() {
++    const { emergencyResponse } = useOutletContext<EmergencyOutletContext>();
++
++    // Get DREF ID from emergency response
++    const drefId = emergencyResponse?.appeals && emergencyResponse.appeals.length > 0
++        ? emergencyResponse.appeals[0].id
++        : null;
++
++    // Fetch DREF summary data
++    const {
++        response: perDrefSummary,
++        pending: perDrefSummaryPending,
++        error: perDrefSummaryError,
++    } = usePerDrefSummary(drefId);
++
++    return (
++        <OperationalStrategy
++            perDrefSummary={perDrefSummary}
++            perDrefSummaryPending={perDrefSummaryPending}
++            perDrefSummaryError={perDrefSummaryError}
++        />
++    );
++}
++
++Component.displayName = 'EmergencyOperationalStrategy';
+diff --git a/app/src/views/EmergencyOperationalStrategy/styles.module.css b/app/src/views/EmergencyOperationalStrategy/styles.module.css
+new file mode 100644
+index 0000000..69f15f4
+--- /dev/null
++++ b/app/src/views/EmergencyOperationalStrategy/styles.module.css
+@@ -0,0 +1,4 @@
++/* EmergencyOperationalStrategy styles */
++.container {
++    padding: var(--go-ui-spacing-md);
++}
+\ No newline at end of file
+diff --git a/app/src/views/FieldReportDetails/index.tsx b/app/src/views/FieldReportDetails/index.tsx
+index 9c5363a..15f45df 100644
+--- a/app/src/views/FieldReportDetails/index.tsx
++++ b/app/src/views/FieldReportDetails/index.tsx
+@@ -242,15 +242,27 @@ export function Component() {
+                 </Breadcrumbs>
+             )}
+             actions={(
+-                <Link
+-                    className={styles.editLink}
+-                    to="fieldReportFormEdit"
+-                    urlParams={{ fieldReportId }}
+-                    variant="secondary"
+-                    disabled={shouldHideDetails}
+-                >
+-                    {strings.editReportButtonLabel}
+-                </Link>
++                <>
++                    <Link
++                        className={styles.editLink}
++                        to="fieldReportFormEdit"
++                        urlParams={{ fieldReportId }}
++                        variant="secondary"
++                        disabled={shouldHideDetails}
++                    >
++                        {strings.editReportButtonLabel}
++                    </Link>
++                    {isDefined(eventDetails?.id) && (
++                        <Link
++                            className={styles.editLink}
++                            to="emergenciesLayout"
++                            urlParams={{ emergencyId: eventDetails.id }}
++                            variant="secondary"
++                        >
++                            {strings.viewEmergencyDetailsButtonLabel ?? 'View Emergency Details'}
++                        </Link>
++                    )}
++                </>
+             )}
+             descriptionContainerClassName={styles.description}
+             description={!shouldHideDetails && (

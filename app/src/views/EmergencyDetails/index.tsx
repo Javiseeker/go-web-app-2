@@ -73,12 +73,30 @@ export function Component() {
     const disasterTypeId = disasterType?.id;
 
     /* ---------- DREF detection (appeals only) ---------- */
-    const hasDref = Boolean(
-        emergencyResponse?.appeals?.some((a: Appeal) => {
-            const label = a?.type_display ?? '';
-            return typeof label === 'string' && /dref/i.test(label);
-        }),
-    );
+    // Debug logging to see what we have
+    // console.log('Emergency Response Appeals:', emergencyResponse?.appeals);
+    // console.log('All appeal types:', emergencyResponse?.appeals?.map((a) => ({
+    //     id: a?.id,
+    //     type_display: a?.type_display,
+    //     code: a?.code,
+    //     name: a?.name,
+    // })));
+
+    const drefAppeal = emergencyResponse?.appeals?.find((a: Appeal) => {
+        const label = a?.type_display ?? '';
+        // console.log('Checking appeal:', {
+        //     id: a?.id,
+        //     type_display: label,
+        //     matches: /dref/i.test(label)
+        // });
+        return typeof label === 'string' && /dref/i.test(label);
+    });
+
+    const hasDref = Boolean(drefAppeal);
+    // const drefId = drefAppeal?.id; // Get the DREF ID for the API call
+
+    // console.log('Found DREF Appeal:', drefAppeal);
+    // console.log('DREF ID:', drefId);
 
     /* ---------------- situational overview logic ---------------- */
     const manualSO = emergencyResponse?.situational_overview;
@@ -88,6 +106,7 @@ export function Component() {
         pending: aiPending,
         error: aiError,
     } = usePerDrefSituationalOverview(
+        // Use event ID, not DREF ID - API expects event ID
         manualSO ? undefined : emergencyResponse?.id,
     );
 

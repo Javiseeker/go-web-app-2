@@ -54,7 +54,7 @@ export default function useIfrcEvents(
     } = useRequest<IfrcEvent>({
         skip: skip || !!cachedData,
         // v2 endpoint with the same query params
-        url: '/api/v2/ifrc-events/',
+        url: '/api/v1/ucl/previous-crises-insights/',
         query: skip
             ? undefined
             : {
