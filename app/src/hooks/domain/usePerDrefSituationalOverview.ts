@@ -24,13 +24,11 @@ interface PerDrefSituationalOverviewResponse {
 /**
  * Usage:
  *   const { response, pending, error, refetch } = usePerDrefSituationalOverview(eventId);
- *
- * Note: Always fetches data for ID 6955 regardless of the eventId parameter
  */
 export default function usePerDrefSituationalOverview(eventId?: number) {
     return useRequest<PerDrefSituationalOverviewResponse>({
-        skip: !eventId, // Still skip if no eventId is provided
+        skip: !eventId, // Skip request if no eventId is provided
         url: '/api/v1/ucl/dref-situational-overview/',
-        query: { id: 6955 }, // Always use hardcoded ID 6955
+        query: { id: eventId }, // Use provided eventId
     });
 }
