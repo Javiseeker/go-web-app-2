@@ -10,17 +10,15 @@ import OperationalStrategy from './OperationalStrategy';
 export function Component() {
     const { emergencyResponse } = useOutletContext<EmergencyOutletContext>();
 
-    // Get DREF ID from emergency response
-    const drefId = emergencyResponse?.appeals && emergencyResponse.appeals.length > 0
-        ? emergencyResponse.appeals[0].id
-        : null;
+    // Use EVENT ID, not DREF ID - the API documentation shows it needs event ID
+    const eventId = emergencyResponse?.id;
 
-    // Fetch DREF summary data
+    // Fetch DREF summary data using event ID
     const {
         response: perDrefSummary,
         pending: perDrefSummaryPending,
         error: perDrefSummaryError,
-    } = usePerDrefSummary(drefId);
+    } = usePerDrefSummary(eventId);
 
     return (
         <OperationalStrategy

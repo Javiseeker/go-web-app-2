@@ -501,6 +501,12 @@
     animation: spin 1s linear infinite;
 }
 
+/* Add extra spacing above indicators section */
+.indicatorsSection {
+    margin-top: var(--go-ui-spacing-xl);
+    margin-bottom: var(--go-ui-spacing-lg);
+}
+
 @keyframes spin {
     to {
         transform: rotate(360deg);

@@ -16,9 +16,8 @@ interface SectorData {
         name: string;
         targeted: number | string;
     }>;
-    needs: string;
-    actionsTaken?: string;
-    description?: string;
+    needs: string; // From needs_summary
+    intervention: string; // From intervention_summary (NOT _description)
 }
 
 interface Props {
@@ -80,7 +79,7 @@ function OperationalStrategy(props: Props) {
     const sectors = perDrefSummary?.sectors || [];
     const metadata = perDrefSummary?.metadata;
 
-    // Map API sectors to sectoral needs data - SHOW ALL SECTORS
+    // Map API sectors - EXACTLY as backend team wants it
     const sectoralNeeds: SectorData[] = sectors
         .filter((sector) => (
             sector.future_actions && sector.future_actions.length > 0
@@ -106,6 +105,12 @@ function OperationalStrategy(props: Props) {
                 })),
             );
 
+            // Get intervention from intervention_summary (NOT _description)
+            const interventionText = sector.future_actions
+                .map((action) => action.intervention_summary)
+                .filter((summary) => summary && summary.trim())
+                .join(' ');
+
             return {
                 id: sector.title,
                 name: sector.title_display.toUpperCase(),
@@ -117,9 +122,8 @@ function OperationalStrategy(props: Props) {
                     ? totalPeopleTargeted.toLocaleString()
                     : '--',
                 indicators: allIndicators,
-                needs: sector.needs_summary || '',
-                actionsTaken: sector.actions_taken_summary || '',
-                description: sector.future_actions[0]?.description || '',
+                needs: sector.needs_summary || '', // From needs_summary
+                intervention: interventionText || '', // From intervention_summary
             };
         });
 
@@ -153,12 +157,56 @@ function OperationalStrategy(props: Props) {
         );
     }
 
-    if (perDrefSummaryError) {
+    // Check if error is 404 (not found) - treat as no data instead of error
+    const is404Error = perDrefSummaryError && (
+        (typeof perDrefSummaryError === 'object' && 'status' in perDrefSummaryError && perDrefSummaryError.status === 404)
+        || (typeof perDrefSummaryError === 'object' && 'response' in perDrefSummaryError && (perDrefSummaryError as Record<string, unknown>).response?.status === 404)
+        || (typeof perDrefSummaryError === 'string' && perDrefSummaryError.includes('404'))
+    );
+
+    // Real errors (not 404)
+    const hasRealError = perDrefSummaryError && !is404Error;
+
+    if (hasRealError) {
         return (
             <div className={styles.operationalStrategy}>
                 <p className={styles.errorText}>
                     {strings.errorLoadingOperationalStrategy}
                 </p>
+            </div>
+        );
+    }
+
+    // If 404 or no data, show no data message
+    if (is404Error || !perDrefSummary || !operationalSummary) {
+        return (
+            <div className={styles.operationalStrategy}>
+                <div className={styles.aiDisclaimer}>
+                    <span className={styles.disclaimerText}>
+                        The content below has been generated or summarised by AI models.
+                    </span>
+                </div>
+                <div className={styles.lastUpdate}>
+                    Last update: N/A
+                </div>
+                <div className={styles.fullWidthSection}>
+                    <div className={styles.strategyCard}>
+                        <h3 className={styles.cardTitle}>
+                            {strings.operationStrategyTitle}
+                        </h3>
+                        <p className={styles.contentText}>
+                            No operational strategy data available for this emergency.
+                        </p>
+                    </div>
+                </div>
+                <div className={styles.sectionContainer}>
+                    <h2 className={styles.sectionTitle}>
+                        {strings.operationalSectoralNeedsTitle}
+                    </h2>
+                    <p className={styles.contentText}>
+                        No sectoral needs data available for this emergency.
+                    </p>
+                </div>
             </div>
         );
     }
@@ -363,17 +411,7 @@ function OperationalStrategy(props: Props) {
 
                                 {isExpanded && (
                                     <div className={styles.sectorDetails}>
-                                        {sector.actionsTaken && (
-                                            <div className={styles.actionsTakenSection}>
-                                                <h4 className={styles.subSectionTitle}>
-                                                    Actions Taken
-                                                </h4>
-                                                <p className={styles.needsText}>
-                                                    {sector.actionsTaken}
-                                                </p>
-                                            </div>
-                                        )}
-
+                                        {/* Needs (from needs_summary) */}
                                         {sector.needs && (
                                             <div className={styles.needsSection}>
                                                 <h4 className={styles.subSectionTitle}>
@@ -385,6 +423,19 @@ function OperationalStrategy(props: Props) {
                                             </div>
                                         )}
 
+                                        {/* Intervention (from intervention_summary) */}
+                                        {sector.intervention && (
+                                            <div className={styles.interventionSection}>
+                                                <h4 className={styles.subSectionTitle}>
+                                                    Intervention
+                                                </h4>
+                                                <p className={styles.needsText}>
+                                                    {sector.intervention}
+                                                </p>
+                                            </div>
+                                        )}
+
+                                        {/* Indicators - Added extra margin for spacing */}
                                         {sector.indicators.length > 0 && (
                                             <div className={styles.indicatorsSection}>
                                                 <h4 className={styles.subSectionTitle}>
@@ -392,13 +443,14 @@ function OperationalStrategy(props: Props) {
                                                 </h4>
                                                 <div className={styles.indicatorsTable}>
                                                     <div className={styles.tableHeader}>
+                                                        <span>Indicator</span>
                                                         <span>
                                                             {strings.targetedLabel}
                                                         </span>
                                                     </div>
                                                     {sector.indicators.map((indicator) => (
                                                         <div
-                                                            key={`${sector.id}-${indicator.name}-${indicator.targeted}`}
+                                                            key={`${sector.id}-${indicator.name}`}
                                                             className={styles.indicatorRow}
                                                         >
                                                             <span className={styles.indicatorName}>
@@ -410,17 +462,6 @@ function OperationalStrategy(props: Props) {
                                                         </div>
                                                     ))}
                                                 </div>
-                                            </div>
-                                        )}
-
-                                        {sector.description && (
-                                            <div className={styles.plannedActionsSection}>
-                                                <h4 className={styles.subSectionTitle}>
-                                                    {strings.plannedActionsTitle || 'Intervention'}
-                                                </h4>
-                                                <p className={styles.needsText}>
-                                                    {sector.description}
-                                                </p>
                                             </div>
                                         )}
                                     </div>
